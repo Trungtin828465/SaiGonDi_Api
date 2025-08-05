@@ -21,7 +21,17 @@ const login = async (req, res, next) => {
   }
 }
 
+const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await userService.getAllUsers()
+    res.status(StatusCodes.OK).json(users)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   register,
-  login
+  login,
+  getAllUsers
 }
