@@ -30,8 +30,62 @@ const getAllUsers = async (req, res, next) => {
   }
 }
 
+const changePassword = async (req, res, next) => {
+  try {
+    const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
+    const updatedUser = await userService.changePassword(userId, req.body)
+
+    res.status(StatusCodes.OK).json(updatedUser)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const emailOTP = async (req, res, next) => {
+  try {
+    const { email } = req.body
+    await userService.emailOTP(email)
+    res.status(StatusCodes.OK).json({ message: 'OTP sent to email' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const phoneOTP = async (req, res, next) => {
+  try {
+    await userService.phoneOTP(req.body)
+    res.status(StatusCodes.OK).json({ message: 'OTP sent to phone' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const verifyOTP = async (req, res, next) => {
+  try {
+    await userService.verifyOTP(req.body)
+    res.status(StatusCodes.OK).json({ message: 'OTP verified successfully' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
+    const profile = await userService.getProfile(userId)
+    res.status(StatusCodes.OK).json(profile)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   register,
   login,
-  getAllUsers
+  getAllUsers,
+  changePassword,
+  emailOTP,
+  phoneOTP,
+  verifyOTP,
+  getProfile
 }
