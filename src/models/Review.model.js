@@ -9,7 +9,7 @@ const reviewSchema = new mongoose.Schema(
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Sử dụng tên Model để nhất quán
+      ref: 'User',
       required: true
     },
     rating: {
@@ -81,7 +81,6 @@ reviewSchema.pre('deleteOne', { document: true, query: false }, async function (
 })
 
 reviewSchema.post('deleteOne', { document: true, query: false }, async function () {
-  // 'this.constructor' chính là ReviewModel
   await this.constructor.calculateAverageRating(this.placeIdForUpdate)
 })
 
