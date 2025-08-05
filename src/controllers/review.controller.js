@@ -3,8 +3,8 @@ import { reviewService } from '../services/review.service.js'
 
 const createReview = async (req, res, next) => {
   try {
-    const { placeId } = req.params // Lấy từ URL
-    const userId = req.user.id // Lấy từ authMiddleware
+    const { placeId } = req.params
+    const userId = req.user.id
     const newReview = await reviewService.createReview(placeId, req.body, userId)
     res.status(StatusCodes.CREATED).json({ success: true, data: newReview })
   } catch (error) {
@@ -30,7 +30,7 @@ const getReviewsByPlace = async (req, res, next) => {
 const deleteReview = async (req, res, next) => {
   try {
     const { reviewId } = req.params
-    const user = req.user // Lấy từ authMiddleware
+    const user = req.user
 
     await reviewService.deleteReview(reviewId, user)
     res.status(StatusCodes.OK).json({ success: true, message: 'Đánh giá đã được xoá thành công.' })
