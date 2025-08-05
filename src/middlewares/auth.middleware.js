@@ -2,16 +2,16 @@ import { jwtVerify } from '~/utils/jwt'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]
-  if (!token) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Không có token' })
+  if (!token) return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Token không được cung cấp'))
 
   try {
-    const decoded = jwtVerify(token)
-    req.user = decoded
+    const decoded = await jwtVerify(token)
+    req.user= decoded
     next()
   } catch (err) {
-    next(err)
+    next(new ApiError(StatusCodes.UNAUTHORIZED, 'Token không hợp lệ hoặc đã hết hạn'))
   }
 }
 
