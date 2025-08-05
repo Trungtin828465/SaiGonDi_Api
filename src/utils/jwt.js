@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { env } from '~/config/environment.js'
+import ApiError from './ApiError'
+import { StatusCodes } from 'http-status-codes'
 
 const jwtGenerate = (payload) => {
   return jwt.sign(payload, env.JWT_SECRET, {
@@ -8,14 +10,11 @@ const jwtGenerate = (payload) => {
 }
 
 const jwtVerify = (token) => {
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        return reject(err)
-      }
-      resolve(decoded)
-    })
-  })
+  try {
+    return jwt.verify(token, env.JWT_SECRET)
+  } catch (error) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, 'Token không hợp lệ')
+  }
 }
 
 export { jwtGenerate, jwtVerify }

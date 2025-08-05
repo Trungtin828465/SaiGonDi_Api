@@ -56,7 +56,7 @@ const login = async (loginData) => {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     }
-    const token = jwtGenerate({ id: user._id, email: user.email })
+    const token = jwtGenerate({ id: user._id, email: user.email, role: user.role })
 
     return { user: { ...returnUser }, token }
   } catch (error) {
@@ -64,8 +64,17 @@ const login = async (loginData) => {
   }
 }
 
+const getAllUsers = async () => {
+  try {
+    const users = await UserModel.find({})
+    return users
+  } catch (error) {
+    throw error
+  }
+}
 
 export const userService = {
   register,
-  login
+  login,
+  getAllUsers
 }
