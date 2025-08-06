@@ -43,8 +43,7 @@ const changePassword = async (req, res, next) => {
 
 const emailOTP = async (req, res, next) => {
   try {
-    const { email } = req.body
-    await userService.emailOTP(email)
+    await userService.emailOTP(req.body)
     res.status(StatusCodes.OK).json({ message: 'OTP sent to email' })
   } catch (error) {
     next(error)
@@ -72,7 +71,7 @@ const verifyOTP = async (req, res, next) => {
 const getProfile = async (req, res, next) => {
   try {
     const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
-    const profile = await userService.getProfile(userId)
+    const profile = await userService.getUserDetails(userId)
     res.status(StatusCodes.OK).json(profile)
   } catch (error) {
     next(error)
