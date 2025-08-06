@@ -79,6 +79,11 @@ const placeSchema = new mongoose.Schema({
     ref: 'users',
     required: true
   },
+  verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users',
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

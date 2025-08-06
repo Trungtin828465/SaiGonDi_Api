@@ -1,12 +1,20 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
+import { PHONE_RULE, PHONE_RULE_MESSAGE } from '~/utils/validators'
 
 const userSchema = new mongoose.Schema({
-  name: {
+  firstName: {
     type: String,
     required: true,
     trim: true,
-    minlength: 3,
+    minlength: 1,
+    maxlength: 50
+  },
+  lastName: {
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 1,
     maxlength: 50
   },
   email: {
@@ -15,6 +23,16 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true
+  },
+  phone: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    validate: {
+      validator: (v) => PHONE_RULE.test(v),
+      message: PHONE_RULE_MESSAGE
+    }
   },
   password: {
     type: String,

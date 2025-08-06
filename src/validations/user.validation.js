@@ -1,34 +1,37 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError.js'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { PHONE_RULE, PHONE_RULE_MESSAGE } from '~/utils/validators'
 
 const register = async (req, res, next) => {
   const validationRule = Joi.object({
-    name: Joi.string().min(3).max(30).required().messages({
-      'string.base': 'Name must be a string',
-      'string.empty': 'Name cannot be empty',
-      'string.min': 'Name must be at least 3 characters long',
-      'string.max': 'Name must not exceed 30 characters'
+    firstName: Joi.string().min(1).max(30).required().messages({
+      'string.base': 'first name must be a string',
+      'string.empty': 'first name cannot be empty',
+      'string.min': 'first name must be at least 1 character long',
+      'string.max': 'first name must not exceed 30 characters'
+    }),
+    lastName: Joi.string().min(1).max(30).required().messages({
+      'string.base': 'last name must be a string',
+      'string.empty': 'last name cannot be empty',
+      'string.min': 'last name must be at least 1 character long',
+      'string.max': 'last name must not exceed 30 characters'
     }),
     email: Joi.string().email().required().messages({
-      'string.base': 'Email must be a string',
-      'string.empty': 'Email cannot be empty',
-      'string.email': 'Email must be a valid email address'
+      'string.base': 'email must be a string',
+      'string.empty': 'email cannot be empty',
+      'string.email': 'email must be a valid email address'
+    }),
+    phone: Joi.string().pattern(PHONE_RULE).required().messages({
+      'string.base': 'phone must be a string',
+      'string.empty': 'phone cannot be empty',
+      'string.pattern.base': PHONE_RULE_MESSAGE
     }),
     password: Joi.string().min(6).required().messages({
-      'string.base': 'Password must be a string',
-      'string.empty': 'Password cannot be empty',
-      'string.min': 'Password must be at least 6 characters long'
-    }),
-    avatar: Joi.string().uri().optional().default(''),
-    bio: Joi.string().max(200).optional().default(''),
-    role: Joi.string().valid('user', 'admin').optional().default('user'),
-    favorites: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
-    checkins: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
-    points: Joi.number().integer().min(0).optional().default(0),
-    badges: Joi.array().items(Joi.string()).optional().default([]),
-    createdAt: Joi.date().default(Date.now())
+      'string.base': 'password must be a string',
+      'string.empty': 'password cannot be empty',
+      'string.min': 'password must be at least 6 characters long'
+    })
   })
 
   try {
@@ -43,14 +46,14 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   const validationRule = Joi.object({
     email: Joi.string().email().required().messages({
-      'string.base': 'Email must be a string',
-      'string.empty': 'Email cannot be empty',
-      'string.email': 'Email must be a valid email address'
+      'string.base': 'email must be a string',
+      'string.empty': 'email cannot be empty',
+      'string.email': 'email must be a valid email address'
     }),
     password: Joi.string().min(6).required().messages({
-      'string.base': 'Password must be a string',
-      'string.empty': 'Password cannot be empty',
-      'string.min': 'Password must be at least 6 characters long'
+      'string.base': 'password must be a string',
+      'string.empty': 'password cannot be empty',
+      'string.min': 'password must be at least 6 characters long'
     })
   })
 
@@ -63,7 +66,97 @@ const login = async (req, res, next) => {
   }
 }
 
+const changePassword = async (req, res, next) => {
+  const validationRule = Joi.object({
+    currentPassword: Joi.string().min(6).required().messages({
+      'string.base': 'current password must be a string',
+      'string.empty': 'current password cannot be empty',
+      'string.min': 'current password must be at least 6 characters long'
+    }),
+    newPassword: Joi.string().min(6).required().messages({
+      'string.base': 'new password must be a string',
+      'string.empty': 'new password cannot be empty',
+      'string.min': 'new password must be at least 6 characters long'
+    })
+  })
+
+  try {
+    const data = req?.body ? req.body : {}
+    await validationRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const emailOTP = async (req, res, next) => {
+  const validationRule = Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.base': 'email must be a string',
+      'string.empty': 'email cannot be empty',
+      'string.email': 'email must be a valid email address'
+    })
+  })
+
+  try {
+    const data = req?.body ? req.body : {}
+    await validationRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const phoneOTP = async (req, res, next) => {
+  const validationRule = Joi.object({
+    phone: Joi.string().pattern(PHONE_RULE).required().messages({
+      'string.base': 'phone must be a string',
+      'string.empty': 'phone cannot be empty',
+      'string.pattern.base': PHONE_RULE_MESSAGE
+    })
+  })
+  try {
+    const data = req?.body ? req.body : {}
+    await validationRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const verifyOTP = async (req, res, next) => {
+  const validationRule = Joi.object({
+    email: Joi.string().email().messages({
+      'string.base': 'email must be a string',
+      'string.empty': 'email cannot be empty',
+      'string.email': 'email must be a valid email address'
+    }),
+    phone: Joi.string().pattern(PHONE_RULE).optional().messages({
+      'string.base': 'phone must be a string',
+      'string.pattern.base': PHONE_RULE_MESSAGE
+    }),
+    otp: Joi.string().required().length(6).messages({
+      'string.base': 'otp must be a string',
+      'string.empty': 'otp cannot be empty',
+      'string.length': 'otp must be exactly 6 characters long'
+    })
+  }).xor('email', 'phone').messages({
+    'object.xor': 'Either email or phone must be provided, but not both'
+  })
+  try {
+    const data = req?.body ? req.body : {}
+    await validationRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const userValidation = {
   register,
-  login
+  login,
+  changePassword,
+  emailOTP,
+  verifyOTP,
+  phoneOTP
 }
