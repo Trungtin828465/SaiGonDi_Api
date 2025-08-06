@@ -1,15 +1,16 @@
 import mongoose from 'mongoose'
+import PlaceModel from './Place.model.js'
 
 const reviewSchema = new mongoose.Schema(
   {
     placeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Place',
+      ref: 'places',
       required: true
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'users',
       required: true
     },
     rating: {
@@ -49,22 +50,20 @@ reviewSchema.statics.calculateAverageRating = async function (placeId) {
   ])
 
   try {
-    // Cần import PlaceModel ở đầu file
-    // import PlaceModel from './Place.model.js'
     if (stats.length > 0) {
-      await mongoose.model('Place').findByIdAndUpdate(placeId, {
+      await PlaceModel.findByIdAndUpdate(placeId, {
         averageRating: stats[0].avgRating,
         numReviews: stats[0].numRatings
       })
     } else {
-      // Nếu không còn review nào, reset rating
-      await mongoose.model('Place').findByIdAndUpdate(placeId, {
+      await PlaceModel.findByIdAndUpdate(placeId, {
         averageRating: 0,
         numReviews: 0
       })
     }
   } catch (err) {
     console.error(err)
+    throw new Error('Error calculating average rating')
   }
 }
 
