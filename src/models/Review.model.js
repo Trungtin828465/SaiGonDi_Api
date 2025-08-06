@@ -4,12 +4,12 @@ const reviewSchema = new mongoose.Schema(
   {
     placeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Place',
+      ref: 'places',
       required: true
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'users',
       required: true
     },
     rating: {

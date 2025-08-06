@@ -49,7 +49,7 @@ const getBlogById = async (blogId, user) => {
 }
 
 const createBlog = async (blogData, authorId) => {
-  const { title, content, images, tags, privacy } = blogData
+  const { title, content, tags, privacy } = blogData
 
   // Tạo slug và đảm bảo nó là duy nhất
   let baseSlug = slugify(title, { lower: true, strict: true, trim: true })
@@ -63,7 +63,6 @@ const createBlog = async (blogData, authorId) => {
     title,
     slug,
     content,
-    images,
     tags,
     privacy,
     authorId
