@@ -5,13 +5,13 @@ import PlaceModel from '~/models/Place.model.js'
 
 const createReview = async (placeId, reviewData, userId) => {
   const place = await PlaceModel.findById(placeId)
-
+  
   if (!place) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
   }
 
   if (place.status !== 'approved') {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Bạn không thể đánh giá một địa điểm chưa được duyệt.')
+    throw new ApiError(StatusCodes.FORBIDDEN, 'không có địa điểm này!')
   }
 
   const existingReview = await ReviewModel.findOne({
