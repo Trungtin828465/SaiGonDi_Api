@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import PlaceModel from './Place.model.js'
+import PlaceModel from '~/models/Place.model.js'
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -19,6 +19,17 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5
     },
+    totalLikes: {
+      type: Number,
+      default: 0
+    },
+    likeBy: {
+      type: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users'
+      }],
+      default: []
+    },
     comment: {
       type: String,
       required: true,
@@ -34,55 +45,16 @@ const reviewSchema = new mongoose.Schema(
   }
 )
 
-// Hàm static để tính toán và cập nhật rating trung bình cho một địa điểm
-reviewSchema.statics.calculateAverageRating = async function (placeId) {
-  const stats = await this.aggregate([
-    {
-      $match: { placeId: placeId }
-    },
-    {
-      $group: {
-        _id: '$placeId',
-        numRatings: { $sum: 1 },
-        avgRating: { $avg: '$rating' }
-      }
-    }
-  ])
-
-  try {
-    if (stats.length > 0) {
-      await PlaceModel.findByIdAndUpdate(placeId, {
-        averageRating: stats[0].avgRating,
-        numReviews: stats[0].numRatings
-      })
-    } else {
-      await PlaceModel.findByIdAndUpdate(placeId, {
-        averageRating: 0,
-        numReviews: 0
-      })
-    }
-  } catch (err) {
-    console.error(err)
-    throw new Error('Error calculating average rating')
+reviewSchema.methods.updatePlaceAvgRating = async function () {
+  const place = await PlaceModel.findById(this.placeId)
+  if (place) {
+    const reviews = await ReviewModel.find({ placeId: this.placeId })
+    const avgRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    place.avgRating = avgRating || 0
+    await place.save()
   }
 }
 
-// Gọi hàm calculateAverageRating sau khi một review được lưu (tạo mới hoặc cập nhật)
-reviewSchema.post('save', function () {
-  this.constructor.calculateAverageRating(this.placeId)
-})
-
-// Gọi hàm calculateAverageRating trước khi một review bị xóa
-reviewSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
-  // Lưu lại placeId để có thể sử dụng trong 'post' hook
-  this.placeIdForUpdate = this.placeId
-  next()
-})
-
-reviewSchema.post('deleteOne', { document: true, query: false }, async function () {
-  await this.constructor.calculateAverageRating(this.placeIdForUpdate)
-})
-
-const ReviewModel = mongoose.model('Review', reviewSchema)
+const ReviewModel = mongoose.model('reviews', reviewSchema)
 
 export default ReviewModel
