@@ -12,7 +12,7 @@ const getAllBlogs = async (queryParams) => {
   const query = { privacy: 'public', status: 'approved' }
 
   const blogs = await Blog.find(query)
-    .populate('authorId', 'name avatar') 
+    .populate('authorId', 'name avatar')
     .sort({ createdAt: -1 })
     .skip(startIndex)
     .limit(limit)
@@ -103,8 +103,12 @@ const deleteBlog = async (blogId, user) => {
   await blog.deleteOne()
 }
 
-const updateBlogStatus = async (blogId, newStatus) => {
+const updateBlogStatus = async (blogId, newStatus, user) => {
   const blog = await Blog.findById(blogId)
+  if (user.role !== 'admin') {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền thực hiện hành động này')
+  }
+
   if (!blog) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
   }
@@ -116,6 +120,36 @@ const updateBlogStatus = async (blogId, newStatus) => {
   return blog
 }
 
+const updateBlog = async (blogId, updateData, user) => {
+  const blog = await Blog.findById(blogId)
+  if (!blog) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
+  }
+
+  if (blog.authorId.toString() !== user.id.toString() && user.role !== 'admin') {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền sửa bài viết này')
+  }
+
+  // Chỉ cho phép cập nhật các trường được chỉ định
+  Object.keys(updateData).forEach((key) => {
+    if (['title', 'content', 'tags', 'privacy'].includes(key)) {
+      blog[key] = updateData[key]
+    }
+  })
+  
+  if (updateData.title) {
+    let baseSlug = slugify(updateData.title, { lower: true, strict: true, trim: true })
+    let slug = baseSlug
+    let count = 1
+    while (await Blog.findOne({ slug, _id: { $ne: blog._id } })) {
+      slug = `${baseSlug}-${count++}`
+    }
+    blog.slug = slug
+  }
+
+  await blog.save()
+  return blog
+}
 
 export const blogService = {
   getAllBlogs,
@@ -123,5 +157,6 @@ export const blogService = {
   createBlog,
   updateBlogPrivacy,
   deleteBlog,
-  updateBlogStatus
+  updateBlogStatus,
+  updateBlog
 }

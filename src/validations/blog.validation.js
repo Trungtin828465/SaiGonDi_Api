@@ -56,6 +56,7 @@ const updateBlogPrivacy = async (req, res, next) => {
   }
 }
 
+
 const updateBlogStatus = async (req, res, next) => {
   const validationRule = Joi.object({
     status: Joi.string().valid('pending', 'approved', 'rejected').required().messages({
@@ -71,8 +72,46 @@ const updateBlogStatus = async (req, res, next) => {
   }
 }
 
+const updateBlog = async (req, res, next) => {
+  const validationRule = Joi.object({
+    title: Joi.string().min(3).max(255).trim().strict().optional().messages({
+      'string.base': 'Tiêu đề phải là một chuỗi',
+      'string.min': 'Tiêu đề phải có ít nhất 3 ký tự',
+      'string.max': 'Tiêu đề không được vượt quá 255 ký tự'
+    }),
+    content: Joi.array().items(
+      Joi.object({
+        type: Joi.string().valid('text', 'image').required().messages({
+          'string.base': 'Loại nội dung phải là chuỗi',
+          'any.only': 'Loại nội dung phải là "text" hoặc "image"',
+          'any.required': 'Loại nội dung là trường bắt buộc'
+        }),
+        value: Joi.string().required().messages({
+          'string.base': 'Giá trị nội dung phải là chuỗi',
+          'string.empty': 'Giá trị nội dung không được để trống',
+          'any.required': 'Giá trị nội dung là trường bắt buộc'
+        })
+      })
+    ).min(1).optional().messages({
+      'array.base': 'Nội dung phải là một mảng các khối',
+      'array.min': 'Nội dung phải có ít nhất một khối'
+    }),
+    tags: Joi.array().items(Joi.string().trim().strict()).optional(),
+    privacy: Joi.string().valid('public', 'private').optional()
+  })
+
+  try {
+    await validationRule.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+
 export const blogValidation = {
   createBlog,
   updateBlogPrivacy,
-  updateBlogStatus
+  updateBlogStatus,
+  updateBlog
 }
