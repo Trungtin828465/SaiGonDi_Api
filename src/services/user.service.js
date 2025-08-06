@@ -8,7 +8,6 @@ import sendSMS from '~/utils/sendSMS.js'
 
 const generateAndSaveOTP = async ({ email = '', phone = '' }) => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
-  console.log({ email, phone, otp }) // Debugging line to check OTP generation
   const otpData = {
     email,
     phone,
@@ -100,6 +99,7 @@ const changePassword = async (userId, passwordData) => {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Current password is incorrect')
     }
     user.password = passwordData.newPassword
+    user.updatedAt = Date.now() // Update the updatedAt field
     await user.save()
     return { message: 'Password changed successfully' }
   } catch (error) {
@@ -107,14 +107,14 @@ const changePassword = async (userId, passwordData) => {
   }
 }
 
-const emailOTP = async (email) => {
+const emailOTP = async (emailData) => {
   try {
-    const otp = await generateAndSaveOTP(email)
+    const otp = await generateAndSaveOTP({ email: emailData.email })
     // Here you would typically save the OTP to the database or cache with an expiration time
     // For simplicity, we are just returning it
     // await saveOtpToDatabase(email, otp) // Implement this function to save OTP securely
     // Send the OTP to the user's email
-    await sendMail(email, 'Your OTP Code', `Your OTP code is ${otp}`)
+    await sendMail(emailData.email, 'Your OTP Code', `Your OTP code is ${otp}`)
     return otp
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to sent send OTP email')
@@ -149,7 +149,9 @@ const verifyOTP = async (otpData) => {
   }
 }
 
-const getProfile = async (userId) => {
+
+// Aggregate user details after implementing other modals (Places, Checkins, etc.)
+const getUserDetails = async (userId) => {
   try {
     const user = await UserModel.findById(userId)
     if (!user) {
@@ -170,5 +172,5 @@ export const userService = {
   emailOTP,
   verifyOTP,
   phoneOTP,
-  getProfile
+  getUserDetails
 }
