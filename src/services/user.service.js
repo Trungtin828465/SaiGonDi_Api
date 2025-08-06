@@ -81,7 +81,7 @@ const login = async (loginData) => {
 
 const getAllUsers = async () => {
   try {
-    const users = await UserModel.find({})
+    const users = await UserModel.find({}).select('-password')
     return users
   } catch (error) {
     throw error
