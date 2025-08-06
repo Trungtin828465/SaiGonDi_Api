@@ -91,6 +91,10 @@ const placeSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  _destroy: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,

@@ -77,6 +77,35 @@ export const updateBlogPrivacy = async (req, res, next) => {
   }
 }
 
+export const updateBlogStatus = async (req, res, next) => {
+  try {
+    const updatedBlog = await blogService.updateBlogStatus(
+      req.params.id,
+      req.body.status,
+      req.user
+    )
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Cập nhật trạng thái bài viết thành công.',
+      data: updatedBlog
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateBlog = async (req, res, next) => {
+  try {
+    const blogId = req.params.id
+    const updateData = req.body
+    const user = req.user
+
+    const updatedBlog = await blogService.updateBlog(blogId, updateData, user)
+    res.status(StatusCodes.OK).json({ success: true, data: updatedBlog })
+  } catch (error) {
+    next(error)
+  }
+}
 /**
  * @desc    Xóa bài viết
  * @route   DELETE /api/blogs/:id

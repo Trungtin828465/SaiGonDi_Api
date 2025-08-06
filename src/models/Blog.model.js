@@ -4,8 +4,19 @@ const blogSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
-    content: { type: String, required: true },
-    images: { type: [String], default: [] },
+    content: [
+      {
+        type: {
+          type: String,
+          enum: ['text', 'image'],
+          required: true
+        },
+        value: {
+          type: String,
+          required: true
+        }
+      }
+    ],
     privacy: { type: String, enum: ['public', 'private'], default: 'public' },
     tags: { type: [String], default: [] },
     status: { type: String, enum: ['pending', 'approved', 'hidden'], default: 'pending' },
