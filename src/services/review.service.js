@@ -3,81 +3,115 @@ import ApiError from '~/utils/ApiError.js'
 import { StatusCodes } from 'http-status-codes'
 import PlaceModel from '~/models/Place.model.js'
 
-/**
- * Tạo đánh giá mới cho địa điểm
- */
 const createReview = async (placeId, reviewData, userId) => {
-  const place = await PlaceModel.findById(placeId)
-  if (!place) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
+  try {
+    const place = await PlaceModel.findById(placeId)
+    if (!place) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
+    }
+    if (place.status !== 'approved') {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'không có địa điểm này!')
+    }
+
+    const existingReview = await ReviewModel.findOne({
+      placeId,
+      userId
+    })
+
+    if (existingReview) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Bạn đã đánh giá địa điểm này rồi.')
+    }
+
+    const newReview = await ReviewModel.create({
+      ...reviewData,
+      placeId,
+      userId: userId
+    })
+    await newReview.updatePlaceAvgRating()
+    return newReview
+  } catch (error) {
+    throw error
   }
-
-  if (place.status !== 'approved') {
-    throw new ApiError(StatusCodes.FORBIDDEN, 'Địa điểm chưa được duyệt.')
-  }
-
-  const existingReview = await ReviewModel.findOne({ placeId, userId })
-  if (existingReview) {
-    throw new ApiError(StatusCodes.CONFLICT, 'Bạn đã đánh giá địa điểm này rồi.')
-  }
-
-  const newReview = await ReviewModel.create({
-    ...reviewData,
-    placeId,
-    userId
-  })
-
-  return newReview
 }
 
-/**
- * Lấy danh sách đánh giá cho địa điểm (có phân trang)
- */
-const getReviewsByPlace = async (placeId, queryParams) => {
-  const page = parseInt(queryParams.page, 10) || 1
-  const limit = parseInt(queryParams.limit, 10) || 10
-  const skip = (page - 1) * limit
+const getReviewsByPlaceId = async (placeId, queryParams) => {
+  try {
+    const place = await PlaceModel.findById(placeId)
+    if (!place || place.status !== 'approved') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
+    }
+    const page = parseInt(queryParams.page, 10) || 1
+    const limit = parseInt(queryParams.limit, 10) || 10
+    const startIndex = (page - 1) * limit
 
-  const filter = { placeId }
+    const query = { placeId }
 
-  const [reviews, total] = await Promise.all([
-    ReviewModel.find(filter)
+    const reviews = await ReviewModel.find(query)
       .populate('userId', 'name avatar')
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    ReviewModel.countDocuments(filter)
-  ])
+      .skip(startIndex)
+      .limit(limit)
 
-  return {
-    reviews,
-    pagination: {
-      total,
-      limit,
-      currentPage: page,
-      totalPages: Math.ceil(total / limit)
+    const total = await ReviewModel.countDocuments(query)
+
+    return {
+      reviews,
+      pagination: {
+        total,
+        limit,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit)
+      }
     }
+  } catch (error) {
+    throw error
   }
 }
 
-/**
- * Xoá đánh giá (chỉ chủ sở hữu hoặc admin)
- */
 const deleteReview = async (reviewId, user) => {
-  const review = await ReviewModel.findById(reviewId)
-  if (!review) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy đánh giá.')
+  try {
+    const review = await ReviewModel.findById(reviewId)
+
+    if (!review) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy đánh giá.')
+    }
+
+    const isAuthor = review.userId.toString() === user.id.toString()
+    const isAdmin = user.role === 'admin'
+
+    if (!isAuthor && !isAdmin) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền xoá đánh giá này.')
+    }
+
+    await review.deleteOne()
+    await review.updatePlaceAvgRating()
+    return { success: true, message: 'Đánh giá đã được xoá thành công.' }
+  } catch (error) {
+    throw error
   }
-
-  const isAuthor = review.userId.toString() === user.id.toString()
-  const isAdmin = user.role === 'admin'
-
-  if (!isAuthor && !isAdmin) {
-    throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền xoá đánh giá này.')
-  }
-
-  await review.deleteOne()
 }
+
+const updateReview = async (reviewId, reviewData, userId) => {
+  try {
+    const review = await ReviewModel.findById(reviewId)
+    if (!review) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy đánh giá.')
+    }
+    if (review.userId.toString() !== userId.toString()) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền cập nhật đánh giá này.')
+    }
+    const updatedReview = await ReviewModel.findByIdAndUpdate(
+      reviewId,
+      { ...reviewData, updatedAt: new Date() },
+      { new: true }
+    )
+    await updatedReview.updatePlaceAvgRating()
+    return updatedReview
+  } catch (error) {
+    throw error
+  }
+}
+
 
 /**
  * Like / Unlike đánh giá
@@ -104,7 +138,8 @@ const likeReview = async (reviewId, userId) => {
 
 export const reviewService = {
   createReview,
-  getReviewsByPlace,
+  getReviewsByPlaceId,
   deleteReview,
+  updateReview,
   likeReview
 }

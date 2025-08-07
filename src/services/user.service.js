@@ -110,10 +110,6 @@ const changePassword = async (userId, passwordData) => {
 const emailOTP = async (emailData) => {
   try {
     const otp = await generateAndSaveOTP({ email: emailData.email })
-    // Here you would typically save the OTP to the database or cache with an expiration time
-    // For simplicity, we are just returning it
-    // await saveOtpToDatabase(email, otp) // Implement this function to save OTP securely
-    // Send the OTP to the user's email
     await sendMail(emailData.email, 'Your OTP Code', `Your OTP code is ${otp}`)
     return otp
   } catch (error) {

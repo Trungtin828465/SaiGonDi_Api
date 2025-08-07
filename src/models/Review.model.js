@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import PlaceModel from '~/models/Place.model.js'
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -17,6 +18,17 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       min: 1,
       max: 5
+    },
+    totalLikes: {
+      type: Number,
+      default: 0
+    },
+    likeBy: {
+      type: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users'
+      }],
+      default: []
     },
     comment: {
       type: String,
@@ -40,6 +52,17 @@ const reviewSchema = new mongoose.Schema(
     timestamps: true
   }
 )
+
+
+reviewSchema.methods.updatePlaceAvgRating = async function () {
+  const place = await PlaceModel.findById(this.placeId)
+  if (place) {
+    const reviews = await ReviewModel.find({ placeId: this.placeId })
+    const avgRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    place.avgRating = avgRating || 0
+    await place.save()
+  }
+}
 
 const ReviewModel = mongoose.model('reviews', reviewSchema)
 

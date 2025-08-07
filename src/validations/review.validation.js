@@ -3,37 +3,85 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError.js'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators.js'
 
-const createReviewSchema = Joi.object({
-  rating: Joi.number().required().min(1).max(5).messages({
-    'number.base': ' phải là một con số',
-    'number.min': 'rating phải từ 1 đến 5 sao',
-    'number.max': 'rating phải từ 1 đến 5 sao',
-    'any.required': 'rating là trường bắt buộc'
-  }),
-  comment: Joi.string().required().min(3).trim().messages({
-    'string.empty': 'comment không được để trống',
-    'string.min': 'comment phải có ít nhất 3 ký tự',
-    'any.required': 'comment là trường bắt buộc'
-  }),
-  images: Joi.array().items(Joi.string()).optional()
+const placeIdRule = Joi.object({
+  placeId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
 })
 
-const reviewIdSchema = Joi.object({
-  reviewId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+const idRule = Joi.object({
+  id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
 })
 
 const createReview = async (req, res, next) => {
+  const createReviewRule = Joi.object({
+    rating: Joi.number().required().min(1).max(5).messages({
+      'number.base': 'rating phải là một con số',
+      'number.min': 'rating phải từ 1 đến 5 sao',
+      'number.max': 'rating phải từ 1 đến 5 sao',
+      'any.required': 'rating là trường bắt buộc'
+    }),
+    comment: Joi.string().required().min(3).trim().messages({
+      'string.empty': 'comment không được để trống',
+      'string.min': 'comment phải có ít nhất 3 ký tự',
+      'any.required': 'comment là trường bắt buộc'
+    }),
+    images: Joi.array().items(Joi.string()).optional()
+  })
+
   try {
-    await createReviewSchema.validateAsync(req.body, { abortEarly: false })
+    const placeIdData = req?.params || {}
+    const data = req?.body || {}
+    await placeIdRule.validateAsync(placeIdData, { abortEarly: false })
+    await createReviewRule.validateAsync(data, { abortEarly: false })
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
 }
 
-const validateReviewId = async (req, res, next) => {
+const deleteReview = async (req, res, next) => {
   try {
-    await reviewIdSchema.validateAsync(req.params, { abortEarly: false })
+    const reviewIdData = req?.params || {}
+    await idRule.validateAsync(reviewIdData, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const getReviewsByPlaceId = async (req, res, next) => {
+  const pagingRule = Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10)
+  })
+  try {
+    const placeIdData = req?.params || {}
+    const data = req?.query || {}
+    await placeIdRule.validateAsync(placeIdData, { abortEarly: false })
+    await pagingRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const updateReview = async (req, res, next) => {
+  const updateReviewRule = Joi.object({
+    rating: Joi.number().optional().min(1).max(5).messages({
+      'number.base': 'rating phải là một con số',
+      'number.min': 'rating phải từ 1 đến 5 sao',
+      'number.max': 'rating phải từ 1 đến 5 sao'
+    }),
+    comment: Joi.string().optional().min(3).trim().messages({
+      'string.empty': 'comment không được để trống',
+      'string.min': 'comment phải có ít nhất 3 ký tự'
+    }),
+    images: Joi.array().items(Joi.string()).optional()
+  })
+  try {
+    const reviewIdData = req?.params || {}
+    const data = req?.body || {}
+    await idRule.validateAsync(reviewIdData, { abortEarly: false })
+    await updateReviewRule.validateAsync(data, { abortEarly: false })
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
@@ -42,5 +90,7 @@ const validateReviewId = async (req, res, next) => {
 
 export const reviewValidation = {
   createReview,
-  validateReviewId
+  deleteReview,
+  getReviewsByPlaceId,
+  updateReview
 }

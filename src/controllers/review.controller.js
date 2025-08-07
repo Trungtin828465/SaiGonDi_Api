@@ -12,10 +12,10 @@ const createReview = async (req, res, next) => {
   }
 }
 
-const getReviewsByPlace = async (req, res, next) => {
+const getReviewsByPlaceId = async (req, res, next) => {
   try {
     const { placeId } = req.params
-    const result = await reviewService.getReviewsByPlace(placeId, req.query)
+    const result = await reviewService.getReviewsByPlaceId(placeId, req.query)
     res.status(StatusCodes.OK).json({
       success: true,
       count: result.reviews.length,
@@ -29,11 +29,22 @@ const getReviewsByPlace = async (req, res, next) => {
 
 const deleteReview = async (req, res, next) => {
   try {
-    const { reviewId } = req.params
+    const { id } = req.params
     const user = req.user
 
-    await reviewService.deleteReview(reviewId, user)
+    await reviewService.deleteReview(id, user)
     res.status(StatusCodes.OK).json({ success: true, message: 'Đánh giá đã được xoá thành công.' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const updateReview = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id
+    const updatedReview = await reviewService.updateReview(id, req.body, userId)
+    res.status(StatusCodes.OK).json({ success: true, data: updatedReview })
   } catch (error) {
     next(error)
   }
@@ -41,6 +52,7 @@ const deleteReview = async (req, res, next) => {
 
 export const reviewController = {
   createReview,
-  getReviewsByPlace,
-  deleteReview
+  getReviewsByPlaceId,
+  deleteReview,
+  updateReview
 }

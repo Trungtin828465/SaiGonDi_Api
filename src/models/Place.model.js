@@ -69,6 +69,13 @@ const placeSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  likeBy: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'users'
+    }],
+    default: []
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'hidden'],
@@ -103,6 +110,11 @@ const placeSchema = new mongoose.Schema({
     versionKey: false
   }
 })
+
+placeSchema.methods.updateTotalLikes = async function () {
+  this.totalLikes = this.likeBy.length
+  await this.save()
+}
 
 const PlaceModel = mongoose.model('places', placeSchema)
 
