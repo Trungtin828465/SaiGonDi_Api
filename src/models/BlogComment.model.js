@@ -1,22 +1,16 @@
 import mongoose from 'mongoose'
 
-const reviewSchema = new mongoose.Schema(
+const blogCommentSchema = new mongoose.Schema(
   {
-    placeId: {
+    blogId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'places',
+      ref: 'blogs',
       required: true
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users',
       required: true
-    },
-    rating: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5
     },
     comment: {
       type: String,
@@ -31,16 +25,17 @@ const reviewSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    likeBy: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
-      default: []
-    }
+    likeBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users'
+      }
+    ]
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 )
 
-const ReviewModel = mongoose.model('reviews', reviewSchema)
 
-export default ReviewModel
+const BlogCommentModel = mongoose.model('blog_comments', blogCommentSchema)
+
+export default BlogCommentModel

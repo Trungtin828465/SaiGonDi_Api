@@ -17,6 +17,6 @@ router.post(
 )
 
 // Xoá một đánh giá (yêu cầu đăng nhập)
-router.delete('/:reviewId', verifyToken, reviewValidation.deleteReview, reviewController.deleteReview)
+router.delete('/:reviewId', verifyToken, reviewValidation.validateReviewId, reviewController.deleteReview)
 
 export const reviewRouter = router

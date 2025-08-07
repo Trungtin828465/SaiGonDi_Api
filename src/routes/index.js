@@ -4,6 +4,7 @@ import { placeRoute } from './place.routes.js'
 import { adminRoute } from './admin.routes.js'
 import { blogRoute } from './blog.routes.js'
 import { reviewRouter } from './review.route.js'
+import { blogCommentRoute } from './blogComment.route.js'
 
 
 const Router = express.Router()
@@ -13,6 +14,7 @@ Router.get('/status', (req, res) => {
 })
 
 Router.use('/blogs', blogRoute)
+Router.use('/comments', blogCommentRoute)
 Router.use('/users', userRoute)
 Router.use('/places', placeRoute)
 Router.use('/admin', adminRoute)
