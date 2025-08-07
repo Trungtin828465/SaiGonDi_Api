@@ -49,7 +49,7 @@ const getBlogById = async (blogId, user) => {
 }
 
 const createBlog = async (blogData, authorId) => {
-  const { title, content, tags, privacy } = blogData
+  const { title, content, tags, privacy, images } = blogData
 
   // Tạo slug và đảm bảo nó là duy nhất
   let baseSlug = slugify(title, { lower: true, strict: true, trim: true })
@@ -65,6 +65,7 @@ const createBlog = async (blogData, authorId) => {
     content,
     tags,
     privacy,
+    images,
     authorId
   })
 
@@ -103,11 +104,28 @@ const deleteBlog = async (blogId, user) => {
   await blog.deleteOne()
 }
 
-const updateBlogStatus = async (blogId, newStatus, user) => {
+const likeBlog = async (blogId, userId) => {
   const blog = await Blog.findById(blogId)
-  if (user.role !== 'admin') {
-    throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền thực hiện hành động này')
+
+  if (!blog) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết.')
   }
+
+  const userIndex = blog.likeBy.findIndex((id) => id.toString() === userId.toString())
+
+  if (userIndex === -1) {
+    blog.likeBy.push(userId)
+  } else {
+    blog.likeBy.splice(userIndex, 1)
+  }
+  blog.totalLikes = blog.likeBy.length
+
+  await blog.save()
+  return blog
+}
+
+const updateBlogStatus = async (blogId, newStatus) => {
+  const blog = await Blog.findById(blogId)
 
   if (!blog) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
@@ -132,11 +150,11 @@ const updateBlog = async (blogId, updateData, user) => {
 
   // Chỉ cho phép cập nhật các trường được chỉ định
   Object.keys(updateData).forEach((key) => {
-    if (['title', 'content', 'tags', 'privacy'].includes(key)) {
+    if (['title', 'content', 'tags', 'privacy', 'images'].includes(key)) {
       blog[key] = updateData[key]
     }
   })
-  
+
   if (updateData.title) {
     let baseSlug = slugify(updateData.title, { lower: true, strict: true, trim: true })
     let slug = baseSlug
@@ -157,6 +175,7 @@ export const blogService = {
   createBlog,
   updateBlogPrivacy,
   deleteBlog,
+  likeBlog,
   updateBlogStatus,
   updateBlog
 }

@@ -81,12 +81,31 @@ export const updateBlogStatus = async (req, res, next) => {
   try {
     const updatedBlog = await blogService.updateBlogStatus(
       req.params.id,
-      req.body.status,
-      req.user
+      req.body.status
     )
     res.status(StatusCodes.OK).json({
       success: true,
       message: 'Cập nhật trạng thái bài viết thành công.',
+      data: updatedBlog
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * @desc    Thích/bỏ thích bài viết
+ * @route   PATCH /api/blogs/:id/like
+ * @access  Private
+ */
+export const likeBlog = async (req, res, next) => {
+  try {
+    const updatedBlog = await blogService.likeBlog(
+      req.params.id,
+      req.user.id
+    )
+    res.status(StatusCodes.OK).json({
+      success: true,
       data: updatedBlog
     })
   } catch (error) {
