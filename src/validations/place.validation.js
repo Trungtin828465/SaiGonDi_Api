@@ -3,6 +3,13 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError.js'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators.js'
 
+const idRule = Joi.object({
+  id: Joi.string().pattern(OBJECT_ID_RULE).required().messages({
+    'string.base': 'ID must be a string',
+    'string.pattern.base': OBJECT_ID_RULE_MESSAGE
+  })
+})
+
 const createNew = async (req, res, next) => {
   const validationRule = Joi.object({
     name: Joi.string().min(3).required().messages({
@@ -52,16 +59,9 @@ const createNew = async (req, res, next) => {
 }
 
 const getPlaceDetails = async (req, res, next) => {
-  const validationRule = Joi.object({
-    id: Joi.string().pattern(OBJECT_ID_RULE).required().messages({
-      'string.base': 'ID must be a string',
-      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
-    })
-  })
-
   try {
     const data = req?.params ? req.params : {}
-    await validationRule.validateAsync(data, { abortEarly: false })
+    await idRule.validateAsync(data, { abortEarly: false })
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
@@ -69,16 +69,19 @@ const getPlaceDetails = async (req, res, next) => {
 }
 
 const idValidate = async (req, res, next) => {
-  const validationRule = Joi.object({
-    id: Joi.string().pattern(OBJECT_ID_RULE).required().messages({
-      'string.base': 'ID must be a string',
-      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
-    })
-  })
-
   try {
     const data = req?.params ? req.params : {}
-    await validationRule.validateAsync(data, { abortEarly: false })
+    await idRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const likePlace = async (req, res, next) => {
+  try {
+    const data = req?.params ? req.params : {}
+    await idRule.validateAsync(data, { abortEarly: false })
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
@@ -88,5 +91,6 @@ const idValidate = async (req, res, next) => {
 export const placeValidation = {
   createNew,
   getPlaceDetails,
-  idValidate
+  idValidate,
+  likePlace
 }

@@ -77,11 +77,27 @@ const destroyPlace = async (req, res, next) => {
   }
 }
 
+const likePlace = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const userId = req.user.id
+    const updatedPlace = await placeService.likePlace(placeId, userId)
+    res.status(StatusCodes.OK).json({
+      message: 'Place liked successfully',
+      data: updatedPlace
+    })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
 export const placeController = {
   createNew,
   getAllPlaces,
   getApprovedPlaces,
   getPlaceDetails,
   updatePlace,
-  destroyPlace
+  destroyPlace,
+  likePlace
 }

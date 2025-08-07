@@ -1,6 +1,7 @@
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import PlaceModel from '~/models/Place.model.js'
+import { mongoose } from 'mongoose'
 
 const createNew = async (placeData, userId, adminId) => {
   try {
@@ -68,11 +69,31 @@ const destroyPlace = async (placeId) => {
   }
 }
 
+const likePlace = async (placeId, userId) => {
+  try {
+    const place = await PlaceModel.findById(placeId)
+    if (!place || place.status !== 'approved') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
+    }
+    if (place.likeBy.includes(new mongoose.Types.ObjectId(userId))) {
+      place.likeBy.pull(new mongoose.Types.ObjectId(userId))
+    } else {
+      place.likeBy.push(new mongoose.Types.ObjectId(userId))
+    }
+    await place.save()
+    await place.updateTotalLikes()
+    return place
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
 export const placeService = {
   createNew,
   getAllPlaces,
   getApprovedPlaces,
   getPlaceDetails,
   updatePlace,
-  destroyPlace
+  destroyPlace,
+  likePlace
 }
