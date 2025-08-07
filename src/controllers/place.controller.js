@@ -31,8 +31,8 @@ const getApprovedPlaces = async (req, res, next) => {
   try {
     const approvedPlaces = await placeService.getApprovedPlaces()
     res.status(StatusCodes.OK).json({
-      message: 'Approved places retrieved successfully',
-      data: approvedPlaces
+      'success': true,
+      'data': approvedPlaces
     })
   } catch (error) {
     next(error)
@@ -44,8 +44,8 @@ const getPlaceDetails = async (req, res, next) => {
     const placeId = req.params.id
     const placeDetails = await placeService.getPlaceDetails(placeId)
     res.status(StatusCodes.OK).json({
-      message: 'Place details retrieved successfully',
-      data: placeDetails
+      'success': true,
+      'data': placeDetails
     })
   } catch (error) {
     next(error)
@@ -57,7 +57,7 @@ const updatePlace = async (req, res, next) => {
     const placeId = req.params.id
     const updatedPlace = await placeService.updatePlace(placeId, req.body)
     res.status(StatusCodes.OK).json({
-      message: 'Place updated successfully',
+      message: 'Đã cập nhật địa điểm thành công',
       data: updatedPlace
     })
   } catch (error) {
@@ -70,7 +70,7 @@ const destroyPlace = async (req, res, next) => {
     const placeId = req.params.id
     await placeService.destroyPlace(placeId)
     res.status(StatusCodes.OK).json({
-      message: 'Place deleted successfully'
+      message: 'Đã xóa địa điểm thành công'
     })
   } catch (error) {
     next(error)
@@ -81,10 +81,10 @@ const likePlace = async (req, res, next) => {
   try {
     const placeId = req.params.id
     const userId = req.user.id
-    const updatedPlace = await placeService.likePlace(placeId, userId)
+    await placeService.likePlace(placeId, userId)
     res.status(StatusCodes.OK).json({
-      message: 'Place liked successfully',
-      data: updatedPlace
+      'success': true,
+      message: 'Đã thích địa điểm thành công'
     })
   }
   catch (error) {
