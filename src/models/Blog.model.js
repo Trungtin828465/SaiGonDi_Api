@@ -4,7 +4,10 @@ const blogSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      minlength: 3,
+      maxlength: 255
     },
     slug: {
       type: String,
@@ -44,8 +47,7 @@ const blogSchema = new mongoose.Schema(
     likeBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'users',
-        default: []
+        ref: 'users'
       }
     ],
     status: {
@@ -64,4 +66,6 @@ const blogSchema = new mongoose.Schema(
   }
 )
 
-export default mongoose.model('Blog', blogSchema)
+const BlogModel = mongoose.model('blogs', blogSchema)
+
+export default BlogModel
