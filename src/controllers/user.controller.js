@@ -11,7 +11,7 @@ const register = async (req, res, next) => {
       user: {
         userId: newUser._id,
         email: newUser.email,
-        fullName: newUser.firstName + ' ' + newUser.lastName,
+        fullName: newUser.firstName + ' ' + newUser.lastName
       }
     })
   } catch (error) {

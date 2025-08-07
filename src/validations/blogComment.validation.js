@@ -40,7 +40,7 @@ const updateComment = async (req, res, next) => {
 
 const validateCommentId = async (req, res, next) => {
   const validationRule = Joi.object({
-    commentId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+    id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   })
   try {
     await validationRule.validateAsync(req.params, { abortEarly: false })
