@@ -25,16 +25,15 @@ const blogCommentSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    likeBy: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'users'
-      }
-    ]
+    likeBy: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
+      default: []
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 )
-
 
 const BlogCommentModel = mongoose.model('blog_comments', blogCommentSchema)
 
