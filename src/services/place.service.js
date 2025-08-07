@@ -20,7 +20,13 @@ const createNew = async (placeData, userId, adminId) => {
 const getApprovedPlaces = async () => {
   try {
     const places = await PlaceModel.find({ status: 'approved' })
-    return places
+    const returnPlaces = places.map(place => ({
+      id: place._id,
+      name: place.name,
+      address: place.address,
+      category: place.category
+    }))
+    return returnPlaces
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
   }
@@ -39,6 +45,9 @@ const getAllPlaces = async () => {
 const getPlaceDetails = async (placeId) => {
   try {
     const place = await PlaceModel.findById(placeId)
+    if (!place || place.status !== 'approved') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
+    }
     return place
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)

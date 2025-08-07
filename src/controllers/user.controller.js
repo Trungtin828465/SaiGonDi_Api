@@ -5,7 +5,15 @@ const register = async (req, res, next) => {
   try {
     const newUser = await userService.register(req.body)
 
-    res.status(StatusCodes.CREATED).json(newUser)
+    res.status(StatusCodes.CREATED).json({
+      success: true,
+      message: 'Đăng ký thành công',
+      user: {
+        userId: newUser._id,
+        email: newUser.email,
+        fullName: newUser.firstName + ' ' + newUser.lastName,
+      }
+    })
   } catch (error) {
     next(error)
   }
@@ -13,9 +21,19 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const user = await userService.login(req.body)
+    const user = await userService.login({ ...req.body, ipAddress: req.ip, device: req.headers['user-agent'] })
 
-    res.status(StatusCodes.OK).json(user)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Đăng nhập thành công',
+      token: user.token,
+      user: {
+        userId: user._id,
+        role: user.role,
+        email: user.email,
+        fullName: user.firstName + ' ' + user.lastName
+      }
+    })
   } catch (error) {
     next(error)
   }
@@ -33,9 +51,12 @@ const getAllUsers = async (req, res, next) => {
 const changePassword = async (req, res, next) => {
   try {
     const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
-    const updatedUser = await userService.changePassword(userId, req.body)
+    await userService.changePassword(userId, req.body)
 
-    res.status(StatusCodes.OK).json(updatedUser)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Đổi mật khẩu thành công'
+    })
   } catch (error) {
     next(error)
   }
@@ -72,7 +93,10 @@ const getProfile = async (req, res, next) => {
   try {
     const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
     const profile = await userService.getUserDetails(userId)
-    res.status(StatusCodes.OK).json(profile)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      user: profile
+    })
   } catch (error) {
     next(error)
   }

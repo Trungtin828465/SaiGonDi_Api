@@ -28,21 +28,7 @@ const register = async (registerData) => {
 
     const newUser = await UserModel.create(registerData)
 
-    const returnUser = {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      avatar: newUser.avatar,
-      bio: newUser.bio,
-      role: newUser.role,
-      favorites: newUser.favorites,
-      checkins: newUser.checkins,
-      points: newUser.points,
-      badges: newUser.badges,
-      createdAt: newUser.createdAt,
-      updatedAt: newUser.updatedAt
-    }
-    return returnUser
+    return newUser
   } catch (error) { throw error }
 }
 
@@ -57,23 +43,9 @@ const login = async (loginData) => {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
     }
 
-    const returnUser = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      bio: user.bio,
-      role: user.role,
-      favorites: user.favorites,
-      checkins: user.checkins,
-      points: user.points,
-      badges: user.badges,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
-    }
     const token = jwtGenerate({ id: user._id, email: user.email, role: user.role })
-
-    return { user: { ...returnUser }, token }
+    await user.saveLog(loginData.ipAddress, loginData.device)
+    return { ...user.toObject(), token }
   } catch (error) {
     throw error
   }
@@ -135,7 +107,7 @@ const verifyOTP = async (otpData) => {
     if (!otpRecord) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid OTP')
     }
-
+    await otpRecord.setVerified()
     // Optionally, you can delete the OTP record after successful verification
     await OTPModel.deleteOne({ _id: otpRecord._id })
 
@@ -153,7 +125,13 @@ const getUserDetails = async (userId) => {
     if (!user) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     }
-    const { password, ...profile } = user.toObject()
+    const profile = {
+      userId: user._id,
+      email: user.email,
+      fullName: `${user.firstName} ${user.lastName}`,
+      phoneVerified: user.phoneVerified,
+      emailVerified: user.emailVerified
+    }
     return profile
   } catch (error) {
     throw error
