@@ -112,9 +112,34 @@ const updateReview = async (reviewId, reviewData, userId) => {
   }
 }
 
+
+/**
+ * Like / Unlike đánh giá
+ */
+const likeReview = async (reviewId, userId) => {
+  const review = await ReviewModel.findById(reviewId)
+  if (!review) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy đánh giá.')
+  }
+
+  const alreadyLiked = review.likeBy.includes(userId)
+
+  if (alreadyLiked) {
+    review.likeBy = review.likeBy.filter(id => id.toString() !== userId.toString())
+  } else {
+    review.likeBy.push(userId)
+  }
+
+  review.totalLikes = review.likeBy.length
+
+  await review.save()
+  return review
+}
+
 export const reviewService = {
   createReview,
   getReviewsByPlaceId,
   deleteReview,
-  updateReview
+  updateReview,
+  likeReview
 }

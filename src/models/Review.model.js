@@ -38,12 +38,21 @@ const reviewSchema = new mongoose.Schema(
     images: {
       type: [String],
       default: []
+    },
+    totalLikes: {
+      type: Number,
+      default: 0
+    },
+    likeBy: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
+      default: []
     }
   },
   {
     timestamps: true
   }
 )
+
 
 reviewSchema.methods.updatePlaceAvgRating = async function () {
   const place = await PlaceModel.findById(this.placeId)
