@@ -39,3 +39,11 @@ export const placeRateLimiter = createRateLimiter({
   maxRequests: 60,
   windowMs: 60 * 1000
 })
+
+
+export const blogRateLimiter = createRateLimiter({
+  maxRequests: 10,
+  windowMs: 60 * 1000
+})
+
+
