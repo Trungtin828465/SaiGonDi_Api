@@ -31,7 +31,8 @@ const createBlog = async (req, res, next) => {
     }),
     tags: Joi.array().items(Joi.string().trim().strict()).optional(),
     images: Joi.array().items(Joi.string().uri()).optional(),
-    privacy: Joi.string().valid('public', 'private').optional()
+    privacy: Joi.string().valid('public', 'private').optional(),
+    id_place: Joi.string().optional()
   })
 
   try {
@@ -99,7 +100,8 @@ const updateBlog = async (req, res, next) => {
     }),
     tags: Joi.array().items(Joi.string().trim().strict()).optional(),
     images: Joi.array().items(Joi.string().uri()).optional(),
-    privacy: Joi.string().valid('public', 'private').optional()
+    privacy: Joi.string().valid('public', 'private').optional(),
+    id_place: Joi.string().optional()
   })
 
   try {

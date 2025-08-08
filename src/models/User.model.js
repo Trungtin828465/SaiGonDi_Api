@@ -91,6 +91,10 @@ const userSchema = new mongoose.Schema({
     }],
     default: []
   },
+  sharedBlogs: [{
+    blog: { type: mongoose.Schema.Types.ObjectId, ref: 'blogs' },
+    sharedAt: { type: Date, default: Date.now }
+  }],
   createdAt: {
     type: Date,
     default: Date.now
