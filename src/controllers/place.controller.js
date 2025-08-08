@@ -92,6 +92,51 @@ const likePlace = async (req, res, next) => {
   }
 }
 
+const addToFavorites = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const userId = req.user.id
+    const user = await placeService.addToFavorites(placeId, userId)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      message: 'Đã thêm địa điểm vào yêu thích thành công',
+      user
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const removeFromFavorites = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const userId = req.user.id
+    const user = await placeService.removeFromFavorites(placeId, userId)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      message: 'Đã xóa địa điểm khỏi yêu thích thành công',
+      user
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const checkinPlace = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const userId = req.user.id
+    const checkinData = await placeService.checkinPlace(placeId, userId)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      message: 'Đã check-in thành công',
+      data: checkinData
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const placeController = {
   createNew,
   getAllPlaces,
@@ -99,5 +144,8 @@ export const placeController = {
   getPlaceDetails,
   updatePlace,
   destroyPlace,
-  likePlace
+  likePlace,
+  addToFavorites,
+  removeFromFavorites,
+  checkinPlace
 }

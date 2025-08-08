@@ -10,4 +10,8 @@ Router.get('/', placeController.getApprovedPlaces)
 Router.get('/:id', placeValidation.getPlaceDetails, placeController.getPlaceDetails)
 Router.patch('/:id', verifyToken, placeValidation.likePlace, placeController.likePlace)
 
+Router.post('/:id/favorite', verifyToken, placeValidation.idValidate, placeController.addToFavorites)
+Router.delete('/:id/favorite', verifyToken, placeValidation.idValidate, placeController.removeFromFavorites)
+Router.post('/:id/checkin', verifyToken, placeValidation.idValidate, placeController.checkinPlace)
+
 export const placeRoute = Router

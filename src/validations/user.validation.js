@@ -95,6 +95,11 @@ const emailOTP = async (req, res, next) => {
       'string.base': 'email must be a string',
       'string.empty': 'email cannot be empty',
       'string.email': 'email must be a valid email address'
+    }),
+    purpose: Joi.string().valid('register', 'verify', 'forgot_password').required().messages({
+      'string.base': 'purpose must be a string',
+      'string.empty': 'purpose cannot be empty',
+      'any.only': 'purpose must be one of the following: register, verify, forgot_password'
     })
   })
 
