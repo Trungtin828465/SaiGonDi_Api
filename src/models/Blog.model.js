@@ -33,7 +33,7 @@ const blogSchema = new mongoose.Schema(
     },
     privacy: {
       type: String,
-      enum: ['public', 'private'],
+      enum: ['public', 'private', 'friends-only', 'pending'],
       default: 'public'
     },
     tags: {
@@ -59,6 +59,24 @@ const blogSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users',
       required: true
+    },
+    id_place: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'places',
+      default: null
+    },
+    shareCount: {
+      type: Number,
+      default: 0
+    },
+    originalPostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'blogs',
+      default: null
+    },
+    destroy : {
+      type: Boolean,
+      default: false
     }
   },
   {

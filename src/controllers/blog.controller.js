@@ -6,9 +6,9 @@ import { StatusCodes } from 'http-status-codes'
  * @route   GET /api/blogs
  * @access  Public
  */
-export const getAllBlogs = async (req, res, next) => {
+const getAppovedBlogs = async (req, res, next) => {
   try {
-    const { blogs, pagination } = await blogService.getAllBlogs(req.query)
+    const { blogs, pagination } = await blogService.getAppovedBlogs(req.query)
     res.status(StatusCodes.OK).json({
       success: true,
       count: blogs.length,
@@ -25,7 +25,7 @@ export const getAllBlogs = async (req, res, next) => {
  * @route   GET /api/blogs/:id
  * @access  Public (có kiểm tra quyền riêng tư)
  */
-export const getBlogById = async (req, res, next) => {
+const getBlogById = async (req, res, next) => {
   try {
     const blog = await blogService.getBlogById(req.params.id, req.user)
     res.status(StatusCodes.OK).json({
@@ -42,7 +42,7 @@ export const getBlogById = async (req, res, next) => {
  * @route   POST /api/blogs
  * @access  Private
  */
-export const createBlog = async (req, res, next) => {
+const createBlog = async (req, res, next) => {
   try {
     // authorId được lấy từ token đã xác thực, không phải từ req.body
     const newBlog = await blogService.createBlog(req.body, req.user.id)
@@ -60,7 +60,7 @@ export const createBlog = async (req, res, next) => {
  * @route   PATCH /api/blogs/:id/privacy
  * @access  Private (chỉ tác giả hoặc admin)
  */
-export const updateBlogPrivacy = async (req, res, next) => {
+const updateBlogPrivacy = async (req, res, next) => {
   try {
     const updatedBlog = await blogService.updateBlogPrivacy(
       req.params.id,
@@ -77,7 +77,7 @@ export const updateBlogPrivacy = async (req, res, next) => {
   }
 }
 
-export const updateBlogStatus = async (req, res, next) => {
+const updateBlogStatus = async (req, res, next) => {
   try {
     const updatedBlog = await blogService.updateBlogStatus(
       req.params.id,
@@ -98,7 +98,7 @@ export const updateBlogStatus = async (req, res, next) => {
  * @route   PATCH /api/blogs/:id/like
  * @access  Private
  */
-export const likeBlog = async (req, res, next) => {
+const likeBlog = async (req, res, next) => {
   try {
     const updatedBlog = await blogService.likeBlog(
       req.params.id,
@@ -113,7 +113,7 @@ export const likeBlog = async (req, res, next) => {
   }
 }
 
-export const updateBlog = async (req, res, next) => {
+const updateBlog = async (req, res, next) => {
   try {
     const blogId = req.params.id
     const updateData = req.body
@@ -130,11 +130,45 @@ export const updateBlog = async (req, res, next) => {
  * @route   DELETE /api/blogs/:id
  * @access  Private (chỉ tác giả hoặc admin)
  */
-export const deleteBlog = async (req, res, next) => {
+const deleteBlog = async (req, res, next) => {
   try {
     await blogService.deleteBlog(req.params.id, req.user)
     res.status(StatusCodes.OK).json({ success: true, message: 'Đã xóa bài viết thành công.' })
   } catch (error) {
     next(error)
   }
+}
+
+/**
+ * @desc    Share bài viết
+ * @route   PATCH /api/blogs/:id/share
+ * @access  Private
+ */
+const shareBlog = async (req, res, next) => {
+  try {
+    const blogId = req.params.id
+    const userId = req.user.id // đồng bộ với các API khác
+
+    const sharedBlog = await blogService.shareBlogById(blogId, userId)
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Chia sẻ bài viết thành công',
+      data: sharedBlog
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const blogController = {
+  getAppovedBlogs,
+  getBlogById,
+  createBlog,
+  updateBlogPrivacy,
+  updateBlogStatus,
+  deleteBlog,
+  likeBlog,
+  updateBlog,
+  shareBlog
 }
