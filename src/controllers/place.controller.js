@@ -17,7 +17,7 @@ const createNew = async (req, res, next) => {
 
 const getAllPlaces = async (req, res, next) => {
   try {
-    const placeList = await placeService.getAllPlaces(req.body)
+    const placeList = await placeService.getAllPlaces(req.query)
     res.status(StatusCodes.OK).json({
       message: 'Place list retrieved successfully',
       data: placeList
@@ -29,7 +29,7 @@ const getAllPlaces = async (req, res, next) => {
 
 const getApprovedPlaces = async (req, res, next) => {
   try {
-    const approvedPlaces = await placeService.getApprovedPlaces()
+    const approvedPlaces = await placeService.getApprovedPlaces(req.query)
     res.status(StatusCodes.OK).json({
       'success': true,
       'data': approvedPlaces
@@ -137,6 +137,47 @@ const checkinPlace = async (req, res, next) => {
   }
 }
 
+const getFavoritePlaces = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    const favoritePlaces = await placeService.getFavoritePlaces(userId)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      'data': favoritePlaces
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const approvePlace = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const adminId = req.user.id
+    const approvedPlace = await placeService.approvePlace(placeId, adminId)
+    res.status(StatusCodes.OK).json({
+      message: 'Địa điểm đã được phê duyệt thành công',
+      data: approvedPlace
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const updatePlaceCoordinates = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const coordinates = req.body.coordinates
+    const updatedPlace = await placeService.updatePlaceCoordinates(placeId, coordinates)
+    res.status(StatusCodes.OK).json({
+      message: 'Đã cập nhật tọa độ địa điểm thành công',
+      data: updatedPlace
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const placeController = {
   createNew,
   getAllPlaces,
@@ -147,5 +188,8 @@ export const placeController = {
   likePlace,
   addToFavorites,
   removeFromFavorites,
-  checkinPlace
+  checkinPlace,
+  getFavoritePlaces,
+  approvePlace,
+  updatePlaceCoordinates
 }

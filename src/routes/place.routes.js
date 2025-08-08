@@ -6,7 +6,8 @@ import { placeController } from '~/controllers/place.controller.js'
 const Router = express.Router()
 
 Router.post('/suggest', verifyToken, placeValidation.createNew, placeController.createNew)
-Router.get('/', placeController.getApprovedPlaces)
+Router.get('/', placeValidation.getApprovedPlaces, placeController.getApprovedPlaces)
+Router.get('/favorites', verifyToken, placeController.getFavoritePlaces)
 Router.get('/:id', placeValidation.getPlaceDetails, placeController.getPlaceDetails)
 Router.patch('/:id', verifyToken, placeValidation.likePlace, placeController.likePlace)
 

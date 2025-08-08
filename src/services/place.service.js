@@ -18,27 +18,69 @@ const createNew = async (placeData, userId, adminId) => {
   }
 }
 
-const getApprovedPlaces = async () => {
+const getApprovedPlaces = async (queryParams) => {
   try {
+    const sortByMapping = {
+      // location: 'location',
+      latest: 'createdAt',
+      rating: 'avgRating'
+    }
+    const page = parseInt(queryParams.page, 10) || 1
+    const limit = parseInt(queryParams.limit, 10) || 10
+    const startIndex = (page - 1) * limit
+
+    const sortBy = queryParams.sortBy || 'createdAt'
+    const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
     const places = await PlaceModel.find({ status: 'approved' })
-    const returnPlaces = places.map(place => ({
-      id: place._id,
-      name: place.name,
-      address: place.address,
-      category: place.category
-    }))
+      .sort({ [sortByMapping[sortBy]]: sortOrder })
+      .skip(startIndex)
+      .limit(limit)
+      .select('name category address avgRating')
+
+    const total = await PlaceModel.countDocuments({ status: 'approved' })
+
+    const returnPlaces = {
+      places,
+      pagination: {
+        total,
+        limit,
+        page,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
     return returnPlaces
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
   }
 }
 
-const getAllPlaces = async () => {
+const getAllPlaces = async (queryParams) => {
   try {
+    const sortByMapping = {
+      // location: 'location',
+      latest: 'createdAt',
+      rating: 'avgRating'
+    }
+    const page = parseInt(queryParams.page, 10) || 1
+    const limit = parseInt(queryParams.limit, 10) || 10
+    const startIndex = (page - 1) * limit
+    const sortBy = queryParams.sortBy || 'createdAt'
+    const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
     const places = await PlaceModel.find()
-    return places
-  }
-  catch (error) {
+      .sort({ [sortByMapping[sortBy]]: sortOrder })
+      .skip(startIndex)
+      .limit(limit)
+    const total = await PlaceModel.countDocuments()
+    return {
+      places,
+      pagination: {
+        total,
+        limit,
+        page,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+  } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
   }
 }
@@ -149,6 +191,50 @@ const checkinPlace = async (placeId, userId) => {
   }
 }
 
+const getFavoritePlaces = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId).populate('favorites')
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    return user.favorites
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const approvePlace = async (placeId, adminId) => {
+  try {
+    const place = await PlaceModel.findById(placeId)
+    if (!place) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
+    }
+    if (place.status === 'approved') {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Địa điểm đã được phê duyệt.')
+    }
+    place.status = 'approved'
+    place.verifiedBy = adminId
+    await place.save()
+    return place
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const updatePlaceCoordinates = async (placeId, coordinates) => {
+  try {
+    const place = await PlaceModel.findById(placeId)
+    if (!place) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
+    }
+    place.location.coordinates = coordinates
+    await place.save()
+    return place
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
 export const placeService = {
   createNew,
   getAllPlaces,
@@ -159,5 +245,8 @@ export const placeService = {
   likePlace,
   addToFavorites,
   removeFromFavorites,
-  checkinPlace
+  checkinPlace,
+  getFavoritePlaces,
+  approvePlace,
+  updatePlaceCoordinates
 }

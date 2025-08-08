@@ -9,8 +9,10 @@ import { categoryController } from '~/controllers/category.controller.js'
 const Router = express.Router()
 
 Router.post('/places', verifyToken, verifyAdmin, placeValidation.createNew, placeController.createNew)
-Router.get('/places', verifyToken, verifyAdmin, placeController.getAllPlaces)
+Router.get('/places', verifyToken, verifyAdmin, placeValidation.getAllPlaces, placeController.getAllPlaces)
 Router.patch('/places/:id', verifyToken, verifyAdmin, placeValidation.idValidate, placeController.updatePlace)
+Router.put('/places/:id/approve', verifyToken, verifyAdmin, placeValidation.idValidate, placeController.approvePlace)
+Router.put('/places/:id/coordinates', verifyToken, verifyAdmin, placeValidation.updatePlaceCoordinates, placeController.updatePlaceCoordinates)
 Router.delete('/places/:id', verifyToken, verifyAdmin, placeValidation.idValidate, placeController.destroyPlace)
 
 Router.post('/categories', verifyToken, verifyAdmin, categoryValidation.createNew, categoryController.createNew)
