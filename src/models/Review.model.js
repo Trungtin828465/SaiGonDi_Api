@@ -38,14 +38,6 @@ const reviewSchema = new mongoose.Schema(
     images: {
       type: [String],
       default: []
-    },
-    totalLikes: {
-      type: Number,
-      default: 0
-    },
-    likeBy: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
-      default: []
     }
   },
   {

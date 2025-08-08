@@ -30,6 +30,7 @@ const createBlog = async (req, res, next) => {
       'any.required': 'Nội dung là trường bắt buộc'
     }),
     tags: Joi.array().items(Joi.string().trim().strict()).optional(),
+    images: Joi.array().items(Joi.string().uri()).optional(),
     privacy: Joi.string().valid('public', 'private').optional()
   })
 
@@ -59,8 +60,8 @@ const updateBlogPrivacy = async (req, res, next) => {
 
 const updateBlogStatus = async (req, res, next) => {
   const validationRule = Joi.object({
-    status: Joi.string().valid('pending', 'approved', 'rejected').required().messages({
-      'any.only': 'Trạng thái phải là một trong "pending", "approved", "rejected"',
+    status: Joi.string().valid('pending', 'approved', 'hidden').required().messages({
+      'any.only': 'Trạng thái phải là một trong "pending", "approved", "hidden"',
       'any.required': 'Trạng thái là trường bắt buộc'
     })
   })
@@ -97,6 +98,7 @@ const updateBlog = async (req, res, next) => {
       'array.min': 'Nội dung phải có ít nhất một khối'
     }),
     tags: Joi.array().items(Joi.string().trim().strict()).optional(),
+    images: Joi.array().items(Joi.string().uri()).optional(),
     privacy: Joi.string().valid('public', 'private').optional()
   })
 
