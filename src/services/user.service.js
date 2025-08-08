@@ -81,8 +81,15 @@ const changePassword = async (userId, passwordData) => {
 
 const emailOTP = async (emailData) => {
   try {
-    const otp = await generateAndSaveOTP({ email: emailData.email })
-    await sendMail(emailData.email, 'Your OTP Code', `Your OTP code is ${otp}`)
+    const { email, purpose } = emailData
+    if (purpose === 'forgot_password') {
+      const user = await UserModel.findOne({ email })
+      if (!user) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+      }
+    }
+    const otp = await generateAndSaveOTP({ email })
+    await sendMail(email, 'Your OTP Code', `Your OTP code is ${otp}`)
     return otp
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to sent send OTP email')

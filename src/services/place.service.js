@@ -1,7 +1,8 @@
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
-import PlaceModel from '~/models/Place.model.js'
 import { mongoose } from 'mongoose'
+import PlaceModel from '~/models/Place.model.js'
+import UserModel from '~/models/User.model.js'
 
 const createNew = async (placeData, userId, adminId) => {
   try {
@@ -97,6 +98,57 @@ const likePlace = async (placeId, userId) => {
   }
 }
 
+const addToFavorites = async (placeId, userId) => {
+  try {
+    const user = await UserModel.findById(userId)
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (user.favorites.includes(placeId)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Place already in favorites')
+    }
+    user.favorites.push(placeId)
+    await user.save()
+    return user
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const removeFromFavorites = async (placeId, userId) => {
+  try {
+    const user = await UserModel.findById(userId)
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (!user.favorites.includes(placeId)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Place not in favorites')
+    }
+    user.favorites.pull(placeId)
+    await user.save()
+    return user
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const checkinPlace = async (placeId, userId) => {
+  try {
+    const user = await UserModel.findById(userId)
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (user.checkins.includes(placeId)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'User already checked in to this place')
+    }
+    user.checkins.push(placeId)
+    await user.save()
+    return user
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
 export const placeService = {
   createNew,
   getAllPlaces,
@@ -104,5 +156,8 @@ export const placeService = {
   getPlaceDetails,
   updatePlace,
   destroyPlace,
-  likePlace
+  likePlace,
+  addToFavorites,
+  removeFromFavorites,
+  checkinPlace
 }
