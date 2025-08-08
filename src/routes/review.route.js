@@ -6,7 +6,7 @@ import { verifyToken } from '../middlewares/auth.middleware.js'
 const router = express.Router()
 
 // Lấy danh sách đánh giá cho một địa điểm
-router.get('/:placeId', reviewValidation.getReviewsByPlaceId, reviewController.getReviewsByPlaceId)
+router.get('/', reviewValidation.getReviewsByPlaceId, reviewController.getReviewsByPlaceId)
 
 // Viết đánh giá cho một địa điểm (yêu cầu đăng nhập)
 router.post('/:placeId', verifyToken, reviewValidation.createReview, reviewController.createReview)

@@ -14,8 +14,7 @@ const createReview = async (req, res, next) => {
 
 const getReviewsByPlaceId = async (req, res, next) => {
   try {
-    const { placeId } = req.params
-    const result = await reviewService.getReviewsByPlaceId(placeId, req.query)
+    const result = await reviewService.getReviewsByPlaceId(req.query)
     res.status(StatusCodes.OK).json({
       success: true,
       count: result.reviews.length,

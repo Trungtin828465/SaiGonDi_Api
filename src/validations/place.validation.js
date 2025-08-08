@@ -88,9 +88,85 @@ const likePlace = async (req, res, next) => {
   }
 }
 
+const getApprovedPlaces = async (req, res, next) => {
+  const pagingRule = Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    sortBy: Joi.string().valid('latest', 'rating', 'location').default('latest'),
+    sortOrder: Joi.string().valid('asc', 'desc').default('desc')
+  })
+  try {
+    const data = req?.query ? req.query : {}
+    await pagingRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const getAllPlaces = async (req, res, next) => {
+  const pagingRule = Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    sortBy: Joi.string().valid('latest', 'rating', 'location').default('latest'),
+    sortOrder: Joi.string().valid('asc', 'desc').default('desc')
+  })
+  try {
+    const data = req?.query ? req.query : {}
+    await pagingRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const updatePlaceCoordinates = async (req, res, next) => {
+  const validationRule = Joi.object({
+    coordinates: Joi.array().items(
+      Joi.number()
+        .min(-180)
+        .max(180)
+        .precision(8)
+        .required()
+        .messages({
+          'number.base': 'longitude must be an array of numbers',
+          'number.min': 'longitude must be between -180 and 180',
+          'number.max': 'longitude must be between -180 and 180' 
+        }),
+      Joi.number()
+        .min(-90)
+        .max(90)
+        .precision(8)
+        .required()
+        .messages({
+          'number.base': 'latitude must be an array of numbers',
+          'number.min': 'latitude must be between -90 and 90',
+          'number.max': 'latitude must be between -90 and 90'
+        })
+    )
+      .length(2).required().messages({
+        'array.base': 'coordinates must be an array',
+        'array.length': 'coordinates must contain exactly 2 numbers',
+        'array.items': 'coordinates must be an array of longitude between -180 and 180 and latitude between -90 and 90'
+      })
+  })
+  try {
+    const placeIdData = req?.params || {}
+    const data = req?.body ? req.body : {}
+    await idRule.validateAsync(placeIdData, { abortEarly: false })
+    await validationRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const placeValidation = {
   createNew,
   getPlaceDetails,
   idValidate,
-  likePlace
+  likePlace,
+  getApprovedPlaces,
+  getAllPlaces,
+  updatePlaceCoordinates
 }

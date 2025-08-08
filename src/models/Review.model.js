@@ -50,8 +50,9 @@ reviewSchema.methods.updatePlaceAvgRating = async function () {
   const place = await PlaceModel.findById(this.placeId)
   if (place) {
     const reviews = await ReviewModel.find({ placeId: this.placeId })
-    const avgRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    const avgRating = reviews?.length == 0 ? 0 : reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     place.avgRating = avgRating || 0
+    place.totalRatings = reviews.length
     await place.save()
   }
 }

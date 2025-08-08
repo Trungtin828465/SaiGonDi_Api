@@ -50,13 +50,12 @@ const deleteReview = async (req, res, next) => {
 
 const getReviewsByPlaceId = async (req, res, next) => {
   const pagingRule = Joi.object({
+    placeId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10)
   })
   try {
-    const placeIdData = req?.params || {}
     const data = req?.query || {}
-    await placeIdRule.validateAsync(placeIdData, { abortEarly: false })
     await pagingRule.validateAsync(data, { abortEarly: false })
     next()
   } catch (error) {

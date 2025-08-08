@@ -34,9 +34,9 @@ const createReview = async (placeId, reviewData, userId) => {
   }
 }
 
-const getReviewsByPlaceId = async (placeId, queryParams) => {
+const getReviewsByPlaceId = async (queryParams) => {
   try {
-    const place = await PlaceModel.findById(placeId)
+    const place = await PlaceModel.findById(queryParams.placeId)
     if (!place || place.status !== 'approved') {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
     }
@@ -44,7 +44,7 @@ const getReviewsByPlaceId = async (placeId, queryParams) => {
     const limit = parseInt(queryParams.limit, 10) || 10
     const startIndex = (page - 1) * limit
 
-    const query = { placeId }
+    const query = { placeId: queryParams.placeId }
 
     const reviews = await ReviewModel.find(query)
       .populate('userId', 'name avatar')
