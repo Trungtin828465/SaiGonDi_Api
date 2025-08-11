@@ -6,9 +6,9 @@ import { StatusCodes } from 'http-status-codes'
  * @route   GET /api/blogs
  * @access  Public
  */
-const getAppovedBlogs = async (req, res, next) => {
+const getBlogs = async (req, res, next) => {
   try {
-    const { blogs, pagination } = await blogService.getAppovedBlogs(req.query)
+    const { blogs, pagination } = await blogService.getBlogs(req.query)
     res.status(StatusCodes.OK).json({
       success: true,
       count: blogs.length,
@@ -37,6 +37,18 @@ const getBlogById = async (req, res, next) => {
   }
 }
 
+
+const getBlogsByAuthor = async (req, res, next) => {
+  try {
+    const blogs = await blogService.getBlogsByAuthor(req.params.authorId, req.user)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: blogs
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 /**
  * @desc    Tạo bài viết mới
  * @route   POST /api/blogs
@@ -162,7 +174,7 @@ const shareBlog = async (req, res, next) => {
 }
 
 export const blogController = {
-  getAppovedBlogs,
+  getBlogs,
   getBlogById,
   createBlog,
   updateBlogPrivacy,
@@ -170,5 +182,6 @@ export const blogController = {
   deleteBlog,
   likeBlog,
   updateBlog,
+  getBlogsByAuthor,
   shareBlog
 }
