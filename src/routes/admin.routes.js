@@ -9,6 +9,7 @@ import { categoryController } from '~/controllers/category.controller.js'
 import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
 import { blogController } from '~/controllers/blog.controller.js'
+import { adminController } from '~/controllers/admin.controller.js'
 
 import { generalValidation } from '~/validations/general.validation.js'
 
@@ -33,4 +34,13 @@ Router.put('/users/:id', verifyToken, verifyAdmin, generalValidation.paramIdVali
 Router.delete('/users/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, userController.destroyUser)
 
 Router.get('/posts', verifyToken, verifyAdmin, blogController.getBlogs)
+Router.get('/posts/:id', verifyToken, verifyAdmin, blogController.getBlogById)
+Router.put('/posts/:id/privacy', verifyToken, verifyAdmin, blogController.updateBlogPrivacy)
+Router.put('/posts/:id/status', verifyToken, verifyAdmin, blogController.updateBlogStatus)
+Router.delete('/posts/:id', verifyToken, verifyAdmin, blogController.deleteBlog)
+
+Router.get('/stats/overview', verifyToken, verifyAdmin, adminController.getOverviewStats)
+Router.get('/stats/daily', verifyToken, verifyAdmin, adminController.getDailyStats)
+Router.get('/stats/popular', verifyToken, verifyAdmin, adminController.getPopularStats)
+
 export const adminRoute = Router

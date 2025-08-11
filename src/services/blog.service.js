@@ -16,6 +16,8 @@ const getBlogs = async (query, user) => {
 
   // Chỉ lấy bài chưa bị xóa
   filter.destroy = false
+
+
   if (user.role !== 'admin') {
     filter.status = 'approved'
   } else {
@@ -59,9 +61,13 @@ const getBlogById = async (id, user) => {
 
   // Kiểm tra quyền private
   if (blog.privacy === 'private' &&
-      blog.authorId._id.toString() !== user?.id &&
-      user?.role !== 'admin') {
+    blog.authorId._id.toString() !== user?.id &&
+    user?.role !== 'admin') {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền xem bài viết này')
+  }
+
+  if (blog.status === 'pending' && user?.role !== 'admin') {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Bài viết này chưa được duyệt')
   }
 
   // Tăng view count (không chờ kết quả để tránh chậm phản hồi)
@@ -117,6 +123,7 @@ const updateBlogPrivacy = async (blogId, newPrivacy, user) => {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền thực hiện hành động này')
   }
 
+
   blog.privacy = newPrivacy
   await blog.save()
 
@@ -134,18 +141,37 @@ const deleteBlog = async (blogId, user) => {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền thực hiện hành động này')
   }
 
-  // Soft delete
-  blog.destroy = true
-  await blog.save()
+  if (user.role === 'admin') {
+    // Đánh dấu để 3 ngày sau xóa
+    blog.status = 'deleted'
+    blog.deletedAt = new Date()
+    await blog.save()
 
-  // Xoá blog khỏi sharedBlogs của tất cả user
-  await UserModel.updateMany(
-    {},
-    { $pull: { sharedBlogs: { blog: blog._id } } }
-  )
+    // Tạo hẹn giờ xóa sau 3 ngày
+    setTimeout(async () => {
+      const b = await Blog.findById(blogId)
+      if (b && b.status === 'deleted') {
+        await Blog.findByIdAndDelete(blogId)
+        await UserModel.updateMany(
+          {},
+          { $pull: { sharedBlogs: { blog: blogId } } }
+        )
+        console.log(`Blog ${blogId} đã bị xóa sau 3 ngày`)
+      }
+    }, 3 * 24 * 60 * 60 * 1000) // 3 ngày tính bằng mili giây
 
-  return { message: 'Bài viết đã bị xoá và xoá khỏi danh sách chia sẻ của user' }
+    return { message: 'Bài viết đã bị đánh dấu xóa, sẽ tự động xóa sau 3 ngày' }
+  } else {
+    // User xóa → hard delete ngay
+    await Blog.findByIdAndDelete(blogId)
+    await UserModel.updateMany(
+      {},
+      { $pull: { sharedBlogs: { blog: blog._id } } }
+    )
+    return { message: 'Bài viết đã bị xoá khỏi hệ thống' }
+  }
 }
+
 
 const likeBlog = async (blogId, userId) => {
   const blog = await Blog.findById(blogId)
@@ -198,16 +224,20 @@ const shareBlogById = async (blogId, userId) => {
   return blog
 }
 
-const updateBlogStatus = async (blogId, newStatus) => {
+const updateBlogStatus = async (blogId, newStatus, user) => {
   const blog = await Blog.findById(blogId)
 
   if (!blog) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
   }
 
-  // Cập nhật trạng thái và lưu lại
+  if (user.role !== 'admin') {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Chỉ admin mới có quyền chỉnh sửa trạng thái')
+  }
+
   blog.status = newStatus
   await blog.save()
+  return blog
 }
 
 const updateBlog = async (blogId, updateData, user) => {

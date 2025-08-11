@@ -93,7 +93,8 @@ const updateBlogStatus = async (req, res, next) => {
   try {
     const updatedBlog = await blogService.updateBlogStatus(
       req.params.id,
-      req.body.status
+      req.body.status,
+      req.user
     )
     res.status(StatusCodes.OK).json({
       success: true,
