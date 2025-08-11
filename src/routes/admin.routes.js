@@ -12,7 +12,7 @@ import { userController } from '~/controllers/user.controller.js'
 import { generalValidation } from '~/validations/general.validation.js'
 
 const Router = express.Router()
-
+Router.post('/login', userValidation.login, userController.login)
 Router.post('/places', verifyToken, verifyAdmin, placeValidation.createNew, placeController.createNew)
 Router.get('/places', verifyToken, verifyAdmin, placeValidation.pagingValidate, placeController.getAllPlaces)
 Router.get('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.getAdminPlaceDetails)

@@ -3,7 +3,7 @@ import express from 'express'
 import { generalValidation } from '~/validations/general.validation'
 import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
-import { verifyToken, verifyAdmin } from '~/middlewares/auth.middleware.js'
+import { verifyToken } from '~/middlewares/auth.middleware.js'
 
 import { loginRateLimiter, registerRateLimiter, verifyOtpRateLimiter } from '~/middlewares/limiter.middleware'
 

@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { jwtGenerate } from '~/utils/jwt'
 import UserModel from '~/models/User.model.js'
 import OTPModel from '~/models/OTP.model.js'
+import ReviewModel from '~/models/Review.model.js'
 import sendMail from '~/utils/sendMail.js'
 import sendSMS from '~/utils/sendSMS.js'
 
@@ -197,6 +198,34 @@ const destroyUser = async (userId) => {
   }
 }
 
+const getUserReviews = async (userId) => {
+  try {
+    const reviews = await ReviewModel.find({ userId })
+      .select('placeId comment totalLikes rating images createdAt')
+    return reviews
+  } catch (error) {
+    throw error
+  }
+}
+
+const updateUserProfile = async (userId, reqBody) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      emailVerified: reqBody?.emailVerified || false,
+      phoneVerified: reqBody?.phoneVerified || false,
+      updatedAt: Date.now() // Update the updatedAt field
+    }
+    const user = await UserModel.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true })
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    return user
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   register,
   login,
@@ -208,5 +237,7 @@ export const userService = {
   getUserDetails,
   getUserProfile,
   banUser,
-  destroyUser
+  destroyUser,
+  getUserReviews,
+  updateUserProfile
 }

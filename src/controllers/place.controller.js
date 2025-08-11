@@ -39,6 +39,18 @@ const getApprovedPlaces = async (req, res, next) => {
   }
 }
 
+const getPlacesMapdata = async (req, res, next) => {
+  try {
+    const mapData = await placeService.getPlacesMapdata(req.query)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      'data': mapData
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getPlaceDetails = async (req, res, next) => {
   try {
     const placeId = req.params.id
@@ -137,19 +149,6 @@ const checkinPlace = async (req, res, next) => {
   }
 }
 
-const getFavoritePlaces = async (req, res, next) => {
-  try {
-    const userId = req.user.id
-    const favoritePlaces = await placeService.getFavoritePlaces(userId)
-    res.status(StatusCodes.OK).json({
-      'success': true,
-      'data': favoritePlaces
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
 const approvePlace = async (req, res, next) => {
   try {
     const placeId = req.params.id
@@ -202,8 +201,8 @@ export const placeController = {
   addToFavorites,
   removeFromFavorites,
   checkinPlace,
-  getFavoritePlaces,
   approvePlace,
   updatePlaceCoordinates,
-  getAdminPlaceDetails
+  getAdminPlaceDetails,
+  getPlacesMapdata
 }
