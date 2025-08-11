@@ -6,7 +6,7 @@ import { blogValidation } from '../validations/blog.validation.js'
 
 const Router = express.Router()
 
-Router.get('/', blogController.getBlogs)
+Router.get('/', verifyToken, blogController.getBlogs)
 Router.post('/', blogRateLimiter, verifyToken, blogValidation.createBlog, blogController.createBlog)
 Router.get('/:id', blogController.getBlogById)
 Router.patch('/:id/privacy', verifyToken, blogValidation.updateBlogPrivacy, blogController.updateBlogPrivacy)

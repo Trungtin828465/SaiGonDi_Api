@@ -8,6 +8,7 @@ import { categoryController } from '~/controllers/category.controller.js'
 
 import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
+import { blogController } from '~/controllers/blog.controller.js'
 
 import { generalValidation } from '~/validations/general.validation.js'
 
@@ -30,4 +31,6 @@ Router.get('/users', verifyToken, verifyAdmin, userController.getAllUsers)
 Router.get('/users/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, userController.getUserDetails)
 Router.put('/users/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, userController.banUser)
 Router.delete('/users/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, userController.destroyUser)
+
+Router.get('/posts', verifyToken, verifyAdmin, blogController.getBlogs)
 export const adminRoute = Router

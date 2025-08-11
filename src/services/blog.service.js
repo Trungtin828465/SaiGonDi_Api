@@ -6,16 +6,21 @@ import ApiError from '~/utils/ApiError.js'
 import UserModel from '~/models/User.model.js'
 
 
-const getBlogs = async (query) => {
-  const { tag, authorId, status, page = 1, limit = 10 } = query
+const getBlogs = async (query, user) => {
+  const { tag, authorId, status, privacy, page = 1, limit = 10 } = query
 
   const filter = {}
   if (tag) filter.tags = tag
   if (authorId) filter.authorId = authorId
-  if (status) filter.privacy = status // public/private
+  if (privacy) filter.privacy = privacy // public/private
 
   // Chỉ lấy bài chưa bị xóa
   filter.destroy = false
+  if (user.role !== 'admin') {
+    filter.status = 'approved'
+  } else {
+    if (status) filter.status = status
+  }
 
   const skip = (page - 1) * limit
   const numericLimit = Number(limit)
