@@ -22,9 +22,13 @@ const createNew = async (req, res, next) => {
       'string.empty': 'description cannot be empty',
       'string.min': 'description must be at least 10 characters long'
     }),
-    category: Joi.string().valid('restaurant', 'cafe', 'park', 'museum', 'shopping', 'other').required().messages({
-      'string.base': 'category must be a string',
-      'any.only': 'category must be one of restaurant, cafe, park, museum, shopping, or other'
+    categories: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).required().messages({
+      'string.base': 'categories must be a string',
+      'string.empty': 'categories cannot be empty',
+      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
+    })).required().messages({
+      'array.base': 'categories must be an array',
+      'array.items': 'categories must contain valid ObjectId strings'
     }),
     address: Joi.string().min(5).required().messages({
       'string.base': 'address must be a string',
@@ -43,7 +47,33 @@ const createNew = async (req, res, next) => {
     }),
     location: Joi.object({
       type: Joi.string().valid('Point').required(),
-      coordinates: Joi.array().items(Joi.number()).length(2).required()
+      coordinates: Joi.array().items(
+        Joi.number()
+          .min(-180)
+          .max(180)
+          .precision(8)
+          .required()
+          .messages({
+            'number.base': 'longitude must be an array of numbers',
+            'number.min': 'longitude must be between -180 and 180',
+            'number.max': 'longitude must be between -180 and 180' 
+          }),
+        Joi.number()
+          .min(-90)
+          .max(90)
+          .precision(8)
+          .required()
+          .messages({
+            'number.base': 'latitude must be an array of numbers',
+            'number.min': 'latitude must be between -90 and 90',
+            'number.max': 'latitude must be between -90 and 90'
+          })
+      )
+        .length(2).required().messages({
+          'array.base': 'coordinates must be an array',
+          'array.length': 'coordinates must contain exactly 2 numbers',
+          'array.items': 'coordinates must be an array of longitude between -180 and 180 and latitude between -90 and 90'
+        })
     }).required().messages({
       'object.base': 'location must be an object',
       'any.required': 'location is required'
@@ -58,53 +88,7 @@ const createNew = async (req, res, next) => {
   }
 }
 
-const getPlaceDetails = async (req, res, next) => {
-  try {
-    const data = req?.params ? req.params : {}
-    await idRule.validateAsync(data, { abortEarly: false })
-    next()
-  } catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
-  }
-}
-
-const idValidate = async (req, res, next) => {
-  try {
-    const data = req?.params ? req.params : {}
-    await idRule.validateAsync(data, { abortEarly: false })
-    next()
-  } catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
-  }
-}
-
-const likePlace = async (req, res, next) => {
-  try {
-    const data = req?.params ? req.params : {}
-    await idRule.validateAsync(data, { abortEarly: false })
-    next()
-  } catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
-  }
-}
-
-const getApprovedPlaces = async (req, res, next) => {
-  const pagingRule = Joi.object({
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(100).default(10),
-    sortBy: Joi.string().valid('latest', 'rating', 'location').default('latest'),
-    sortOrder: Joi.string().valid('asc', 'desc').default('desc')
-  })
-  try {
-    const data = req?.query ? req.query : {}
-    await pagingRule.validateAsync(data, { abortEarly: false })
-    next()
-  } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
-  }
-}
-
-const getAllPlaces = async (req, res, next) => {
+const pagingValidate = async (req, res, next) => {
   const pagingRule = Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10),
@@ -163,10 +147,6 @@ const updatePlaceCoordinates = async (req, res, next) => {
 
 export const placeValidation = {
   createNew,
-  getPlaceDetails,
-  idValidate,
-  likePlace,
-  getApprovedPlaces,
-  getAllPlaces,
+  pagingValidate,
   updatePlaceCoordinates
 }

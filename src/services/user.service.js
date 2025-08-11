@@ -42,6 +42,9 @@ const login = async (loginData) => {
     if (!isPasswordValid) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
     }
+    if (user.banned) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been banned')
+    }
 
     const token = jwtGenerate({ id: user._id, email: user.email, role: user.role })
     await user.saveLog(loginData.ipAddress, loginData.device)
@@ -53,7 +56,7 @@ const login = async (loginData) => {
 
 const getAllUsers = async () => {
   try {
-    const users = await UserModel.find({}).select('-password')
+    const users = await UserModel.find({ role: 'user' }).select('-password')
     return users
   } catch (error) {
     throw error
@@ -126,11 +129,14 @@ const verifyOTP = async (otpData) => {
 
 
 // Aggregate user details after implementing other modals (Places, Checkins, etc.)
-const getUserDetails = async (userId) => {
+const getUserProfile = async (userId) => {
   try {
     const user = await UserModel.findById(userId)
-    if (!user) {
+    if (!user || user.role !== 'user' || user._destroyed) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (user.banned) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned')
     }
     const profile = {
       userId: user._id,
@@ -145,6 +151,52 @@ const getUserDetails = async (userId) => {
   }
 }
 
+const getUserDetails = async (userId) => {
+  try {
+    const user = await UserModel.find({ _id: userId, role: 'user' })
+      .populate('favorites', 'name address avgRating totalRatings')
+      .populate('checkins', 'name address avgRating totalRatings')
+      .populate('badges', 'name address avgRating totalRatings')
+      .populate('sharedBlogs', 'title content')
+      .select('-password -__v')
+    if (!user ||user.length === 0) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    return user[0]
+  } catch (error) {
+    throw error
+  }
+}
+
+const banUser = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId)
+    if (!user || user.role !== 'user') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (user.banned) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'User is already banned')
+    }
+    user.banned = true
+    await user.save()
+  } catch (error) {
+    throw error
+  }
+}
+
+const destroyUser = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId)
+    if (!user || user.role !== 'user') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    user._destroyed = true
+    await user.save()
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   register,
   login,
@@ -153,5 +205,8 @@ export const userService = {
   emailOTP,
   verifyOTP,
   phoneOTP,
-  getUserDetails
+  getUserDetails,
+  getUserProfile,
+  banUser,
+  destroyUser
 }

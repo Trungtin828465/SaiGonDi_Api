@@ -32,10 +32,14 @@ const getApprovedPlaces = async (queryParams) => {
     const sortBy = queryParams.sortBy || 'createdAt'
     const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
     const places = await PlaceModel.find({ status: 'approved' })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name category address avgRating')
+      .select('name address avgRating')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -67,6 +71,10 @@ const getAllPlaces = async (queryParams) => {
     const sortBy = queryParams.sortBy || 'createdAt'
     const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
     const places = await PlaceModel.find()
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
@@ -87,11 +95,21 @@ const getAllPlaces = async (queryParams) => {
 
 const getPlaceDetails = async (placeId) => {
   try {
-    const place = await PlaceModel.findById(placeId)
-    if (!place || place.status !== 'approved') {
+    const place = await PlaceModel.find({ _id: placeId, status: 'approved' })
+      .populate({
+        path: 'categories',
+        select: 'name icon description'
+      })
+      .populate({
+        path: 'likeBy',
+        select: 'firstName lastName avatar'
+      })
+      .select('categories status name description address district ward avgRating totalRatings totalLikes likeBy')
+    const returnPlace = place[0] || null
+    if (!returnPlace || returnPlace.status !== 'approved') {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
     }
-    return place
+    return returnPlace
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
   }
@@ -235,10 +253,39 @@ const updatePlaceCoordinates = async (placeId, coordinates) => {
   }
 }
 
+const getAdminPlaceDetails = async (placeId) => {
+  try {
+    const place = await PlaceModel.findById(placeId)
+      .populate({
+        path: 'categories',
+        select: 'name icon description'
+      })
+      .populate({
+        path: 'likeBy',
+        select: 'firstName lastName avatar'
+      })
+      .populate({
+        path: 'createdBy',
+        select: 'firstName lastName email'
+      })
+      .populate({
+        path: 'verifiedBy',
+        select: 'firstName lastName email'
+      })
+    if (!place) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
+    }
+    return place
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
 export const placeService = {
   createNew,
   getAllPlaces,
   getApprovedPlaces,
+  getAdminPlaceDetails,
   getPlaceDetails,
   updatePlace,
   destroyPlace,

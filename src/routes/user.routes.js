@@ -1,4 +1,6 @@
 import express from 'express'
+
+import { generalValidation } from '~/validations/general.validation'
 import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
 import { verifyToken, verifyAdmin } from '~/middlewares/auth.middleware.js'
@@ -14,8 +16,7 @@ Router.post('/send-otp', verifyOtpRateLimiter, userValidation.emailOTP, userCont
 Router.post('/verify-otp', userValidation.verifyOTP, userController.verifyOTP)
 
 Router.get('/profile', verifyToken, userController.getProfile)
+Router.get('/', generalValidation.queryUserIdValidate, userController.getProfile)
 // Router.post('/logout', userController.logout)
-
-Router.get('/', verifyToken, verifyAdmin, userController.getAllUsers)
 
 export const userRoute = Router

@@ -95,6 +95,14 @@ const userSchema = new mongoose.Schema({
     blog: { type: mongoose.Schema.Types.ObjectId, ref: 'blogs' },
     sharedAt: { type: Date, default: Date.now }
   }],
+  banned: {
+    type: Boolean,
+    default: false
+  },
+  _destroyed: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

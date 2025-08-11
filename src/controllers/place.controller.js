@@ -178,6 +178,19 @@ const updatePlaceCoordinates = async (req, res, next) => {
   }
 }
 
+const getAdminPlaceDetails = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const placeDetails = await placeService.getAdminPlaceDetails(placeId)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      'data': placeDetails
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const placeController = {
   createNew,
   getAllPlaces,
@@ -191,5 +204,6 @@ export const placeController = {
   checkinPlace,
   getFavoritePlaces,
   approvePlace,
-  updatePlaceCoordinates
+  updatePlaceCoordinates,
+  getAdminPlaceDetails
 }
