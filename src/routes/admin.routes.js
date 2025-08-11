@@ -10,10 +10,14 @@ import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
 import { blogController } from '~/controllers/blog.controller.js'
 import { adminController } from '~/controllers/admin.controller.js'
+import { badgeController } from '~/controllers/badge.controller.js'
 
 import { generalValidation } from '~/validations/general.validation.js'
 
+
 const Router = express.Router()
+
+
 Router.post('/login', userValidation.login, userController.login)
 Router.post('/places', verifyToken, verifyAdmin, placeValidation.createNew, placeController.createNew)
 Router.get('/places', verifyToken, verifyAdmin, placeValidation.pagingValidate, placeController.getAllPlaces)
@@ -42,5 +46,11 @@ Router.delete('/posts/:id', verifyToken, verifyAdmin, blogController.deleteBlog)
 Router.get('/stats/overview', verifyToken, verifyAdmin, adminController.getOverviewStats)
 Router.get('/stats/daily', verifyToken, verifyAdmin, adminController.getDailyStats)
 Router.get('/stats/popular', verifyToken, verifyAdmin, adminController.getPopularStats)
+
+Router.get('/badges', verifyToken, verifyAdmin, badgeController.getAllBadges)
+Router.post('/badges', verifyToken, verifyAdmin, badgeController.createBadge)
+Router.patch('/badges/:id', verifyToken, verifyAdmin, badgeController.updateBadge)
+Router.delete('/badges/:id', verifyToken, verifyAdmin, badgeController.deleteBadge)
+
 
 export const adminRoute = Router
