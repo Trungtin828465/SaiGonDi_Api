@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes'
  */
 const getBlogs = async (req, res, next) => {
   try {
-    const { blogs, pagination } = await blogService.getBlogs(req.query)
+    const { blogs, pagination } = await blogService.getBlogs(req.query, req.user)
     res.status(StatusCodes.OK).json({
       success: true,
       count: blogs.length,
@@ -93,7 +93,8 @@ const updateBlogStatus = async (req, res, next) => {
   try {
     const updatedBlog = await blogService.updateBlogStatus(
       req.params.id,
-      req.body.status
+      req.body.status,
+      req.user
     )
     res.status(StatusCodes.OK).json({
       success: true,
