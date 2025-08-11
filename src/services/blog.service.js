@@ -6,52 +6,61 @@ import ApiError from '~/utils/ApiError.js'
 import UserModel from '~/models/User.model.js'
 
 
-const getAppovedBlogs = async (queryParams) => {
-  const page = parseInt(queryParams.page, 10) || 1
-  const limit = parseInt(queryParams.limit, 10) || 10
-  const startIndex = (page - 1) * limit
+const getBlogs = async (query) => {
+  const { tag, authorId, status, page = 1, limit = 10 } = query
 
-  // Chỉ lấy các bài viết công khai, đã được duyệt và chưa bị hủy
-  const query = { privacy: 'public', status: 'approved', destroy: false }
+  const filter = {}
+  if (tag) filter.tags = tag
+  if (authorId) filter.authorId = authorId
+  if (status) filter.privacy = status // public/private
 
-  const blogs = await Blog.find(query)
+  // Chỉ lấy bài chưa bị xóa
+  filter.destroy = false
+
+  const skip = (page - 1) * limit
+  const numericLimit = Number(limit)
+
+  const totalBlogs = await Blog.countDocuments(filter)
+  const blogs = await Blog.find(filter)
     .populate('authorId', 'name avatar')
     .sort({ createdAt: -1 })
-    .skip(startIndex)
-    .limit(limit)
+    .skip(skip)
+    .limit(numericLimit)
+    .lean()
 
-  const total = await Blog.countDocuments(query)
-
-  return {
-    blogs,
-    pagination: {
-      total,
-      limit,
-      currentPage: page,
-      totalPages: Math.ceil(total / limit)
-    }
+  const totalPages = Math.ceil(totalBlogs / numericLimit)
+  const pagination = {
+    currentPage: Number(page),
+    totalPages,
+    totalBlogs
   }
+
+  return { blogs, pagination }
 }
 
-const getBlogById = async (blogId, user) => {
-  const blog = await Blog.findById(blogId).populate('authorId', 'name avatar')
+const getBlogById = async (id, user) => {
+  const blog = await Blog.findById(id)
+    .populate('authorId', 'name avatar')
+    .lean() // giảm tải bộ nhớ, trả về object thuần
+
   if (!blog) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
   }
 
-  // Nếu bài viết đã bị hủy, chỉ admin mới được xem
+  // Nếu bị hủy → chỉ admin mới xem
   if (blog.destroy && user?.role !== 'admin') {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
   }
 
-  // req.user có thể không tồn tại nếu người dùng chưa đăng nhập
-  const userId = user?.id
-  const userRole = user?.role
-
-  // Nếu bài viết là riêng tư, chỉ tác giả hoặc admin mới được xem
-  if (blog.privacy === 'private' && blog.authorId._id.toString() !== userId && userRole !== 'admin') {
+  // Kiểm tra quyền private
+  if (blog.privacy === 'private' &&
+      blog.authorId._id.toString() !== user?.id &&
+      user?.role !== 'admin') {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền xem bài viết này')
   }
+
+  // Tăng view count (không chờ kết quả để tránh chậm phản hồi)
+  Blog.updateOne({ _id: id }, { $inc: { viewCount: 1 } }).exec()
 
   return blog
 }
@@ -239,7 +248,7 @@ const updateBlog = async (blogId, updateData, user) => {
 }
 
 export const blogService = {
-  getAppovedBlogs,
+  getBlogs,
   getBlogById,
   createBlog,
   updateBlogPrivacy,

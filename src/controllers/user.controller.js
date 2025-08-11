@@ -91,11 +91,50 @@ const verifyOTP = async (req, res, next) => {
 
 const getProfile = async (req, res, next) => {
   try {
-    const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
-    const profile = await userService.getUserDetails(userId)
+    const userId = req?.query?.userId || req.user.id
+    const profile = await userService.getUserProfile(userId)
     res.status(StatusCodes.OK).json({
       success: true,
       user: profile
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getUserDetails = async (req, res, next) => {
+  try {
+    const userId = req.params.id
+    const userDetails = await userService.getUserDetails(userId)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      user: userDetails
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const banUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id
+    await userService.banUser(userId)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'User has been banned successfully'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const destroyUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id
+    await userService.destroyUser(userId)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'User has been deleted successfully'
     })
   } catch (error) {
     next(error)
@@ -106,9 +145,12 @@ export const userController = {
   register,
   login,
   getAllUsers,
+  getUserDetails,
   changePassword,
   emailOTP,
   phoneOTP,
   verifyOTP,
-  getProfile
+  getProfile,
+  banUser,
+  destroyUser
 }

@@ -15,10 +15,11 @@ const placeSchema = new mongoose.Schema({
     minlength: 10,
     maxlength: 500
   },
-  category: {
-    type: String,
+  categories: {
+    type: [mongoose.Schema.Types.ObjectId],
     required: true,
-    enum: ['restaurant', 'cafe', 'park', 'museum', 'shopping', 'other']
+    ref: 'categories',
+    default: []
   },
   address: {
     type: String,
@@ -102,10 +103,6 @@ const placeSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
-  },
-  _destroy: {
-    type: Boolean,
-    default: false
   }
 }, {
   timestamps: true,
