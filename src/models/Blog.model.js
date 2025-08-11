@@ -77,12 +77,20 @@ const blogSchema = new mongoose.Schema(
     destroy : {
       type: Boolean,
       default: false
+    },
+    viewCount: {
+      type: Number,
+      default: 0
     }
   },
   {
     timestamps: true
   }
 )
+
+blogSchema.index({ slug: 1 })
+blogSchema.index({ createdAt: 1 })
+blogSchema.index({ tags: 1 })
 
 const BlogModel = mongoose.model('blogs', blogSchema)
 
