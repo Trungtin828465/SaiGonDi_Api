@@ -1,11 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 import { placeService } from '~/services/place.service.js'
 
+
 const createNew = async (req, res, next) => {
   try {
     const userId = req.user.id
     const role = req.user.role
     const newPlace = await placeService.createNew(req.body, userId, role === 'admin' ? userId : null)
+
     res.status(StatusCodes.CREATED).json({
       message: 'Place created successfully',
       data: newPlace

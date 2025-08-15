@@ -33,6 +33,14 @@ const badgeSchema = new mongoose.Schema(
     condition: {
       type: Object,
       default: {}
+    },
+    startDate: {
+      type: Date,
+      default: null
+    },
+    endDate: {
+      type: Date,
+      default: null
     }
   },
   {
