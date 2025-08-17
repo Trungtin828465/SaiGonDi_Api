@@ -4,6 +4,16 @@ import { mongoose } from 'mongoose'
 import PlaceModel from '~/models/Place.model.js'
 import UserModel from '~/models/User.model.js'
 
+import { OBJECT_ID_RULE } from '~/utils/validators'
+
+const queryGenerate = async (id) => {
+  if (id.match(OBJECT_ID_RULE)) {
+    return { _id: new mongoose.Types.ObjectId(id) }
+  }
+  return { slug: id }
+}
+
+
 const createNew = async (placeData, userId, adminId) => {
   try {
     const newPlace = await PlaceModel.create({
@@ -39,7 +49,47 @@ const getApprovedPlaces = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name address avgRating')
+      .select('name slug address avgRating')
+
+    const total = await PlaceModel.countDocuments({ status: 'approved' })
+
+    const returnPlaces = {
+      places,
+      pagination: {
+        total,
+        limit,
+        page,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+    return returnPlaces
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const getPlacesMapdata = async (queryParams) => {
+  try {
+    const sortByMapping = {
+      // location: 'location',
+      latest: 'createdAt',
+      rating: 'avgRating'
+    }
+    const page = parseInt(queryParams.page, 10) || 1
+    const limit = parseInt(queryParams.limit, 10) || 10
+    const startIndex = (page - 1) * limit
+
+    const sortBy = queryParams.sortBy || 'createdAt'
+    const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
+    const places = await PlaceModel.find({ status: 'approved' })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
+      .sort({ [sortByMapping[sortBy]]: sortOrder })
+      .skip(startIndex)
+      .limit(limit)
+      .select('name slug category address location avgRating')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -95,7 +145,8 @@ const getAllPlaces = async (queryParams) => {
 
 const getPlaceDetails = async (placeId) => {
   try {
-    const place = await PlaceModel.find({ _id: placeId, status: 'approved' })
+    const query = await queryGenerate(placeId)
+    const place = await PlaceModel.find({ ...query, status: 'approved' })
       .populate({
         path: 'categories',
         select: 'name icon description'
@@ -104,14 +155,14 @@ const getPlaceDetails = async (placeId) => {
         path: 'likeBy',
         select: 'firstName lastName avatar'
       })
-      .select('categories status name description address district ward avgRating totalRatings totalLikes likeBy')
+      .select('categories status name slug description address district ward avgRating totalRatings totalLikes likeBy')
     const returnPlace = place[0] || null
     if (!returnPlace || returnPlace.status !== 'approved') {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
     }
     return returnPlace
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -281,10 +332,35 @@ const getAdminPlaceDetails = async (placeId) => {
   }
 }
 
+const getUserSuggestedPlaces = async (userId) => {
+  try {
+    const suggestedPlaces = await PlaceModel.find({
+      createdBy: userId
+    })
+    return suggestedPlaces
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const getUserCheckins = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId).populate('checkins')
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    return user.checkins
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
 export const placeService = {
   createNew,
   getAllPlaces,
   getApprovedPlaces,
+  getPlacesMapdata,
+  getUserSuggestedPlaces,
   getAdminPlaceDetails,
   getPlaceDetails,
   updatePlace,
@@ -295,5 +371,6 @@ export const placeService = {
   checkinPlace,
   getFavoritePlaces,
   approvePlace,
-  updatePlaceCoordinates
+  updatePlaceCoordinates,
+  getUserCheckins
 }

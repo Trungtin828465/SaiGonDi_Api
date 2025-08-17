@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes'
  */
 const getBlogs = async (req, res, next) => {
   try {
-    const { blogs, pagination } = await blogService.getBlogs(req.query)
+    const { blogs, pagination } = await blogService.getBlogs(req.query, req.user)
     res.status(StatusCodes.OK).json({
       success: true,
       count: blogs.length,
@@ -54,10 +54,15 @@ const getBlogsByAuthor = async (req, res, next) => {
  * @route   POST /api/blogs
  * @access  Private
  */
+import { badgeService } from '../services/badge.service.js'
+
 const createBlog = async (req, res, next) => {
   try {
     // authorId được lấy từ token đã xác thực, không phải từ req.body
     const newBlog = await blogService.createBlog(req.body, req.user.id)
+
+    await badgeService.checkAndAwardBadges(req.user.id, 'blog')
+
     res.status(StatusCodes.CREATED).json({
       success: true,
       data: newBlog
@@ -93,7 +98,8 @@ const updateBlogStatus = async (req, res, next) => {
   try {
     const updatedBlog = await blogService.updateBlogStatus(
       req.params.id,
-      req.body.status
+      req.body.status,
+      req.user
     )
     res.status(StatusCodes.OK).json({
       success: true,

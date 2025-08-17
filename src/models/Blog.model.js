@@ -52,7 +52,7 @@ const blogSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ['pending', 'approved', 'hidden'],
+      enum: ['pending', 'approved', 'hidden', 'deleted'],
       default: 'pending'
     },
     authorId: {
@@ -81,7 +81,8 @@ const blogSchema = new mongoose.Schema(
     viewCount: {
       type: Number,
       default: 0
-    }
+    },
+    deletedAt: { type: Date, default: null }
   },
   {
     timestamps: true
