@@ -38,6 +38,10 @@ const reviewSchema = new mongoose.Schema(
     images: {
       type: [String],
       default: []
+    },
+    _hidden: {
+      type: Boolean,
+      default: false
     }
   },
   {

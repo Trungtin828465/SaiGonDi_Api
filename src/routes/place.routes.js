@@ -6,6 +6,7 @@ import { generalValidation } from '~/validations/general.validation'
 
 const Router = express.Router()
 
+Router.get('/nearby', verifyToken, placeValidation.nearbyPlaces, placeController.getNearbyPlaces)
 Router.post('/suggest', verifyToken, placeValidation.createNew, placeController.createNew)
 Router.get('/', placeValidation.pagingValidate, placeController.getApprovedPlaces)
 Router.get('/map-data', placeValidation.pagingValidate, placeController.getPlacesMapdata)
@@ -14,6 +15,6 @@ Router.patch('/:id', verifyToken, generalValidation.paramIdValidate, placeContro
 
 Router.post('/:id/favorite', verifyToken, generalValidation.paramIdValidate, placeController.addToFavorites)
 Router.delete('/:id/favorite', verifyToken, generalValidation.paramIdValidate, placeController.removeFromFavorites)
-Router.post('/:id/checkin', verifyToken, generalValidation.paramIdValidate, placeController.checkinPlace)
+Router.post('/:id/checkin', verifyToken, placeValidation.checkinPlace, placeController.checkinPlace)
 
 export const placeRoute = Router

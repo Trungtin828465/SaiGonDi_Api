@@ -71,14 +71,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: []
   },
-  checkins: {
-    type: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'places'
-    }],
-    required: true,
-    default: []
-  },
   points: {
     type: Number,
     default: 0

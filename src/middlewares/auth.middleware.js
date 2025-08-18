@@ -7,8 +7,8 @@ export const verifyToken = async (req, res, next) => {
   if (!token) return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Token không được cung cấp'))
 
   try {
-    const decoded = await jwtVerify(token)
-    req.user= decoded
+    const decoded = jwtVerify(token)
+    req.user = decoded
     next()
   } catch (err) {
     next(new ApiError(StatusCodes.UNAUTHORIZED, 'Token không hợp lệ hoặc đã hết hạn'))
