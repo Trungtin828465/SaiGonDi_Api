@@ -11,6 +11,8 @@ const Router = express.Router()
 
 Router.post('/register', registerRateLimiter, userValidation.register, userController.register)
 Router.post('/login', loginRateLimiter, userValidation.login, userController.login)
+Router.post('/logout', verifyToken, userController.logout)
+Router.post('/request-token', userValidation.requestToken, userController.requestToken)
 Router.put('/change-password', verifyToken, userValidation.changePassword, userController.changePassword)
 Router.post('/send-otp', verifyOtpRateLimiter, userValidation.emailOTP, userController.emailOTP)
 Router.post('/verify-otp', userValidation.verifyOTP, userController.verifyOTP)

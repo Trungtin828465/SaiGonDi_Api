@@ -138,7 +138,8 @@ const checkinPlace = async (req, res, next) => {
   try {
     const placeId = req.params.id
     const userId = req.user.id
-    const checkinData = await placeService.checkinPlace(placeId, userId)
+    const data = req.body
+    const checkinData = await placeService.checkinPlace(placeId, userId, data)
     res.status(StatusCodes.OK).json({
       'success': true,
       message: 'Đã check-in thành công',
@@ -190,6 +191,18 @@ const getAdminPlaceDetails = async (req, res, next) => {
   }
 }
 
+const getNearbyPlaces = async (req, res, next) => {
+  try {
+    const nearbyPlaces = await placeService.getNearbyPlaces(req.body)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      'data': nearbyPlaces
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const placeController = {
   createNew,
   getAllPlaces,
@@ -204,5 +217,6 @@ export const placeController = {
   approvePlace,
   updatePlaceCoordinates,
   getAdminPlaceDetails,
-  getPlacesMapdata
+  getPlacesMapdata,
+  getNearbyPlaces
 }

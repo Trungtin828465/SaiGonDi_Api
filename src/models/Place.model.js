@@ -151,9 +151,6 @@ placeSchema.methods.updateTotalLikes = async function () {
   await this.save()
 }
 
-// Create index for slug for better query performance
-placeSchema.index({ slug: 1 })
-
 const PlaceModel = mongoose.model('places', placeSchema)
 
 export default PlaceModel

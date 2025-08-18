@@ -21,18 +21,40 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const user = await userService.login({ ...req.body, ipAddress: req.ip, device: req.headers['user-agent'] })
+    const { userData, accessToken, refreshToken } = await userService.login({ ...req.body, ipAddress: req.ip, device: req.headers['user-agent'] })
 
     res.status(StatusCodes.OK).json({
       success: true,
       message: 'Đăng nhập thành công',
-      token: user.token,
-      user: {
-        userId: user._id,
-        role: user.role,
-        email: user.email,
-        fullName: user.firstName + ' ' + user.lastName
-      }
+      user: userData,
+      accessToken,
+      refreshToken
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const logout = async (req, res, next) => {
+  try {
+    const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
+    await userService.revokeRefreshToken(userId)
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Đăng xuất thành công'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const requestToken = async (req, res, next) => {
+  try {
+    const newToken = await userService.requestToken(req.body)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      accessToken: newToken
     })
   } catch (error) {
     next(error)
@@ -144,6 +166,8 @@ const destroyUser = async (req, res, next) => {
 export const userController = {
   register,
   login,
+  logout,
+  requestToken,
   getAllUsers,
   getUserDetails,
   changePassword,

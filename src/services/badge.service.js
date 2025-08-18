@@ -1,5 +1,5 @@
 import UserModel from '~/models/User.model.js'
-import BadgeModel from '~/models/Badges.model.js'
+import BadgeModel from '~/models/Badge.model.js'
 import ReviewModel from '~/models/Review.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
 import BlogModel from '~/models/Blog.model.js'
@@ -7,7 +7,7 @@ import PlaceModel from '~/models/Place.model.js'
 
 /**
  * Kiểm tra và trao badges cho user dựa vào points hoặc condition
- * @param {String} userId 
+ * @param {String} userId
  */
 const checkAndAwardBadges = async (userId) => {
   try {

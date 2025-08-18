@@ -2,6 +2,7 @@ import UserModel from '~/models/User.model.js'
 import PlaceModel from '~/models/Place.model.js'
 import BlogModel from '~/models/Blog.model.js'
 import BlogCommentModel from '~/models/BlogComment.model.js'
+import ReviewModel from '~/models/Review.model.js'
 const getOverviewStats = async () => {
   try {
     const userCount = await UserModel.countDocuments()
@@ -103,9 +104,53 @@ const getPopularStats = async () => {
   }
 }
 
+const getFilteredReviews = async (paging, query) => {
+  try {
+    const { page, limit } = paging
+
+    const reviews = await ReviewModel.find(query)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 })
+
+    const total = await ReviewModel.countDocuments()
+
+    return {
+      reviews,
+      total,
+      page,
+      limit
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteReview = async (id) => {
+  try {
+    const deletedReview = await ReviewModel.findByIdAndDelete(id)
+    await deletedReview.updatePlaceAvgRating()
+    return deletedReview
+  } catch (error) {
+    throw error
+  }
+}
+
+const hideReview = async (id) => {
+  try {
+    const review = await ReviewModel.findByIdAndUpdate(id, { _hidden: true }, { new: true })
+    return review
+  } catch (error) {
+    throw error
+  }
+}
 
 export const adminService = {
   getOverviewStats,
   getDailyStats,
-  getPopularStats
+  getPopularStats,
+  getFilteredReviews,
+  deleteReview,
+  hideReview
 }

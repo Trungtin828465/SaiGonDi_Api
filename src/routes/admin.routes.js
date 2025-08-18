@@ -8,15 +8,18 @@ import { categoryController } from '~/controllers/category.controller.js'
 
 import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
+
 import { blogController } from '~/controllers/blog.controller.js'
+
+import { adminValidation } from '~/validations/admin.validation'
 import { adminController } from '~/controllers/admin.controller.js'
+
 import { badgeController } from '~/controllers/badge.controller.js'
 
 import { generalValidation } from '~/validations/general.validation.js'
 
 
 const Router = express.Router()
-
 
 Router.post('/login', userValidation.login, userController.login)
 Router.post('/places', verifyToken, verifyAdmin, placeValidation.createNew, placeController.createNew)
@@ -52,5 +55,8 @@ Router.post('/badges', verifyToken, verifyAdmin, badgeController.createBadge)
 Router.patch('/badges/:id', verifyToken, verifyAdmin, badgeController.updateBadge)
 Router.delete('/badges/:id', verifyToken, verifyAdmin, badgeController.deleteBadge)
 
+Router.get('/reviews', verifyToken, verifyAdmin, adminValidation.getFilteredReviews, adminController.getFilteredReviews)
+Router.delete('/reviews/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, adminController.deleteReview)
+Router.put('/reviews/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, adminController.hideReview)
 
 export const adminRoute = Router
