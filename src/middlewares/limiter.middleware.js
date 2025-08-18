@@ -46,4 +46,21 @@ export const blogRateLimiter = createRateLimiter({
   windowMs: 60 * 1000
 })
 
+export const reviewRateLimiter = createRateLimiter({
+  maxRequests: 5,
+  windowMs: 60 * 1000,
+  message: 'Too many review submissions, please try again later.'
+})
+
+export const commentRateLimiter = createRateLimiter({
+  maxRequests: 5,
+  windowMs: 60 * 1000,
+  message: 'Too many comment submissions, please try again later.'
+})
+
+export const shareRateLimiter = createRateLimiter({
+  maxRequests: 5,
+  windowMs: 60 * 1000,
+  message: 'Too many share attempts, please try again later.'
+})
 

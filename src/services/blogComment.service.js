@@ -2,6 +2,7 @@ import BlogCommentModel from '~/models/BlogComment.model.js'
 import BlogModel from '~/models/Blog.model.js'
 import ApiError from '~/utils/ApiError.js'
 import { StatusCodes } from 'http-status-codes'
+import { badgeActionService } from './badgeAction.service.js'
 
 const createComment = async (blogId, commentData, userId) => {
   const blog = await BlogModel.findById(blogId)
@@ -15,6 +16,9 @@ const createComment = async (blogId, commentData, userId) => {
     blogId: blogId,
     userId: userId
   })
+
+  // Trigger badge action
+  badgeActionService.handleUserAction(userId, 'comment', { blogId, commentId: newComment._id })
 
   return newComment
 }
@@ -86,6 +90,8 @@ const likeComment = async (commentId, userId) => {
 
   if (userIndex === -1) {
     comment.likeBy.push(userId)
+    // Trigger badge action
+    badgeActionService.handleUserAction(userId, 'like_comment', { commentId })
   } else {
     comment.likeBy.splice(userIndex, 1)
   }
