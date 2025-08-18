@@ -66,6 +66,23 @@ const login = async (req, res, next) => {
   }
 }
 
+const requestToken = async (req, res, next) => {
+  const validationRule = Joi.object({
+    refreshToken: Joi.string().required().messages({
+      'string.base': 'refresh token must be a string',
+      'string.empty': 'refresh token cannot be empty'
+    })
+  })
+
+  try {
+    const data = req?.body ? req.body : {}
+    await validationRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 const changePassword = async (req, res, next) => {
   const validationRule = Joi.object({
     currentPassword: Joi.string().min(6).required().messages({
@@ -204,6 +221,7 @@ const updateUserProfile = async (req, res, next) => {
 export const userValidation = {
   register,
   login,
+  requestToken,
   changePassword,
   emailOTP,
   verifyOTP,

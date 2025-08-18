@@ -53,8 +53,32 @@ const queryUserIdValidate = async (req, res, next) => {
   }
 }
 
+const pagingValidate = async (req, res, next) => {
+  const pagingRule = Joi.object({
+    page: Joi.number().integer().min(1).default(1).messages({
+      'number.base': 'Page must be a number',
+      'number.integer': 'Page must be an integer',
+      'number.min': 'Page must be at least 1'
+    }),
+    limit: Joi.number().integer().min(1).max(100).default(10).messages({
+      'number.base': 'Limit must be a number',
+      'number.integer': 'Limit must be an integer',
+      'number.min': 'Limit must be at least 1',
+      'number.max': 'Limit must not exceed 100'
+    })
+  })
+  try {
+    const data = req?.query ? req.query : {}
+    await pagingRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const generalValidation = {
   paramIdValidate,
   queryUserIdValidate,
-  paramSlugValidate
+  paramSlugValidate,
+  pagingValidate
 }

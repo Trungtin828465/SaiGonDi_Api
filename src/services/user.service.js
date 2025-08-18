@@ -1,9 +1,11 @@
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
-import { jwtGenerate } from '~/utils/jwt'
+import { jwtGenerate, requestNewToken } from '~/utils/jwt'
 import UserModel from '~/models/User.model.js'
 import OTPModel from '~/models/OTP.model.js'
 import ReviewModel from '~/models/Review.model.js'
+import CheckinModel from '~/models/Checkin.model.js'
+import RefreshTokenModel from '~/models/RefreshToken.model'
 import sendMail from '~/utils/sendMail.js'
 import sendSMS from '~/utils/sendSMS.js'
 
@@ -36,6 +38,7 @@ const register = async (registerData) => {
 const login = async (loginData) => {
   try {
     const user = await UserModel.findOne({ email: loginData.email })
+      .select('_id role email firstName lastName password banned')
     if (!user) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
     }
@@ -47,9 +50,40 @@ const login = async (loginData) => {
       throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been banned')
     }
 
-    const token = jwtGenerate({ id: user._id, email: user.email, role: user.role })
+    const { AcessToken, RefreshToken } = jwtGenerate({ id: user._id, email: user.email, role: user.role })
+
+    await RefreshTokenModel.create({ userId: user._id, token: RefreshToken })
+
     await user.saveLog(loginData.ipAddress, loginData.device)
-    return { ...user.toObject(), token }
+    const userData = {
+      userId: user._id,
+      role: user.role,
+      email: user.email,
+      fullName: user.firstName + ' ' + user.lastName
+    }
+    return { userData, accessToken: AcessToken, refreshToken: RefreshToken }
+  } catch (error) {
+    throw error
+  }
+}
+
+const requestToken = async ({ refreshToken }) => {
+  try {
+    const refreshTokenDoc = await RefreshTokenModel.findOne({ token: refreshToken })
+    if (!refreshTokenDoc) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Refresh Token không hợp lệ hoặc đã hết hạn')
+    }
+    const newTokens = requestNewToken(refreshToken)
+    return newTokens
+  } catch (error) {
+    throw error
+  }
+}
+
+const revokeRefreshToken = async (userId) => {
+  try {
+    await RefreshTokenModel.deleteMany({ userId })
+    return { message: 'Refresh tokens revoked successfully' }
   } catch (error) {
     throw error
   }
@@ -156,14 +190,17 @@ const getUserDetails = async (userId) => {
   try {
     const user = await UserModel.find({ _id: userId, role: 'user' })
       .populate('favorites', 'name address avgRating totalRatings')
-      .populate('checkins', 'name address avgRating totalRatings')
       .populate('badges', 'name address avgRating totalRatings')
       .populate('sharedBlogs', 'title content')
       .select('-password -__v')
+
     if (!user ||user.length === 0) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     }
-    return user[0]
+    const returnedUser = user[0]
+    const userCheckins = await CheckinModel.find({ userId })
+      .populate('placeId', 'name address avgRating totalRatings')
+    return { ...returnedUser.toObject(), checkins: userCheckins }
   } catch (error) {
     throw error
   }
@@ -229,6 +266,8 @@ const updateUserProfile = async (userId, reqBody) => {
 export const userService = {
   register,
   login,
+  requestToken,
+  revokeRefreshToken,
   getAllUsers,
   changePassword,
   emailOTP,

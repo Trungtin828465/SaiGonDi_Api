@@ -46,7 +46,7 @@ const getReviewsByPlaceId = async (queryParams) => {
 
     const query = { placeId: queryParams.placeId }
 
-    const reviews = await ReviewModel.find(query)
+    const reviews = await ReviewModel.find({ ...query, _hidden: false })
       .populate('userId', 'name avatar')
       .sort({ createdAt: -1 })
       .skip(startIndex)
