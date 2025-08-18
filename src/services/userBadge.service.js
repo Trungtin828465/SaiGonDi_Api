@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import Badge from '~/models/Badges.model.js'
+import Badge from '~/models/Badge.model.js'
 import User from '~/models/User.model.js'
 import UserBadge from '~/models/UserBadge.model.js'
 import ApiError from '~/utils/ApiError'

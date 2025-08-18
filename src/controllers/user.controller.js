@@ -84,19 +84,10 @@ const changePassword = async (req, res, next) => {
   }
 }
 
-const emailOTP = async (req, res, next) => {
+const sendOTP = async (req, res, next) => {
   try {
-    await userService.emailOTP(req.body)
+    await userService.sendOTP(req.body)
     res.status(StatusCodes.OK).json({ message: 'OTP sent to email' })
-  } catch (error) {
-    next(error)
-  }
-}
-
-const phoneOTP = async (req, res, next) => {
-  try {
-    await userService.phoneOTP(req.body)
-    res.status(StatusCodes.OK).json({ message: 'OTP sent to phone' })
   } catch (error) {
     next(error)
   }
@@ -163,14 +154,12 @@ const destroyUser = async (req, res, next) => {
   }
 }
 
-const getScoreAndTitle = async (req, res, next) => {
+const resetPassword = async (req, res, next) => {
   try {
-    const userId = req.user.id
-    const scoreData = await userService.getScoreAndTitle(userId)
+    await userService.resetPassword(req.body)
     res.status(StatusCodes.OK).json({
       success: true,
-      message: 'Lấy điểm và danh hiệu thành công.',
-      data: scoreData
+      message: 'Password reset successfully'
     })
   } catch (error) {
     next(error)
@@ -181,15 +170,14 @@ export const userController = {
   register,
   login,
   logout,
+  resetPassword,
   requestToken,
   getAllUsers,
   getUserDetails,
   changePassword,
-  emailOTP,
-  phoneOTP,
+  sendOTP,
   verifyOTP,
   getProfile,
   banUser,
-  destroyUser,
-  getScoreAndTitle
+  destroyUser
 }

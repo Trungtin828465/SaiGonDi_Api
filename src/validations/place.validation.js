@@ -226,10 +226,53 @@ const nearbyPlaces = async (req, res, next) => {
   }
 }
 
+const searchValidate = async (req, res, next) => {
+  const searchRule = Joi.object({
+    name: Joi.string().min(3).messages({
+      'string.base': 'name must be a string',
+      'string.min': 'name must be at least 3 characters long'
+    }).optional(),
+    category: Joi.string().pattern(OBJECT_ID_RULE).messages({
+      'string.base': 'category must be a string',
+      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
+    }).optional(),
+    address: Joi.string().min(5).messages({
+      'string.base': 'address must be a string',
+      'string.min': 'address must be at least 5 characters long'
+    }).optional(),
+    avgRating: Joi.number().min(0).max(5).messages({
+      'number.base': 'avgRating must be a number',
+      'number.min': 'avgRating must be at least 0',
+      'number.max': 'avgRating must be at most 5'
+    }).optional(),
+    totalRatings: Joi.number().integer().min(0).messages({
+      'number.base': 'totalRatings must be a number',
+      'number.integer': 'totalRatings must be an integer',
+      'number.min': 'totalRatings must be at least 0'
+    }).optional(),
+    district: Joi.string().min(2).messages({
+      'string.base': 'district must be a string',
+      'string.min': 'district must be at least 2 characters long'
+    }).optional(),
+    ward: Joi.string().min(2).messages({
+      'string.base': 'ward must be a string',
+      'string.min': 'ward must be at least 2 characters long'
+    }).optional()
+  })
+  try {
+    const data = req?.params ? req.params : {}
+    await searchRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const placeValidation = {
   createNew,
   pagingValidate,
   updatePlaceCoordinates,
   checkinPlace,
-  nearbyPlaces
+  nearbyPlaces,
+  searchValidate
 }

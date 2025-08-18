@@ -106,40 +106,19 @@ const changePassword = async (req, res, next) => {
   }
 }
 
-const emailOTP = async (req, res, next) => {
-  const validationRule = Joi.object({
+const sendOTP = async (req, res, next) => {
+  const sendOTPRule = Joi.object({
     email: Joi.string().email().required().messages({
       'string.base': 'email must be a string',
       'string.empty': 'email cannot be empty',
       'string.email': 'email must be a valid email address'
-    }),
-    purpose: Joi.string().valid('register', 'verify', 'forgot_password').required().messages({
-      'string.base': 'purpose must be a string',
-      'string.empty': 'purpose cannot be empty',
-      'any.only': 'purpose must be one of the following: register, verify, forgot_password'
     })
   })
 
   try {
     const data = req?.body ? req.body : {}
-    await validationRule.validateAsync(data, { abortEarly: false })
-    next()
-  } catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
-  }
-}
-
-const phoneOTP = async (req, res, next) => {
-  const validationRule = Joi.object({
-    phone: Joi.string().pattern(PHONE_RULE).required().messages({
-      'string.base': 'phone must be a string',
-      'string.empty': 'phone cannot be empty',
-      'string.pattern.base': PHONE_RULE_MESSAGE
-    })
-  })
-  try {
-    const data = req?.body ? req.body : {}
-    await validationRule.validateAsync(data, { abortEarly: false })
+    const validatedData = await sendOTPRule.validateAsync(data, { abortEarly: false })
+    req.body = validatedData
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
@@ -153,17 +132,11 @@ const verifyOTP = async (req, res, next) => {
       'string.empty': 'email cannot be empty',
       'string.email': 'email must be a valid email address'
     }),
-    phone: Joi.string().pattern(PHONE_RULE).optional().messages({
-      'string.base': 'phone must be a string',
-      'string.pattern.base': PHONE_RULE_MESSAGE
-    }),
     otp: Joi.string().required().length(6).messages({
       'string.base': 'otp must be a string',
       'string.empty': 'otp cannot be empty',
       'string.length': 'otp must be exactly 6 characters long'
     })
-  }).xor('email', 'phone').messages({
-    'object.xor': 'Either email or phone must be provided, but not both'
   })
   try {
     const data = req?.body ? req.body : {}
@@ -218,13 +191,40 @@ const updateUserProfile = async (req, res, next) => {
   }
 }
 
+const resetPassword = async (req, res, next) => {
+  const resetPasswordRule = Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.base': 'email must be a string',
+      'string.empty': 'email cannot be empty',
+      'string.email': 'email must be a valid email address'
+    }),
+    otp: Joi.string().required().length(6).messages({
+      'string.base': 'otp must be a string',
+      'string.empty': 'otp cannot be empty',
+      'string.length': 'otp must be exactly 6 characters long'
+    }),
+    newPassword: Joi.string().min(6).required().messages({
+      'string.base': 'new password must be a string',
+      'string.empty': 'new password cannot be empty',
+      'string.min': 'new password must be at least 6 characters long'
+    })
+  })
+  try {
+    const data = req?.body ? req.body : {}
+    await resetPasswordRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const userValidation = {
   register,
   login,
   requestToken,
+  resetPassword,
   changePassword,
-  emailOTP,
+  sendOTP,
   verifyOTP,
-  phoneOTP,
   updateUserProfile
 }

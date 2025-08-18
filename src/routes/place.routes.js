@@ -6,6 +6,7 @@ import { generalValidation } from '~/validations/general.validation'
 
 const Router = express.Router()
 
+Router.get('/search', placeValidation.searchValidate, placeController.searchPlaces)
 Router.get('/nearby', verifyToken, placeValidation.nearbyPlaces, placeController.getNearbyPlaces)
 Router.post('/suggest', verifyToken, placeValidation.createNew, placeController.createNew)
 Router.get('/', placeValidation.pagingValidate, placeController.getApprovedPlaces)

@@ -9,17 +9,15 @@ const otpSchema = new mongoose.Schema({
     lowercase: true,
     default: ''
   },
-  phone: {
-    type: String,
-    required: false,
-    trim: true,
-    default: ''
-  },
   otp: {
     type: String,
     required: true,
     minlength: 6,
     maxlength: 6
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   },
   createdAt: {
     type: Date,
@@ -28,12 +26,12 @@ const otpSchema = new mongoose.Schema({
   }
 })
 
-otpSchema.methods.setVerified = async function () {
-  if (this.email) {
-    await UserModel.updateOne({ email: this.email }, { $set: { emailVerified: true } })
-  }
-  if (this.phone) {
-    await UserModel.updateOne({ phone: this.phone }, { $set: { phoneVerified: true } })
+otpSchema.methods.verifyOTP = async function () {
+  try {
+    this.isVerified = true
+    await this.save()
+  } catch (error) {
+    throw new Error('Failed to verify OTP')
   }
 }
 

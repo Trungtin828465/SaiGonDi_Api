@@ -1,4 +1,4 @@
-import Badge from '~/models/Badges.model.js'
+import Badge from '~/models/Badge.model.js'
 import PointHistory from '~/models/PointHistory.model.js'
 import { userBadgeService } from '~/services/userBadge.service.js'
 

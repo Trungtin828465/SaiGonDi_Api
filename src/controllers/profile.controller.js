@@ -80,10 +80,25 @@ const updateProfile = async (req, res, next) => {
   }
 }
 
+const getScoreAndTitle = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    const scoreData = await userService.getScoreAndTitle(userId)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Lấy điểm và danh hiệu thành công.',
+      data: scoreData
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const profileController = {
   getSuggestedPlaces,
   getProfile,
   getFavoritePlaces,
+  getScoreAndTitle,
   getUserCheckins,
   getUserReviews,
   updateProfile
