@@ -4,6 +4,7 @@ import slugify from 'slugify'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError.js'
 import UserModel from '~/models/User.model.js'
+import { badgeActionService } from './badgeAction.service.js'
 
 
 const getBlogs = async (query, user) => {
@@ -109,6 +110,9 @@ const createBlog = async (blogData, authorId) => {
     id_place
   })
 
+  // Trigger badge action
+  badgeActionService.handleUserAction(authorId, 'create_blog', { blogId: newBlog._id })
+
   return newBlog
 }
 
@@ -184,6 +188,8 @@ const likeBlog = async (blogId, userId) => {
 
   if (userIndex === -1) {
     blog.likeBy.push(userId)
+    // Trigger badge action
+    badgeActionService.handleUserAction(userId, 'like', { blogId })
   } else {
     blog.likeBy.splice(userIndex, 1)
   }
@@ -220,6 +226,9 @@ const shareBlogById = async (blogId, userId) => {
     },
     { new: true }
   )
+
+  // Trigger badge action
+  badgeActionService.handleUserAction(userId, 'share', { blogId })
 
   return blog
 }

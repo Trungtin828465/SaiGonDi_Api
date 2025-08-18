@@ -3,11 +3,14 @@ import { blogCommentController } from '../controllers/blogComment.controller.js'
 import { blogCommentValidation } from '../validations/blogComment.validation.js'
 import { verifyToken } from '../middlewares/auth.middleware.js'
 
+import { commentRateLimiter } from '~/middlewares/limiter.middleware.js'
+
 const router = express.Router()
 
 // Tạo comment mới cho 1 blog
 router.post(
   '/:blogId',
+  commentRateLimiter,
   verifyToken,
   blogCommentValidation.validateBlogId,
   blogCommentController.createComment

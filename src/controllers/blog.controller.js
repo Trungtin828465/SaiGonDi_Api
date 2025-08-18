@@ -54,15 +54,13 @@ const getBlogsByAuthor = async (req, res, next) => {
  * @route   POST /api/blogs
  * @access  Private
  */
-import { badgeService } from '../services/badge.service.js'
+
+
 
 const createBlog = async (req, res, next) => {
   try {
     // authorId được lấy từ token đã xác thực, không phải từ req.body
     const newBlog = await blogService.createBlog(req.body, req.user.id)
-
-    await badgeService.checkAndAwardBadges(req.user.id, 'blog')
-
     res.status(StatusCodes.CREATED).json({
       success: true,
       data: newBlog

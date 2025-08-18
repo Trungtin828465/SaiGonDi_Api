@@ -10,6 +10,16 @@ const getAllBadges = async (req, res, next) => {
   }
 }
 
+const getAllBadgesWithProgress = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const badges = await badgeService.getAllBadgesWithProgress(userId);
+    res.status(StatusCodes.OK).json({ success: true, data: badges });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createBadge = async (req, res, next) => {
   try {
     const newBadge = await badgeService.createBadge(req.body)
@@ -43,5 +53,6 @@ export const badgeController = {
   getAllBadges,
   createBadge,
   updateBadge,
-  deleteBadge
+  deleteBadge,
+  getAllBadgesWithProgress
 }

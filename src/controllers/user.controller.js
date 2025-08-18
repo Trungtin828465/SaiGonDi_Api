@@ -163,6 +163,20 @@ const destroyUser = async (req, res, next) => {
   }
 }
 
+const getScoreAndTitle = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    const scoreData = await userService.getScoreAndTitle(userId)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Lấy điểm và danh hiệu thành công.',
+      data: scoreData
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   register,
   login,
@@ -176,5 +190,6 @@ export const userController = {
   verifyOTP,
   getProfile,
   banUser,
-  destroyUser
+  destroyUser,
+  getScoreAndTitle
 }

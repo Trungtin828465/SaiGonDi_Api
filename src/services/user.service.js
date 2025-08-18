@@ -263,6 +263,30 @@ const updateUserProfile = async (userId, reqBody) => {
   }
 }
 
+const getScoreAndTitle = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId).select('points').lean()
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+
+    const points = user.points || 0
+    let title = 'Tân binh' // Default title: Newbie
+
+    if (points >= 1000) {
+      title = 'Bậc thầy' // Master
+    } else if (points >= 500) {
+      title = 'Nhà thám hiểm' // Adventurer
+    } else if (points >= 100) {
+      title = 'Người khám phá' // Explorer
+    }
+
+    return { points, title }
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   register,
   login,
@@ -278,5 +302,6 @@ export const userService = {
   banUser,
   destroyUser,
   getUserReviews,
-  updateUserProfile
+  updateUserProfile,
+  getScoreAndTitle
 }

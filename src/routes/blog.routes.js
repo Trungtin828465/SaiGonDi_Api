@@ -1,6 +1,6 @@
 import express from 'express'
 import {blogController} from '../controllers/blog.controller.js'
-import { blogRateLimiter } from '~/middlewares/limiter.middleware.js'
+import { blogRateLimiter, shareRateLimiter } from '~/middlewares/limiter.middleware.js'
 import { verifyToken, verifyAdmin } from '../middlewares/auth.middleware.js'
 import { blogValidation } from '../validations/blog.validation.js'
 
@@ -13,6 +13,6 @@ Router.patch('/:id/privacy', verifyToken, blogValidation.updateBlogPrivacy, blog
 Router.delete('/:id', verifyToken, blogController.deleteBlog)
 Router.put('/:id', verifyToken, blogValidation.updateBlog, blogController.updateBlog)
 Router.patch('/:id/like', verifyToken, blogController.likeBlog)
-Router.post('/:id/share', verifyToken, blogController.shareBlog)
+Router.post('/:id/share', shareRateLimiter, verifyToken, blogController.shareBlog)
 
 export const blogRoute = Router

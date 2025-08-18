@@ -29,5 +29,4 @@ Router.use('/places', placeRoute)
 Router.use('/admin', adminRoute)
 Router.use('/reviews', reviewRouter)
 
-
 export const APIs = Router

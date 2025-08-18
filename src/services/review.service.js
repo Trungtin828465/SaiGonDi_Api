@@ -2,6 +2,7 @@ import ReviewModel from '~/models/Review.model.js'
 import ApiError from '~/utils/ApiError.js'
 import { StatusCodes } from 'http-status-codes'
 import PlaceModel from '~/models/Place.model.js'
+import { badgeActionService } from './badgeAction.service.js'
 
 const createReview = async (placeId, reviewData, userId) => {
   try {
@@ -28,6 +29,8 @@ const createReview = async (placeId, reviewData, userId) => {
       userId: userId
     })
     await newReview.updatePlaceAvgRating()
+    // Trigger badge action
+    badgeActionService.handleUserAction(userId, 'create_review', { reviewId: newReview._id, placeId })
     return newReview
   } catch (error) {
     throw error
@@ -128,6 +131,8 @@ const likeReview = async (reviewId, userId) => {
     review.likeBy = review.likeBy.filter(id => id.toString() !== userId.toString())
   } else {
     review.likeBy.push(userId)
+    // Trigger badge action
+    badgeActionService.handleUserAction(userId, 'like_review', { reviewId })
   }
 
   review.totalLikes = review.likeBy.length

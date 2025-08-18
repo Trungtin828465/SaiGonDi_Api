@@ -1,11 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 import { reviewService } from '../services/review.service.js'
 
+
 const createReview = async (req, res, next) => {
   try {
     const { placeId } = req.params
     const userId = req.user.id
     const newReview = await reviewService.createReview(placeId, req.body, userId)
+
     res.status(StatusCodes.CREATED).json({ success: true, data: newReview })
   } catch (error) {
     next(error)
