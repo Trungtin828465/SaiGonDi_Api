@@ -7,13 +7,14 @@ import ReviewModel from '~/models/Review.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
 import RefreshTokenModel from '~/models/RefreshToken.model'
 import sendMail from '~/utils/sendMail.js'
-import sendSMS from '~/utils/sendSMS.js'
 
-const generateAndSaveOTP = async ({ email = '', phone = '' }) => {
+const generateAndSaveOTP = async (email) => {
+  if (!email) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email is required to generate OTP')
+  }
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   const otpData = {
     email,
-    phone,
     otp
   }
   // Save OTP to the database (you need to implement this function)
@@ -117,16 +118,10 @@ const changePassword = async (userId, passwordData) => {
   }
 }
 
-const emailOTP = async (emailData) => {
+const sendOTP = async (reqBody) => {
   try {
-    const { email, purpose } = emailData
-    if (purpose === 'forgot_password') {
-      const user = await UserModel.findOne({ email })
-      if (!user) {
-        throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
-      }
-    }
-    const otp = await generateAndSaveOTP({ email })
+    const { email } = reqBody
+    const otp = await generateAndSaveOTP(email)
     await sendMail(email, 'Your OTP Code', `Your OTP code is ${otp}`)
     return otp
   } catch (error) {
@@ -134,27 +129,15 @@ const emailOTP = async (emailData) => {
   }
 }
 
-const phoneOTP = async (phoneData) => {
-  try {
-    const otp = await generateAndSaveOTP({ phone: phoneData.phone })
-
-    await sendSMS(phoneData.phone, `Your OTP code is ${otp}`)
-    return otp
-  } catch (error) {
-    throw error
-  }
-}
-
 const verifyOTP = async (otpData) => {
   try {
-    const otpRecord = await OTPModel.findOne(otpData)
+    const { email, otp } = otpData
+    const otpRecord = await OTPModel.findOne({ email, otp })
 
     if (!otpRecord) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid OTP')
     }
-    await otpRecord.setVerified()
-    // Optionally, you can delete the OTP record after successful verification
-    await OTPModel.deleteOne({ _id: otpRecord._id })
+    await otpRecord.verifyOTP()
 
     return { message: 'OTP verified successfully' }
   } catch (error) {
@@ -162,6 +145,29 @@ const verifyOTP = async (otpData) => {
   }
 }
 
+const resetPassword = async (reqBody) => {
+  try {
+    const { email, otp, newPassword } = reqBody
+    const otpRecord = await OTPModel.findOne({ email, otp })
+
+    if (!otpRecord || !otpRecord.isVerified) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid or expired OTP')
+    }
+
+    const user = await UserModel.findOne({ email })
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+
+    user.password = newPassword
+    await user.save()
+    await OTPModel.deleteOne({ _id: otpRecord._id }) // Optionally delete the OTP record
+
+    return { message: 'Password reset successfully' }
+  } catch (error) {
+    throw error
+  }
+}
 
 // Aggregate user details after implementing other modals (Places, Checkins, etc.)
 const getUserProfile = async (userId) => {
@@ -263,20 +269,45 @@ const updateUserProfile = async (userId, reqBody) => {
   }
 }
 
+const getScoreAndTitle = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId).select('points').lean()
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+
+    const points = user.points || 0
+    let title = 'Tân binh' // Default title: Newbie
+
+    if (points >= 1000) {
+      title = 'Bậc thầy' // Master
+    } else if (points >= 500) {
+      title = 'Nhà thám hiểm' // Adventurer
+    } else if (points >= 100) {
+      title = 'Người khám phá' // Explorer
+    }
+
+    return { points, title }
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   register,
   login,
+  resetPassword,
   requestToken,
   revokeRefreshToken,
   getAllUsers,
   changePassword,
-  emailOTP,
+  sendOTP,
   verifyOTP,
-  phoneOTP,
   getUserDetails,
   getUserProfile,
   banUser,
   destroyUser,
   getUserReviews,
-  updateUserProfile
+  updateUserProfile,
+  getScoreAndTitle
 }

@@ -1,11 +1,13 @@
 import { blogCommentService } from '~/services/blogComment.service.js'
 import { StatusCodes } from 'http-status-codes'
 
+
 const createComment = async (req, res, next) => {
   try {
     const { blogId } = req.params
     const userId = req.user.id
     const newComment = await blogCommentService.createComment(blogId, req.body, userId)
+
     res.status(StatusCodes.CREATED).json({
       success: true,
       data: newComment

@@ -75,14 +75,6 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  badges: {
-    type: [{
-      type: String,
-      enum: ['newbie', 'explorer', 'enthusiast', 'connoisseur', 'expert'],
-      default: 'newbie'
-    }],
-    default: []
-  },
   sharedBlogs: [{
     blog: { type: mongoose.Schema.Types.ObjectId, ref: 'blogs' },
     sharedAt: { type: Date, default: Date.now }

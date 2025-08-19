@@ -9,5 +9,6 @@ Router.get('/checkins', verifyToken, profileController.getUserCheckins)
 Router.put('/', verifyToken, profileController.updateProfile)
 Router.get('/reviews', verifyToken, profileController.getUserReviews)
 Router.get('/suggested-places', verifyToken, profileController.getSuggestedPlaces)
+Router.get('/score', verifyToken, profileController.getScoreAndTitle)
 
 export const profileRoute = Router

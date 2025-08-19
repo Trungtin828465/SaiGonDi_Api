@@ -4,7 +4,7 @@ import ReviewModel from '~/models/Review.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
 import BlogModel from '~/models/Blog.model.js'
 import PlaceModel from '~/models/Place.model.js'
-
+import { userBadgeService } from './userBadge.service.js'
 /**
  * Kiểm tra và trao badges cho user dựa vào points hoặc condition
  * @param {String} userId
@@ -71,55 +71,45 @@ const checkAndAwardBadges = async (userId) => {
   }
 }
 
+
 /**
  * Lấy tất cả badges
  */
 const getAllBadges = async () => {
-  try {
-    return await BadgeModel.find().sort({ createdAt: -1 })
-  } catch (error) {
-    throw error
-  }
+  return await BadgeModel.find().sort({ createdAt: -1 })
+}
+
+const getAllBadgesWithProgress = async (userId) => {
+  return await userBadgeService.getUserBadges(userId)
 }
 
 /**
  * Tạo badge mới
  */
 const createBadge = async (badgeData) => {
-  try {
-    const newBadge = new BadgeModel(badgeData)
-    return await newBadge.save()
-  } catch (error) {
-    throw error
-  }
+  const newBadge = new BadgeModel(badgeData)
+  return await newBadge.save()
 }
 
 /**
  * Cập nhật badge
  */
 const updateBadge = async (badgeId, badgeData) => {
-  try {
-    return await BadgeModel.findByIdAndUpdate(badgeId, badgeData, { new: true })
-  } catch (error) {
-    throw error
-  }
+  return await BadgeModel.findByIdAndUpdate(badgeId, badgeData, { new: true })
 }
 
 /**
  * Xoá badge
  */
 const deleteBadge = async (badgeId) => {
-  try {
-    await BadgeModel.findByIdAndDelete(badgeId)
-  } catch (error) {
-    throw error
-  }
+  return await BadgeModel.findByIdAndDelete(badgeId)
 }
 
 export const badgeService = {
-  checkAndAwardBadges,
   getAllBadges,
   createBadge,
   updateBadge,
-  deleteBadge
+  deleteBadge,
+  getAllBadgesWithProgress,
+  checkAndAwardBadges
 }

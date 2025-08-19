@@ -6,6 +6,7 @@ import UserModel from '~/models/User.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
 
 import { OBJECT_ID_RULE } from '~/utils/validators'
+import CategoryModel from '~/models/Category.model'
 
 const queryGenerate = async (id) => {
   if (id.match(OBJECT_ID_RULE)) {
@@ -396,10 +397,53 @@ const getNearbyPlaces = async (locationData) => {
   }
 }
 
+const searchPlaces = async (filterCriteria) => {
+  try {
+    const query = {}
+    if (filterCriteria.name) {
+      query.name = { $regex: filterCriteria.name, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.category) {
+      const category = await CategoryModel.findOne({ name: filterCriteria.category }).select('_id')
+      if (category) {
+        query.categories = category._id
+      } else {
+        query.categories = null
+      }
+    }
+    if (filterCriteria.address) {
+      query.address = { $regex: filterCriteria.address, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.district) {
+      query.district = { $regex: filterCriteria.district, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.ward) {
+      query.ward = { $regex: filterCriteria.ward, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.avgRating) {
+      query.avgRating = { $gte: parseFloat(filterCriteria.avgRating) } // Minimum average rating
+    }
+    if (filterCriteria.totalRatings) {
+      query.totalRatings = { $gte: parseInt(filterCriteria.totalRatings) } // Minimum total ratings
+    }
+    const places = await PlaceModel.find({ ...query, status: 'approved' })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
+      .select('name slug address avgRating totalRatings categories location')
+      .limit(50) // Limit results for performance
+    return places
+  } catch (error) {
+    throw error
+  }
+}
+
 export const placeService = {
   createNew,
   getAllPlaces,
   getApprovedPlaces,
+  searchPlaces,
   getPlacesMapdata,
   getUserSuggestedPlaces,
   getAdminPlaceDetails,

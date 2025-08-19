@@ -76,9 +76,27 @@ const pagingValidate = async (req, res, next) => {
   }
 }
 
+const emailValidation = async (req, res, next) => {
+  const emailRule = Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.base': 'Email must be a string',
+      'string.email': 'Email must be a valid email address',
+      'string.empty': 'Email must not be empty'
+    })
+  })
+  try {
+    const data = req?.body ? req.body : {}
+    await emailRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const generalValidation = {
   paramIdValidate,
   queryUserIdValidate,
   paramSlugValidate,
+  emailValidation,
   pagingValidate
 }
