@@ -105,6 +105,7 @@ const deleteBadge = async (badgeId) => {
   return await BadgeModel.findByIdAndDelete(badgeId)
 }
 
+
 export const badgeService = {
   getAllBadges,
   createBadge,
