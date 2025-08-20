@@ -105,10 +105,7 @@ const blogSchema = new mongoose.Schema(
     },
 
     // Lưu phường xã + tỉnh/thành
-    ward: {
-      type: String,
-      default: null
-    },
+    ward: { type: mongoose.Schema.Types.ObjectId, ref: 'wards' },
     province: {
       type: String,
       default: 'Hồ Chí Minh'

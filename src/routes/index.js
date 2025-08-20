@@ -6,7 +6,7 @@ import { blogRoute } from './blog.routes.js'
 import { reviewRouter } from './review.route.js'
 import { blogCommentRoute } from './blogComment.route.js'
 import { profileRoute } from './profile.routes.js'
-
+import { wardRoute } from './ward.routes.js'
 
 import { placeRateLimiter } from '../middlewares/limiter.middleware.js'
 
@@ -20,6 +20,7 @@ Router.get('/status', (req, res) => {
 
 Router.use('/blogs', blogRoute)
 Router.use('/comments', blogCommentRoute)
+Router.use('/wards', wardRoute)
 Router.use('/users', userRoute)
 
 Router.use('/me', profileRoute)
