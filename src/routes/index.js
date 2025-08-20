@@ -7,6 +7,7 @@ import { reviewRouter } from './review.route.js'
 import { blogCommentRoute } from './blogComment.route.js'
 import { placeRateLimiter } from '../middlewares/limiter.middleware.js'
 
+
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -24,5 +25,6 @@ Router.use('/places', placeRoute)
 
 Router.use('/admin', adminRoute)
 Router.use('/reviews', reviewRouter)
+
 
 export const APIs = Router
