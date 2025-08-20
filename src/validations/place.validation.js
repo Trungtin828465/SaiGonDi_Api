@@ -145,8 +145,134 @@ const updatePlaceCoordinates = async (req, res, next) => {
   }
 }
 
+const checkinPlace = async (req, res, next) => {
+  const checkinRule = Joi.object({
+    location: Joi.object({
+      type: Joi.string().valid('Point').required(),
+      coordinates: Joi.array().items(
+        Joi.number()
+          .min(-180)
+          .max(180)
+          .precision(8)
+          .required()
+          .messages({
+            'number.base': 'longitude must be an array of numbers',
+            'number.min': 'longitude must be between -180 and 180',
+            'number.max': 'longitude must be between -180 and 180' 
+          }),
+        Joi.number()
+          .min(-90)
+          .max(90)
+          .precision(8)
+          .required()
+          .messages({
+            'number.base': 'latitude must be an array of numbers',
+            'number.min': 'latitude must be between -90 and 90',
+            'number.max': 'latitude must be between -90 and 90'
+          })
+      )
+        .length(2).required().messages({
+          'array.base': 'coordinates must be an array',
+          'array.length': 'coordinates must contain exactly 2 numbers',
+          'array.items': 'coordinates must be an array of longitude between -180 and 180 and latitude between -90 and 90'
+        })
+    }).required().messages({
+      'object.base': 'location must be an object',
+      'any.required': 'location is required'
+    })
+  })
+  try {
+    const data = req?.body ? req.body : {}
+    const placeIdData = req?.params || {}
+    await checkinRule.validateAsync(data, { abortEarly: false })
+    await idRule.validateAsync(placeIdData, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const nearbyPlaces = async (req, res, next) => {
+  const nearbyRule = Joi.object({
+    longitude: Joi.number()
+      .min(-180)
+      .max(180)
+      .precision(8)
+      .required()
+      .messages({
+        'number.base': 'longitude must be a number',
+        'number.min': 'longitude must be between -180 and 180',
+        'number.max': 'longitude must be between -180 and 180'
+      }),
+    latitude: Joi.number()
+      .min(-90)
+      .max(90)
+      .precision(8)
+      .required()
+      .messages({
+        'number.base': 'latitude must be a number',
+        'number.min': 'latitude must be between -90 and 90',
+        'number.max': 'latitude must be between -90 and 90'
+      }),
+    radius: Joi.number().integer().min(1).max(10000).default(5000)
+  })
+  try {
+    const data = req?.body ? req.body : {}
+    const validatedData = await nearbyRule.validateAsync(data, { abortEarly: false })
+    req.body = validatedData
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
+const searchValidate = async (req, res, next) => {
+  const searchRule = Joi.object({
+    name: Joi.string().min(3).messages({
+      'string.base': 'name must be a string',
+      'string.min': 'name must be at least 3 characters long'
+    }).optional(),
+    category: Joi.string().pattern(OBJECT_ID_RULE).messages({
+      'string.base': 'category must be a string',
+      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
+    }).optional(),
+    address: Joi.string().min(5).messages({
+      'string.base': 'address must be a string',
+      'string.min': 'address must be at least 5 characters long'
+    }).optional(),
+    avgRating: Joi.number().min(0).max(5).messages({
+      'number.base': 'avgRating must be a number',
+      'number.min': 'avgRating must be at least 0',
+      'number.max': 'avgRating must be at most 5'
+    }).optional(),
+    totalRatings: Joi.number().integer().min(0).messages({
+      'number.base': 'totalRatings must be a number',
+      'number.integer': 'totalRatings must be an integer',
+      'number.min': 'totalRatings must be at least 0'
+    }).optional(),
+    district: Joi.string().min(2).messages({
+      'string.base': 'district must be a string',
+      'string.min': 'district must be at least 2 characters long'
+    }).optional(),
+    ward: Joi.string().min(2).messages({
+      'string.base': 'ward must be a string',
+      'string.min': 'ward must be at least 2 characters long'
+    }).optional()
+  })
+  try {
+    const data = req?.params ? req.params : {}
+    await searchRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const placeValidation = {
   createNew,
   pagingValidate,
-  updatePlaceCoordinates
+  updatePlaceCoordinates,
+  checkinPlace,
+  nearbyPlaces,
+  searchValidate
 }

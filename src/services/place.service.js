@@ -3,6 +3,18 @@ import { StatusCodes } from 'http-status-codes'
 import { mongoose } from 'mongoose'
 import PlaceModel from '~/models/Place.model.js'
 import UserModel from '~/models/User.model.js'
+import CheckinModel from '~/models/Checkin.model.js'
+
+import { OBJECT_ID_RULE } from '~/utils/validators'
+import CategoryModel from '~/models/Category.model'
+
+const queryGenerate = async (id) => {
+  if (id.match(OBJECT_ID_RULE)) {
+    return { _id: new mongoose.Types.ObjectId(id) }
+  }
+  return { slug: id }
+}
+
 
 const createNew = async (placeData, userId, adminId) => {
   try {
@@ -14,7 +26,7 @@ const createNew = async (placeData, userId, adminId) => {
     })
     return newPlace
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -39,7 +51,7 @@ const getApprovedPlaces = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name address avgRating')
+      .select('name slug address avgRating')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -54,7 +66,47 @@ const getApprovedPlaces = async (queryParams) => {
     }
     return returnPlaces
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
+  }
+}
+
+const getPlacesMapdata = async (queryParams) => {
+  try {
+    const sortByMapping = {
+      // location: 'location',
+      latest: 'createdAt',
+      rating: 'avgRating'
+    }
+    const page = parseInt(queryParams.page, 10) || 1
+    const limit = parseInt(queryParams.limit, 10) || 10
+    const startIndex = (page - 1) * limit
+
+    const sortBy = queryParams.sortBy || 'createdAt'
+    const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
+    const places = await PlaceModel.find({ status: 'approved' })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
+      .sort({ [sortByMapping[sortBy]]: sortOrder })
+      .skip(startIndex)
+      .limit(limit)
+      .select('name slug category address location avgRating')
+
+    const total = await PlaceModel.countDocuments({ status: 'approved' })
+
+    const returnPlaces = {
+      places,
+      pagination: {
+        total,
+        limit,
+        page,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+    return returnPlaces
+  } catch (error) {
+    throw error
   }
 }
 
@@ -89,13 +141,14 @@ const getAllPlaces = async (queryParams) => {
       }
     }
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
 const getPlaceDetails = async (placeId) => {
   try {
-    const place = await PlaceModel.find({ _id: placeId, status: 'approved' })
+    const query = await queryGenerate(placeId)
+    const place = await PlaceModel.find({ ...query, status: 'approved' })
       .populate({
         path: 'categories',
         select: 'name icon description'
@@ -104,14 +157,14 @@ const getPlaceDetails = async (placeId) => {
         path: 'likeBy',
         select: 'firstName lastName avatar'
       })
-      .select('categories status name description address district ward avgRating totalRatings totalLikes likeBy')
+      .select('categories status name slug description address district ward avgRating totalRatings totalLikes likeBy')
     const returnPlace = place[0] || null
     if (!returnPlace || returnPlace.status !== 'approved') {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
     }
     return returnPlace
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -127,7 +180,7 @@ const updatePlace = async (placeId, updateData) => {
     return updatedPlace
   }
   catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -135,7 +188,7 @@ const destroyPlace = async (placeId) => {
   try {
     return await updatePlace(placeId, { status: 'hidden' })
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -154,7 +207,7 @@ const likePlace = async (placeId, userId) => {
     await place.updateTotalLikes()
     return place
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -171,7 +224,7 @@ const addToFavorites = async (placeId, userId) => {
     await user.save()
     return user
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -188,24 +241,32 @@ const removeFromFavorites = async (placeId, userId) => {
     await user.save()
     return user
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
-const checkinPlace = async (placeId, userId) => {
+const checkinPlace = async (placeId, userId, checkinData) => {
   try {
     const user = await UserModel.findById(userId)
     if (!user) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     }
-    if (user.checkins.includes(placeId)) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'User already checked in to this place')
+    const place = await PlaceModel.findById(placeId)
+    if (!place || place.status !== 'approved') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
     }
-    user.checkins.push(placeId)
-    await user.save()
-    return user
+    const existingCheckin = await CheckinModel.findOne({ userId, placeId })
+    if (existingCheckin) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'User has already checked in at this place')
+    }
+    const newCheckin = await CheckinModel.create({
+      userId,
+      placeId,
+      ...checkinData
+    })
+    return newCheckin
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -217,7 +278,7 @@ const getFavoritePlaces = async (userId) => {
     }
     return user.favorites
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -235,7 +296,7 @@ const approvePlace = async (placeId, adminId) => {
     await place.save()
     return place
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -249,7 +310,7 @@ const updatePlaceCoordinates = async (placeId, coordinates) => {
     await place.save()
     return place
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
   }
 }
 
@@ -277,7 +338,104 @@ const getAdminPlaceDetails = async (placeId) => {
     }
     return place
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    throw error
+  }
+}
+
+const getUserSuggestedPlaces = async (userId) => {
+  try {
+    const suggestedPlaces = await PlaceModel.find({
+      createdBy: userId
+    })
+    return suggestedPlaces
+  } catch (error) {
+    throw error
+  }
+}
+
+const getUserCheckins = async (userId) => {
+  try {
+    const checkins = await CheckinModel.find({ userId })
+      .populate({
+        path: 'placeId',
+        select: 'name address avgRating totalRatings'
+      })
+    return checkins
+  } catch (error) {
+    throw error
+  }
+}
+
+const getNearbyPlaces = async (locationData) => {
+  try {
+    const { latitude, longitude, radius = 5000 } = locationData // Default radius 5km
+
+    const places = await PlaceModel.find({
+      status: 'approved',
+      location: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)]
+          },
+          $maxDistance: parseInt(radius) // Distance in meters
+        }
+      }
+    })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
+      .select('name slug address avgRating totalRatings categories location')
+      .limit(50) // Limit results for performance
+    return places
+  } catch (error) {
+    if (error.code === 27) {
+      throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Geospatial index not found. Please contact administrator.')
+    }
+    throw error
+  }
+}
+
+const searchPlaces = async (filterCriteria) => {
+  try {
+    const query = {}
+    if (filterCriteria.name) {
+      query.name = { $regex: filterCriteria.name, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.category) {
+      const category = await CategoryModel.findOne({ name: filterCriteria.category }).select('_id')
+      if (category) {
+        query.categories = category._id
+      } else {
+        query.categories = null
+      }
+    }
+    if (filterCriteria.address) {
+      query.address = { $regex: filterCriteria.address, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.district) {
+      query.district = { $regex: filterCriteria.district, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.ward) {
+      query.ward = { $regex: filterCriteria.ward, $options: 'i' } // Case-insensitive search
+    }
+    if (filterCriteria.avgRating) {
+      query.avgRating = { $gte: parseFloat(filterCriteria.avgRating) } // Minimum average rating
+    }
+    if (filterCriteria.totalRatings) {
+      query.totalRatings = { $gte: parseInt(filterCriteria.totalRatings) } // Minimum total ratings
+    }
+    const places = await PlaceModel.find({ ...query, status: 'approved' })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
+      .select('name slug address avgRating totalRatings categories location')
+      .limit(50) // Limit results for performance
+    return places
+  } catch (error) {
+    throw error
   }
 }
 
@@ -285,6 +443,9 @@ export const placeService = {
   createNew,
   getAllPlaces,
   getApprovedPlaces,
+  searchPlaces,
+  getPlacesMapdata,
+  getUserSuggestedPlaces,
   getAdminPlaceDetails,
   getPlaceDetails,
   updatePlace,
@@ -295,5 +456,7 @@ export const placeService = {
   checkinPlace,
   getFavoritePlaces,
   approvePlace,
-  updatePlaceCoordinates
+  updatePlaceCoordinates,
+  getUserCheckins,
+  getNearbyPlaces
 }

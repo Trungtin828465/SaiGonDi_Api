@@ -21,18 +21,40 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const user = await userService.login({ ...req.body, ipAddress: req.ip, device: req.headers['user-agent'] })
+    const { userData, accessToken, refreshToken } = await userService.login({ ...req.body, ipAddress: req.ip, device: req.headers['user-agent'] })
 
     res.status(StatusCodes.OK).json({
       success: true,
       message: 'Đăng nhập thành công',
-      token: user.token,
-      user: {
-        userId: user._id,
-        role: user.role,
-        email: user.email,
-        fullName: user.firstName + ' ' + user.lastName
-      }
+      user: userData,
+      accessToken,
+      refreshToken
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const logout = async (req, res, next) => {
+  try {
+    const userId = req.user.id // Assuming user ID is stored in req.user by verifyToken middleware
+    await userService.revokeRefreshToken(userId)
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Đăng xuất thành công'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const requestToken = async (req, res, next) => {
+  try {
+    const newToken = await userService.requestToken(req.body)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      accessToken: newToken
     })
   } catch (error) {
     next(error)
@@ -62,19 +84,10 @@ const changePassword = async (req, res, next) => {
   }
 }
 
-const emailOTP = async (req, res, next) => {
+const sendOTP = async (req, res, next) => {
   try {
-    await userService.emailOTP(req.body)
+    await userService.sendOTP(req.body)
     res.status(StatusCodes.OK).json({ message: 'OTP sent to email' })
-  } catch (error) {
-    next(error)
-  }
-}
-
-const phoneOTP = async (req, res, next) => {
-  try {
-    await userService.phoneOTP(req.body)
-    res.status(StatusCodes.OK).json({ message: 'OTP sent to phone' })
   } catch (error) {
     next(error)
   }
@@ -141,14 +154,12 @@ const destroyUser = async (req, res, next) => {
   }
 }
 
-const getScoreAndTitle = async (req, res, next) => {
+const resetPassword = async (req, res, next) => {
   try {
-    const userId = req.user.id
-    const scoreData = await userService.getScoreAndTitle(userId)
+    await userService.resetPassword(req.body)
     res.status(StatusCodes.OK).json({
       success: true,
-      message: 'Lấy điểm và danh hiệu thành công.',
-      data: scoreData
+      message: 'Password reset successfully'
     })
   } catch (error) {
     next(error)
@@ -158,14 +169,15 @@ const getScoreAndTitle = async (req, res, next) => {
 export const userController = {
   register,
   login,
+  logout,
+  resetPassword,
+  requestToken,
   getAllUsers,
   getUserDetails,
   changePassword,
-  emailOTP,
-  phoneOTP,
+  sendOTP,
   verifyOTP,
   getProfile,
   banUser,
-  destroyUser,
-  getScoreAndTitle
+  destroyUser
 }

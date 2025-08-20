@@ -5,6 +5,9 @@ import { adminRoute } from './admin.routes.js'
 import { blogRoute } from './blog.routes.js'
 import { reviewRouter } from './review.route.js'
 import { blogCommentRoute } from './blogComment.route.js'
+import { profileRoute } from './profile.routes.js'
+
+
 import { placeRateLimiter } from '../middlewares/limiter.middleware.js'
 
 
@@ -19,6 +22,7 @@ Router.use('/blogs', blogRoute)
 Router.use('/comments', blogCommentRoute)
 Router.use('/users', userRoute)
 
+Router.use('/me', profileRoute)
 
 Router.use('/places', placeRateLimiter)
 Router.use('/places', placeRoute)

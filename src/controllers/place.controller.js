@@ -41,6 +41,18 @@ const getApprovedPlaces = async (req, res, next) => {
   }
 }
 
+const getPlacesMapdata = async (req, res, next) => {
+  try {
+    const mapData = await placeService.getPlacesMapdata(req.query)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      'data': mapData
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getPlaceDetails = async (req, res, next) => {
   try {
     const placeId = req.params.id
@@ -128,24 +140,12 @@ const checkinPlace = async (req, res, next) => {
   try {
     const placeId = req.params.id
     const userId = req.user.id
-    const checkinData = await placeService.checkinPlace(placeId, userId)
+    const data = req.body
+    const checkinData = await placeService.checkinPlace(placeId, userId, data)
     res.status(StatusCodes.OK).json({
       'success': true,
       message: 'Đã check-in thành công',
       data: checkinData
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-const getFavoritePlaces = async (req, res, next) => {
-  try {
-    const userId = req.user.id
-    const favoritePlaces = await placeService.getFavoritePlaces(userId)
-    res.status(StatusCodes.OK).json({
-      'success': true,
-      'data': favoritePlaces
     })
   } catch (error) {
     next(error)
@@ -193,10 +193,35 @@ const getAdminPlaceDetails = async (req, res, next) => {
   }
 }
 
+const getNearbyPlaces = async (req, res, next) => {
+  try {
+    const nearbyPlaces = await placeService.getNearbyPlaces(req.body)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      'data': nearbyPlaces
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const searchPlaces = async (req, res, next) => {
+  try {
+    const filteredPlaces = await placeService.searchPlaces(req.query)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      'data': filteredPlaces
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const placeController = {
   createNew,
   getAllPlaces,
   getApprovedPlaces,
+  searchPlaces,
   getPlaceDetails,
   updatePlace,
   destroyPlace,
@@ -204,8 +229,9 @@ export const placeController = {
   addToFavorites,
   removeFromFavorites,
   checkinPlace,
-  getFavoritePlaces,
   approvePlace,
   updatePlaceCoordinates,
-  getAdminPlaceDetails
+  getAdminPlaceDetails,
+  getPlacesMapdata,
+  getNearbyPlaces
 }

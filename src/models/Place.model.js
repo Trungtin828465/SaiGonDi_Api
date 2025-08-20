@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import slugify from 'slugify'
 
 const placeSchema = new mongoose.Schema({
   name: {
@@ -7,6 +8,11 @@ const placeSchema = new mongoose.Schema({
     trim: true,
     minlength: 3,
     maxlength: 100
+  },
+  slug: {
+    type: String,
+    unique: true,
+    trim: true
   },
   description: {
     type: String,
@@ -110,6 +116,34 @@ const placeSchema = new mongoose.Schema({
     virtuals: true,
     versionKey: false
   }
+})
+
+// Function to generate slug from name using slugify package
+function generateSlug(name) {
+  return slugify(name, {
+    lower: true,
+    strict: true,
+    locale: 'vi', // Vietnamese locale support
+    remove: /[*+~.()'"!:@]/g // Remove special characters
+  })
+}
+
+// Pre-save middleware to generate slug
+placeSchema.pre('save', async function(next) {
+  if (this.isModified('name') || this.isNew) {
+    let baseSlug = generateSlug(this.name)
+    let slug = baseSlug
+    let counter = 1
+
+    // Check if slug already exists and make it unique
+    while (await mongoose.model('places').findOne({ slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${counter}`
+      counter++
+    }
+
+    this.slug = slug
+  }
+  next()
 })
 
 placeSchema.methods.updateTotalLikes = async function () {
