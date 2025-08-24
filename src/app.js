@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import express from 'express'
 import cors from 'cors'
-import { CONNECT_DB } from '~/config/db.js'
+import { connectDB } from '~/config/db.js'
 import { env } from '~/config/environment.js'
 import { APIs } from '~/routes/index.js'
 import { errorHandler } from '~/middlewares/error.middleware.js'
@@ -22,7 +22,7 @@ const START_SERVER = async () => {
 
 (async () => {
   console.log('Connecting to database...')
-  await CONNECT_DB()
+  await connectDB()
   console.log('Database connected successfully')
   console.log('Starting server...')
   await START_SERVER()
