@@ -59,8 +59,18 @@ const getBlogsByAuthor = async (req, res, next) => {
 
 const createBlog = async (req, res, next) => {
   try {
+    const blogData = {
+      ...req.body,
+      mainImage: req.cloudFiles?.mainImage,
+      album: req.cloudFiles?.album,
+      content: [
+        ...(req.body.content || []),
+        ...(req.cloudFiles?.content || [])
+      ]
+    };
+
     // authorId được lấy từ token đã xác thực, không phải từ req.body
-    const newBlog = await blogService.createBlog(req.body, req.user.id)
+    const newBlog = await blogService.createBlog(blogData, req.user.id)
     res.status(StatusCodes.CREATED).json({
       success: true,
       data: newBlog
@@ -132,8 +142,17 @@ const likeBlog = async (req, res, next) => {
 const updateBlog = async (req, res, next) => {
   try {
     const blogId = req.params.id
-    const updateData = req.body
     const user = req.user
+
+    const updateData = {
+      ...req.body,
+      mainImage: req.cloudFiles?.mainImage || req.body.mainImage || null,
+      album: req.cloudFiles?.album || req.body.album || [],
+      content: [
+        ...(req.body.content || []),
+        ...(req.cloudFiles?.content || [])
+      ]
+    }
 
     const updatedBlog = await blogService.updateBlog(blogId, updateData, user)
     res.status(StatusCodes.OK).json({ success: true, data: updatedBlog })
