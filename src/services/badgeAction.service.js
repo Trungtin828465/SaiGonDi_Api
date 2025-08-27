@@ -78,6 +78,11 @@ const handleUserAction = async (userId, action, meta = {}) => {
   }
 }
 
+const getPointHistoryByUserId = async (userId) => {
+  const history = await PointHistory.find({ userId }).sort({ createdAt: -1 })
+  return history
+}
 export const badgeActionService = {
-  handleUserAction
+  handleUserAction,
+  getPointHistoryByUserId
 }

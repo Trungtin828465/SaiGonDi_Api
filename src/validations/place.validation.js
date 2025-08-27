@@ -56,7 +56,7 @@ const createNew = async (req, res, next) => {
           .messages({
             'number.base': 'longitude must be an array of numbers',
             'number.min': 'longitude must be between -180 and 180',
-            'number.max': 'longitude must be between -180 and 180' 
+            'number.max': 'longitude must be between -180 and 180'
           }),
         Joi.number()
           .min(-90)
@@ -77,7 +77,17 @@ const createNew = async (req, res, next) => {
     }).required().messages({
       'object.base': 'location must be an object',
       'any.required': 'location is required'
-    })
+    }),
+    images: Joi.array().items(
+      Joi.string().uri().messages({
+        'string.base': 'each image must be a string',
+        'string.uri': 'each image must be a valid URL'
+      })
+    ).min(1).required().messages({
+      'array.base': 'images must be an array of strings',
+      'array.min': 'at least 1 image is required'
+    }),
+
   })
   try {
     const data = req?.body ? req.body : {}
@@ -115,7 +125,7 @@ const updatePlaceCoordinates = async (req, res, next) => {
         .messages({
           'number.base': 'longitude must be an array of numbers',
           'number.min': 'longitude must be between -180 and 180',
-          'number.max': 'longitude must be between -180 and 180' 
+          'number.max': 'longitude must be between -180 and 180'
         }),
       Joi.number()
         .min(-90)
@@ -158,7 +168,7 @@ const checkinPlace = async (req, res, next) => {
           .messages({
             'number.base': 'longitude must be an array of numbers',
             'number.min': 'longitude must be between -180 and 180',
-            'number.max': 'longitude must be between -180 and 180' 
+            'number.max': 'longitude must be between -180 and 180'
           }),
         Joi.number()
           .min(-90)

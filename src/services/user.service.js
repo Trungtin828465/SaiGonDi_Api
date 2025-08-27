@@ -196,7 +196,7 @@ const getUserDetails = async (userId) => {
   try {
     const user = await UserModel.find({ _id: userId, role: 'user' })
       .populate('favorites', 'name address avgRating totalRatings')
-      .populate('badges', 'name address avgRating totalRatings')
+
       .populate('sharedBlogs', 'title content')
       .select('-password -__v')
 
