@@ -17,23 +17,23 @@ const getBlogs = async (query, user) => {
   if (authorId) filter.authorId = authorId
   if (privacy) filter.privacy = privacy
 
-  if (user.role !== 'admin') {
-    filter.status = 'approved'
-  } else {
+  // if (user.role !== 'admin') {
+  //   filter.status = 'approved'
+  // } else {
     if (status) filter.status = status
-  }
+  // }
 
   const skip = (page - 1) * limit
   const numericLimit = Number(limit)
 
   const totalBlogs = await Blog.countDocuments(filter)
   const blogs = await Blog.find(filter)
-    .populate('authorId', 'name avatar')
+    .populate('authorId', 'firstName lastName avatar')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
     .lean()
-
+  
   return {
     blogs,
     pagination: {
@@ -47,7 +47,7 @@ const getBlogs = async (query, user) => {
 // Lấy chi tiết blog
 const getBlogById = async (id, user) => {
   const blog = await Blog.findById(id)
-    .populate('authorId', 'name avatar')
+    .populate('authorId', 'firstName lastName avatar')
     .lean()
 
   if (!blog) {
@@ -243,7 +243,7 @@ const getBlogsByAuthor = async (authorId, user) => {
   }
 
   const blogs = await Blog.find(filter)
-    .populate('authorId', 'name avatar')
+    .populate('authorId', 'firstName lastName avatar')
     .sort({ createdAt: -1 })
     .lean()
 
