@@ -129,7 +129,7 @@ function generateSlug(name) {
 }
 
 // Pre-save middleware to generate slug
-placeSchema.pre('save', async function(next) {
+placeSchema.pre('save', async function (next) {
   if (this.isModified('name') || this.isNew) {
     let baseSlug = generateSlug(this.name)
     let slug = baseSlug
