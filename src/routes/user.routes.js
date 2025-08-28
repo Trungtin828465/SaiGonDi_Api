@@ -24,6 +24,6 @@ Router.get('/profile', verifyToken, userController.getProfile)
 // Router.post('/logout', userController.logout)
 
 Router.get('/badges', verifyToken, userBadgeController.getBadges)
-
+Router.get('/badges/history', verifyToken, userBadgeController.getPointHistory)
 
 export const userRoute = Router
