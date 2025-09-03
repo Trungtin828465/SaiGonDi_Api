@@ -1,7 +1,10 @@
 import { StatusCodes } from 'http-status-codes'
 import { badgeService } from '../services/badge.service.js'
+<<<<<<< HEAD
 import PointHistory from '~/models/PointHistory.model.js'
 import UserBadge from '~/models/UserBadge.model.js'
+=======
+>>>>>>> c9b4a797654c1d145110abf60f830bd170f83cd5
 
 const getAllBadges = async (req, res, next) => {
   try {
@@ -41,6 +44,7 @@ const updateBadge = async (req, res, next) => {
   }
 }
 
+<<<<<<< HEAD
 export const getPointHistory = async (req, res) => {
   try {
     const userId = req.user.id // nếu bạn dùng middleware auth (JWT) thì lấy từ token
@@ -94,6 +98,8 @@ export const getPointHistory = async (req, res) => {
   }
 }
 
+=======
+>>>>>>> c9b4a797654c1d145110abf60f830bd170f83cd5
 const deleteBadge = async (req, res, next) => {
   try {
     const { id } = req.params
@@ -111,6 +117,5 @@ export const badgeController = {
   createBadge,
   updateBadge,
   deleteBadge,
-  getPointHistory,
   getAllBadgesWithProgress
 }
