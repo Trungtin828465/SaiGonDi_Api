@@ -358,7 +358,7 @@ const getUserCheckins = async (userId) => {
     const checkins = await CheckinModel.find({ userId })
       .populate({
         path: 'placeId',
-        select: 'name address avgRating totalRatings'
+        select: 'name address ward district avgRating totalRatings'
       })
     return checkins
   } catch (error) {

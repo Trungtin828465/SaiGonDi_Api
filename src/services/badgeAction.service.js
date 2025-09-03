@@ -15,8 +15,9 @@ const handleUserAction = async (userId, action, meta = {}) => {
   for (const badge of badges) {
     const condition = badge.condition || {}
     // Tìm key điều kiện khớp với hành động (không phân biệt hoa thường)
+    const normalizedAction = action.toLowerCase().replace(/[-_]/g, '');
     const matchedActionKey = Object.keys(condition).find(
-      (key) => key.toLowerCase() === action.toLowerCase()
+      (key) => key.toLowerCase().replace(/[-_]/g, '') === normalizedAction
     )
 
     // Nếu huy hiệu này không có điều kiện cho hành động này, bỏ qua
