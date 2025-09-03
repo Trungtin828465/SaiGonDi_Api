@@ -1,4 +1,3 @@
-import { badgeActionService } from './badgeAction.service.js';
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { mongoose } from 'mongoose'
@@ -265,10 +264,6 @@ const checkinPlace = async (placeId, userId, checkinData) => {
       placeId,
       ...checkinData
     })
-
-    // Trigger badge action
-    await badgeActionService.handleUserAction(userId, 'checkinPlace', { placeId });
-
     return newCheckin
   } catch (error) {
     throw error
