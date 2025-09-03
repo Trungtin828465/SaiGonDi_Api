@@ -29,6 +29,7 @@ const getBlogs = async (query, user) => {
   const totalBlogs = await Blog.countDocuments(filter)
   const blogs = await Blog.find(filter)
     .populate('authorId', 'firstName lastName avatar')
+    .populate('ward', 'name') 
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
@@ -54,7 +55,31 @@ const getBlogById = async (id, user) => {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
   }
 
-  if (blog.destroy && user?.role !== 'admin') {
+  // if (blog.destroy && user?.role !== 'admin') {
+  //   throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
+  // }
+
+  if (blog.privacy === 'private' &&
+    blog.authorId._id.toString() !== user?.id &&
+    user?.role !== 'admin') {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền xem bài viết này')
+  }
+
+  if (blog.status === 'pending' && user?.role !== 'admin') {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Bài viết này chưa được duyệt')
+  }
+
+  Blog.updateOne({ _id: id }, { $inc: { viewCount: 1 } }).exec()
+  return blog
+}
+
+// Lấy chi tiết blog theo slug
+const getBlogBySlug = async (slug, user) => {
+  const blog = await Blog.findOne({ slug })
+    .populate('authorId', 'firstName lastName avatar')
+    .lean()
+
+  if (!blog) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
   }
 
@@ -68,7 +93,7 @@ const getBlogById = async (id, user) => {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bài viết này chưa được duyệt')
   }
 
-  Blog.updateOne({ _id: id }, { $inc: { viewCount: 1 } }).exec()
+  Blog.updateOne({ _id: blog._id }, { $inc: { viewCount: 1 } }).exec()
   return blog
 }
 
@@ -253,6 +278,7 @@ const getBlogsByAuthor = async (authorId, user) => {
 export const blogService = {
   getBlogs,
   getBlogById,
+  getBlogBySlug,  
   createBlog,
   updateBlogPrivacy,
   getBlogsByAuthor,

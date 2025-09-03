@@ -11,7 +11,8 @@ const Router = express.Router()
 
 Router.get('/', blogController.getBlogs)//gọi bên middleware upload lên cloudinary để sau verifyToken
 Router.post('/', blogRateLimiter, verifyToken, uploadFiles.array('files'), uploadBlogFiles, blogValidation.createBlog, blogController.createBlog)
-Router.get('/:id', verifyToken, blogController.getBlogById)
+Router.get('/slug/:slug', blogController.getBlogBySlug)
+Router.get('/:id', blogController.getBlogById)
 Router.patch('/:id/privacy', verifyToken, blogValidation.updateBlogPrivacy, blogController.updateBlogPrivacy)
 Router.delete('/:id', verifyToken, blogController.deleteBlog)
 Router.put('/:id', verifyToken,uploadFiles.array('files'), uploadBlogFiles, blogValidation.updateBlog, blogController.updateBlog)
