@@ -52,7 +52,7 @@ const getApprovedPlaces = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug address avgRating')
+      .select('name slug address avgRating images')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -92,7 +92,7 @@ const getPlacesMapdata = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug category address location avgRating')
+      .select('name slug category address location avgRating images')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -158,7 +158,7 @@ const getPlaceDetails = async (placeId) => {
         path: 'likeBy',
         select: 'firstName lastName avatar'
       })
-      .select('categories status name slug description address district ward avgRating totalRatings totalLikes likeBy')
+      .select('categories status name slug description address district ward avgRating totalRatings totalLikes likeBy images')
     const returnPlace = place[0] || null
     if (!returnPlace || returnPlace.status !== 'approved') {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
@@ -391,7 +391,7 @@ const getNearbyPlaces = async (locationData) => {
         path: 'categories',
         select: 'name icon'
       })
-      .select('name slug address avgRating totalRatings categories location')
+      .select('name slug address avgRating totalRatings categories location images')
       .limit(50) // Limit results for performance
     return places
   } catch (error) {
@@ -436,7 +436,7 @@ const searchPlaces = async (filterCriteria) => {
         path: 'categories',
         select: 'name icon'
       })
-      .select('name slug address avgRating totalRatings categories location')
+      .select('name slug address avgRating totalRatings categories location images')
       .limit(50) // Limit results for performance
     return places
   } catch (error) {

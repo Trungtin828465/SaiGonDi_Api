@@ -17,12 +17,15 @@ import { adminController } from '~/controllers/admin.controller.js'
 import { badgeController } from '~/controllers/badge.controller.js'
 
 import { generalValidation } from '~/validations/general.validation.js'
+import { uploadFiles } from '~/middlewares/multer.middleware.js'
+import { uploadPlaceImages } from '~/middlewares/cloudinary.middleware.js'
+
 
 
 const Router = express.Router()
 
 Router.post('/login', userValidation.login, userController.login)
-Router.post('/places', verifyToken, verifyAdmin, placeValidation.createNew, placeController.createNew)
+Router.post('/places', verifyToken, verifyAdmin, uploadFiles.array('images', 10), uploadPlaceImages, placeValidation.createNew, placeController.createNew)
 Router.get('/places', verifyToken, verifyAdmin, placeValidation.pagingValidate, placeController.getAllPlaces)
 Router.get('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.getAdminPlaceDetails)
 Router.patch('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.updatePlace)
