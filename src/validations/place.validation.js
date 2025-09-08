@@ -90,6 +90,9 @@ const createNew = async (req, res, next) => {
 
   })
   try {
+    if (req.body.location && typeof req.body.location === 'string') {
+      req.body.location = JSON.parse(req.body.location)
+    }
     const data = req?.body ? req.body : {}
     await validationRule.validateAsync(data, { abortEarly: false })
     next()

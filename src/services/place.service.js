@@ -1,9 +1,11 @@
+import { badgeActionService } from './badgeAction.service.js';
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { mongoose } from 'mongoose'
 import PlaceModel from '~/models/Place.model.js'
 import UserModel from '~/models/User.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
+import ReviewModel from '~/models/Review.model.js'
 
 import { OBJECT_ID_RULE } from '~/utils/validators'
 import CategoryModel from '~/models/Category.model'
@@ -51,7 +53,7 @@ const getApprovedPlaces = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug address avgRating')
+      .select('name slug address avgRating images')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -91,7 +93,7 @@ const getPlacesMapdata = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug category address location avgRating')
+      .select('name slug category address location avgRating images')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -147,7 +149,7 @@ const getAllPlaces = async (queryParams) => {
 
 const getPlaceDetails = async (placeId) => {
   try {
-    const query = await queryGenerate(placeId)
+    const query = await queryGenerate(placeId);
     const place = await PlaceModel.find({ ...query, status: 'approved' })
       .populate({
         path: 'categories',
@@ -157,16 +159,33 @@ const getPlaceDetails = async (placeId) => {
         path: 'likeBy',
         select: 'firstName lastName avatar'
       })
-      .select('categories status name slug description address district ward avgRating totalRatings totalLikes likeBy')
-    const returnPlace = place[0] || null
+      .populate({
+        path: 'ward',
+        select: 'name location.coordinates' // Include ward name and coordinates
+      })
+      .select(
+        'categories status name slug description address district ward avgRating totalRatings totalLikes likeBy images'
+      );
+
+    const returnPlace = place[0] || null;
     if (!returnPlace || returnPlace.status !== 'approved') {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found');
     }
-    return returnPlace
+
+    // Lấy danh sách đánh giá của địa điểm
+    const reviews = await ReviewModel.find({ placeId: returnPlace._id, _hidden: false })
+      .populate('userId', 'name avatar') // Lấy thông tin người dùng
+      .select('comment rating createdAt') // Chọn các trường cần thiết
+      .sort({ createdAt: -1 });
+
+    return {
+      ...returnPlace.toObject(),
+      reviews // Thêm danh sách đánh giá vào kết quả trả về
+    };
   } catch (error) {
-    throw error
+    throw error;
   }
-}
+};
 
 const updatePlace = async (placeId, updateData) => {
   try {
@@ -264,6 +283,10 @@ const checkinPlace = async (placeId, userId, checkinData) => {
       placeId,
       ...checkinData
     })
+
+    // Trigger badge action
+    await badgeActionService.handleUserAction(userId, 'checkinPlace', { placeId });
+
     return newCheckin
   } catch (error) {
     throw error
@@ -386,7 +409,7 @@ const getNearbyPlaces = async (locationData) => {
         path: 'categories',
         select: 'name icon'
       })
-      .select('name slug address avgRating totalRatings categories location')
+      .select('name slug address avgRating totalRatings categories location images')
       .limit(50) // Limit results for performance
     return places
   } catch (error) {
@@ -431,7 +454,7 @@ const searchPlaces = async (filterCriteria) => {
         path: 'categories',
         select: 'name icon'
       })
-      .select('name slug address avgRating totalRatings categories location')
+      .select('name slug address avgRating totalRatings categories location images')
       .limit(50) // Limit results for performance
     return places
   } catch (error) {
