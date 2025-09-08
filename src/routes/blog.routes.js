@@ -11,6 +11,8 @@ const Router = express.Router()
 
 Router.get('/', verifyToken, blogController.getBlogs)
 Router.post('/', blogRateLimiter, verifyToken, uploadFiles.array('files'), uploadBlogFiles, blogValidation.createBlog, blogController.createBlog)
+
+Router.get('/slug/:slug', blogController.getBlogBySlug)
 Router.get('/:id', blogController.getBlogById)
 Router.patch('/:id/privacy', verifyToken, blogValidation.updateBlogPrivacy, blogController.updateBlogPrivacy)
 Router.delete('/:id', verifyToken, blogController.deleteBlog)
