@@ -1,170 +1,1178 @@
 [
-  { "name": "Sài Gòn", "type": "phường" },
-  { "name": "Tân Định", "type": "phường" },
-  { "name": "Bến Thành", "type": "phường" },
-  { "name": "Cầu Ông Lãnh", "type": "phường" },
-  { "name": "Bàn Cờ", "type": "phường" },
-  { "name": "Xuân Hòa", "type": "phường" },
-  { "name": "Nhiêu Lộc", "type": "phường" },
-  { "name": "Xóm Chiếu", "type": "phường" },
-  { "name": "Khánh Hội", "type": "phường" },
-  { "name": "Vĩnh Hội", "type": "phường" },
-  { "name": "Chợ Quán", "type": "phường" },
-  { "name": "An Đông", "type": "phường" },
-  { "name": "Chợ Lớn", "type": "phường" },
-  { "name": "Bình Tây", "type": "phường" },
-  { "name": "Bình Tiên", "type": "phường" },
-  { "name": "Bình Phú", "type": "phường" },
-  { "name": "Phú Lâm", "type": "phường" },
-  { "name": "Tân Thuận", "type": "phường" },
-  { "name": "Phú Thuận", "type": "phường" },
-  { "name": "Tân Mỹ", "type": "phường" },
-  { "name": "Tân Hưng", "type": "phường" },
-  { "name": "Chánh Hưng", "type": "phường" },
-  { "name": "Phú Định", "type": "phường" },
-  { "name": "Bình Đông", "type": "phường" },
-  { "name": "Diên Hồng", "type": "phường" },
-  { "name": "Vườn Lài", "type": "phường" },
-  { "name": "Hòa Hưng", "type": "phường" },
-  { "name": "Minh Phụng", "type": "phường" },
-  { "name": "Bình Thới", "type": "phường" },
-  { "name": "Hòa Bình", "type": "phường" },
-  { "name": "Phú Thọ", "type": "phường" },
-  { "name": "Đông Hưng Thuận", "type": "phường" },
-  { "name": "Trung Mỹ Tây", "type": "phường" },
-  { "name": "Tân Thới Hiệp", "type": "phường" },
-  { "name": "Thới An", "type": "phường" },
-  { "name": "An Phú Đông", "type": "phường" },
-  { "name": "An Lạc", "type": "phường" },
-  { "name": "Bình Tân", "type": "phường" },
-  { "name": "Tân Tạo", "type": "phường" },
-  { "name": "Bình Trị Đông", "type": "phường" },
-  { "name": "Bình Hưng Hòa", "type": "phường" },
-  { "name": "Gia Định", "type": "phường" },
-  { "name": "Bình Thạnh", "type": "phường" },
-  { "name": "Bình Lợi Trung", "type": "phường" },
-  { "name": "Thạnh Mỹ Tây", "type": "phường" },
-  { "name": "Bình Quới", "type": "phường" },
-  { "name": "Hạnh Thông", "type": "phường" },
-  { "name": "An Nhơn", "type": "phường" },
-  { "name": "Gò Vấp", "type": "phường" },
-  { "name": "An Hội Đông", "type": "phường" },
-  { "name": "Thông Tây Hội", "type": "phường" },
-  { "name": "An Hội Tây", "type": "phường" },
-  { "name": "Đức Nhuận", "type": "phường" },
-  { "name": "Cầu Kiệu", "type": "phường" },
-  { "name": "Phú Nhuận", "type": "phường" },
-  { "name": "Tân Sơn Hòa", "type": "phường" },
-  { "name": "Tân Sơn Nhất", "type": "phường" },
-  { "name": "Tân Hòa", "type": "phường" },
-  { "name": "Bảy Hiền", "type": "phường" },
-  { "name": "Tân Bình", "type": "phường" },
-  { "name": "Tân Sơn", "type": "phường" },
-  { "name": "Tây Thạnh", "type": "phường" },
-  { "name": "Tân Sơn Nhì", "type": "phường" },
-  { "name": "Phú Thọ Hòa", "type": "phường" },
-  { "name": "Tân Phú", "type": "phường" },
-  { "name": "Phú Thạnh", "type": "phường" },
-  { "name": "Hiệp Bình", "type": "phường" },
-  { "name": "Thủ Đức", "type": "phường" },
-  { "name": "Tam Bình", "type": "phường" },
-  { "name": "Linh Xuân", "type": "phường" },
-  { "name": "Tăng Nhơn Phú", "type": "phường" },
-  { "name": "Long Bình", "type": "phường" },
-  { "name": "Long Phước", "type": "phường" },
-  { "name": "Long Trường", "type": "phường" },
-  { "name": "Cát Lái", "type": "phường" },
-  { "name": "Bình Trưng", "type": "phường" },
-  { "name": "Phước Long", "type": "phường" },
-  { "name": "An Khánh", "type": "phường" },
-  { "name": "Đông Hòa", "type": "phường" },
-  { "name": "Đức Nhuận", "type": "phường" },
-  { "name": "Dĩ An", "type": "phường" },
-  { "name": "Tân Đông Hiệp", "type": "phường" },
-  { "name": "Thuận An", "type": "phường" },
-  { "name": "Thuận Giao", "type": "phường" },
-  { "name": "Bình Hòa", "type": "phường" },
-  { "name": "Lái Thiêu", "type": "phường" },
-  { "name": "An Phú", "type": "phường" },
-  { "name": "Bình Dương", "type": "phường" },
-  { "name": "Chánh Hiệp", "type": "phường" },
-  { "name": "Hòa Lợi", "type": "phường" },
-  { "name": "Phú An", "type": "phường" },
-  { "name": "Rạch Dừa", "type": "phường" },
-  { "name": "Phước Thắng", "type": "phường" },
-  { "name": "Bà Rịa", "type": "phường" },
-  { "name": "Long Hương", "type": "phường" },
-  { "name": "Tam Long", "type": "phường" },
-  { "name": "Phú Mỹ", "type": "phường" },
-  { "name": "Tân Thành", "type": "phường" },
-  { "name": "Tân Phước", "type": "phường" },
-  { "name": "Tân Hải", "type": "phường" },
-  { "name": "Tân Khánh", "type": "phường" },
-  { "name": "Tây Nam", "type": "phường" },
-  { "name": "Long Nguyên", "type": "phường" },
-  { "name": "Bến Cát", "type": "phường" },
-  { "name": "Chánh Phú Hòa", "type": "phường" },
-  { "name": "Thới Hòa", "type": "phường" },
-  { "name": "Vĩnh Lộc", "type": "phường" },
-  { "name": "Tân Vĩnh Lộc", "type": "phường" },
-  { "name": "Hiệp Thành", "type": "phường" },
-  { "name": "Linh Chiểu", "type": "phường" },
-  { "name": "Long Thạnh Mỹ", "type": "phường" },
-  { "name": "Trường Thọ", "type": "phường" },
-  { "name": "Thạnh Xuân", "type": "phường" },
-  { "name": "Thới Hòa", "type": "xã" },
-  { "name": "Long Sơn", "type": "xã" },
-  { "name": "Hòa Hiệp", "type": "xã" },
-  { "name": "Bình Châu", "type": "xã" },
-  { "name": "Thạnh An", "type": "xã" },
-  { "name": "Bình Hưng", "type": "xã" },
-  { "name": "An Thới Đông", "type": "xã" },
-  { "name": "Cần Giờ", "type": "xã" },
-  { "name": "Củ Chi", "type": "xã" },
-  { "name": "Nhà Bè", "type": "xã" },
-  { "name": "Bà Điểm", "type": "xã" },
-  { "name": "Tân Thới Nhì", "type": "xã" },
-  { "name": "Xuân Thới Đông", "type": "xã" },
-  { "name": "Xuân Thới Thượng", "type": "xã" },
-  { "name": "Đông Thạnh", "type": "xã" },
-  { "name": "Nhơn Đức", "type": "xã" },
-  { "name": "Hiệp Phước", "type": "xã" },
-  { "name": "Phú Xuân", "type": "xã" },
-  { "name": "Long Thới", "type": "xã" },
-  { "name": "Phước Kiển", "type": "xã" },
-  { "name": "Phước Lộc", "type": "xã" },
-  { "name": "An Thạnh", "type": "xã" },
-  { "name": "An Nhơn Tây", "type": "xã" },
-  { "name": "An Phú Tây", "type": "xã" },
-  { "name": "Tân Quý Tây", "type": "xã" },
-  { "name": "Bình Chánh", "type": "xã" },
-  { "name": "Tân Kiên", "type": "xã" },
-  { "name": "Tân Nhựt", "type": "xã" },
-  { "name": "Vĩnh Lộc", "type": "xã" },
-  { "name": "Tân Vĩnh Lộc", "type": "xã" },
-  { "name": "Bình Lợi", "type": "xã" },
-  { "name": "Ngãi Giao", "type": "xã" },
-  { "name": "Kim Long", "type": "xã" },
-  { "name": "Bình Giã", "type": "xã" },
-  { "name": "Nghĩa Thành", "type": "xã" },
-  { "name": "Xuân Sơn", "type": "xã" },
-  { "name": "Châu Đức", "type": "xã" },
-  { "name": "Châu Pha", "type": "xã" },
-  { "name": "Hồ Tràm", "type": "xã" },
-  { "name": "Xuyên Mộc", "type": "xã" },
-  { "name": "Hòa Hội", "type": "xã" },
-  { "name": "Bàu Lâm", "type": "xã" },
-  { "name": "Đất Đỏ", "type": "xã" },
-  { "name": "Long Hải", "type": "xã" },
-  { "name": "Long Điền", "type": "xã" },
-  { "name": "Tân Thạnh", "type": "xã" },
-  { "name": "Phú Giáo", "type": "xã" },
-  { "name": "An Ngãi", "type": "xã" },
-  { "name": "Tam Phước", "type": "xã" },
-  { "name": "Vĩnh Thanh", "type": "xã" },
-  { "name": "Phước Hưng", "type": "xã" },
-  { "name": "Phước Tỉnh", "type": "xã" },
-  { "name": "Long Phước", "type": "xã" },
-  { "name": "Lộc An", "type": "xã" },
-  { "name": "Côn Đảo", "type": "đặc khu" }
+  {
+    "name": "Sài Gòn",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7769, 106.6959]
+    }
+  },
+  {
+    "name": "Tân Định",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7763, 106.6951]
+    }
+  },
+  {
+    "name": "Bến Thành",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7765, 106.6955]
+    }
+  },
+  {
+    "name": "Cầu Ông Lãnh",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7767, 106.6957]
+    }
+  },
+  {
+    "name": "Bàn Cờ",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7761, 106.6953]
+    }
+  },
+  {
+    "name": "Xuân Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7762, 106.6954]
+    }
+  },
+  {
+    "name": "Nhiêu Lộc",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7764, 106.6956]
+    }
+  },
+  {
+    "name": "Xóm Chiếu",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7768, 106.6958]
+    }
+  },
+  {
+    "name": "Khánh Hội",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7769, 106.6960]
+    }
+  },
+  {
+    "name": "Vĩnh Hội",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7770, 106.6961]
+    }
+  },
+  {
+    "name": "Chợ Quán",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7771, 106.6962]
+    }
+  },
+  {
+    "name": "An Đông",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7772, 106.6963]
+    }
+  },
+  {
+    "name": "Chợ Lớn",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7773, 106.6964]
+    }
+  },
+  {
+    "name": "Bình Tây",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7774, 106.6965]
+    }
+  },
+  {
+    "name": "Bình Tiên",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7775, 106.6966]
+    }
+  },
+  {
+    "name": "Bình Phú",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7776, 106.6967]
+    }
+  },
+  {
+    "name": "Phú Lâm",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7777, 106.6968]
+    }
+  },
+  {
+    "name": "Tân Thuận",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7778, 106.6969]
+    }
+  },
+  {
+    "name": "Phú Thuận",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7779, 106.6970]
+    }
+  },
+  {
+    "name": "Tân Mỹ",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7780, 106.6971]
+    }
+  },
+  {
+    "name": "Tân Hưng",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7781, 106.6972]
+    }
+  },
+  {
+    "name": "Chánh Hưng",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7782, 106.6973]
+    }
+  },
+  {
+    "name": "Phú Định",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7783, 106.6974]
+    }
+  },
+  {
+    "name": "Bình Đông",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7784, 106.6975]
+    }
+  },
+  {
+    "name": "Diên Hồng",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7785, 106.6976]
+    }
+  },
+  {
+    "name": "Vườn Lài",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7786, 106.6977]
+    }
+  },
+  {
+    "name": "Hòa Hưng",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7787, 106.6978]
+    }
+  },
+  {
+    "name": "Minh Phụng",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7788, 106.6979]
+    }
+  },
+  {
+    "name": "Bình Thới",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7789, 106.6980]
+    }
+  },
+  {
+    "name": "Hòa Bình",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7790, 106.6981]
+    }
+  },
+  {
+    "name": "Phú Thọ",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7791, 106.6982]
+    }
+  },
+  {
+    "name": "Đông Hưng Thuận",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7792, 106.6983]
+    }
+  },
+  {
+    "name": "Trung Mỹ Tây",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7793, 106.6984]
+    }
+  },
+  {
+    "name": "Tân Thới Hiệp",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7794, 106.6985]
+    }
+  },
+  {
+    "name": "Thới An",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7795, 106.6986]
+    }
+  },
+  {
+    "name": "An Phú Đông",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7796, 106.6987]
+    }
+  },
+  {
+    "name": "An Lạc",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7797, 106.6988]
+    }
+  },
+  {
+    "name": "Bình Tân",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7798, 106.6989]
+    }
+  },
+  {
+    "name": "Tân Tạo",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7799, 106.6990]
+    }
+  },
+  {
+    "name": "Bình Trị Đông",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7800, 106.6991]
+    }
+  },
+  {
+    "name": "Bình Hưng Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7801, 106.6992]
+    }
+  },
+  {
+    "name": "Gia Định",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7802, 106.6993]
+    }
+  },
+  {
+    "name": "Bình Thạnh",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7803, 106.6994]
+    }
+  },
+  {
+    "name": "Bình Lợi Trung",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7804, 106.6995]
+    }
+  },
+  {
+    "name": "Thạnh Mỹ Tây",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7805, 106.6996]
+    }
+  },
+  {
+    "name": "Bình Quới",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7806, 106.6997]
+    }
+  },
+  {
+    "name": "Hạnh Thông",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7807, 106.6998]
+    }
+  },
+  {
+    "name": "An Nhơn",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7808, 106.6999]
+    }
+  },
+  {
+    "name": "Gò Vấp",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7810, 106.7000]
+    }
+  },
+  {
+    "name": "An Hội Đông",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7811, 106.7001]
+    }
+  },
+  {
+    "name": "Thông Tây Hội",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7812, 106.7002]
+    }
+  },
+  {
+    "name": "An Hội Tây",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7813, 106.7003]
+    }
+  },
+  {
+    "name": "Đức Nhuận",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7814, 106.7004]
+    }
+  },
+  {
+    "name": "Cầu Kiệu",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7815, 106.7005]
+    }
+  },
+  {
+    "name": "Phú Nhuận",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7816, 106.7006]
+    }
+  },
+  {
+    "name": "Tân Sơn Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7817, 106.7007]
+    }
+  },
+  {
+    "name": "Tân Sơn Nhất",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7818, 106.7008]
+    }
+  },
+  {
+    "name": "Tân Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7819, 106.7009]
+    }
+  },
+  {
+    "name": "Bảy Hiền",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7820, 106.7010]
+    }
+  },
+  {
+    "name": "Tân Bình",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7821, 106.7011]
+    }
+  },
+  {
+    "name": "Tân Sơn",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7822, 106.7012]
+    }
+  },
+  {
+    "name": "Tây Thạnh",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7823, 106.7013]
+    }
+  },
+  {
+    "name": "Tân Sơn Nhì",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7824, 106.7014]
+    }
+  },
+  {
+    "name": "Phú Thọ Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7825, 106.7015]
+    }
+  },
+  {
+    "name": "Tân Phú",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7826, 106.7016]
+    }
+  },
+  {
+    "name": "Phú Thạnh",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7827, 106.7017]
+    }
+  },
+  {
+    "name": "Hiệp Bình",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7828, 106.7018]
+    }
+  },
+  {
+    "name": "Thủ Đức",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7829, 106.7019]
+    }
+  },
+  {
+    "name": "Tam Bình",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7830, 106.7020]
+    }
+  },
+  {
+    "name": "Linh Xuân",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7831, 106.7021]
+    }
+  },
+  {
+    "name": "Tăng Nhơn Phú",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7832, 106.7022]
+    }
+  },
+  {
+    "name": "Long Bình",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7833, 106.7023]
+    }
+  },
+  {
+    "name": "Long Phước",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7834, 106.7024]
+    }
+  },
+  {
+    "name": "Long Trường",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7835, 106.7025]
+    }
+  },
+  {
+    "name": "Cát Lái",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7836, 106.7026]
+    }
+  },
+  {
+    "name": "Bình Trưng",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7837, 106.7027]
+    }
+  },
+  {
+    "name": "Phước Long",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7838, 106.7028]
+    }
+  },
+  {
+    "name": "An Khánh",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7839, 106.7029]
+    }
+  },
+  {
+    "name": "Đông Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7840, 106.7030]
+    }
+  },
+  {
+    "name": "Đức Nhuận",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7841, 106.7031]
+    }
+  },
+  {
+    "name": "Dĩ An",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7842, 106.7032]
+    }
+  },
+  {
+    "name": "Tân Đông Hiệp",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7843, 106.7033]
+    }
+  },
+  {
+    "name": "Thuận An",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7844, 106.7034]
+    }
+  },
+  {
+    "name": "Thuận Giao",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7845, 106.7035]
+    }
+  },
+  {
+    "name": "Bình Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7846, 106.7036]
+    }
+  },
+  {
+    "name": "Lái Thiêu",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7847, 106.7037]
+    }
+  },
+  {
+    "name": "An Phú",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7848, 106.7038]
+    }
+  },
+  {
+    "name": "Bình Dương",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7849, 106.7039]
+    }
+  },
+  {
+    "name": "Chánh Hiệp",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7850, 106.7040]
+    }
+  },
+  {
+    "name": "Hòa Lợi",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7851, 106.7041]
+    }
+  },
+  {
+    "name": "Phú An",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7852, 106.7042]
+    }
+  },
+  {
+    "name": "Rạch Dừa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7853, 106.7043]
+    }
+  },
+  {
+    "name": "Phước Thắng",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7854, 106.7044]
+    }
+  },
+  {
+    "name": "Bà Rịa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7855, 106.7045]
+    }
+  },
+  {
+    "name": "Long Hương",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7856, 106.7046]
+    }
+  },
+  {
+    "name": "Tam Long",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7857, 106.7047]
+    }
+  },
+  {
+    "name": "Phú Mỹ",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7858, 106.7048]
+    }
+  },
+  {
+    "name": "Tân Thành",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7859, 106.7049]
+    }
+  },
+  {
+    "name": "Tân Phước",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7860, 106.7050]
+    }
+  },
+  {
+    "name": "Tân Hải",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7861, 106.7051]
+    }
+  },
+  {
+    "name": "Tân Khánh",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7862, 106.7052]
+    }
+  },
+  {
+    "name": "Tây Nam",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7863, 106.7053]
+    }
+  },
+  {
+    "name": "Long Nguyên",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7864, 106.7054]
+    }
+  },
+  {
+    "name": "Bến Cát",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7865, 106.7055]
+    }
+  },
+  {
+    "name": "Chánh Phú Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7866, 106.7056]
+    }
+  },
+  {
+    "name": "Thới Hòa",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7867, 106.7057]
+    }
+  },
+  {
+    "name": "Vĩnh Lộc",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7868, 106.7058]
+    }
+  },
+  {
+    "name": "Tân Vĩnh Lộc",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7869, 106.7059]
+    }
+  },
+  {
+    "name": "Hiệp Thành",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7870, 106.7060]
+    }
+  },
+  {
+    "name": "Linh Chiểu",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7871, 106.7061]
+    }
+  },
+  {
+    "name": "Long Thạnh Mỹ",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7872, 106.7062]
+    }
+  },
+  {
+    "name": "Trường Thọ",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7873, 106.7063]
+    }
+  },
+  {
+    "name": "Thạnh Xuân",
+    "type": "phường",
+    "location": {
+      "coordinates": [10.7874, 106.7064]
+    }
+  },
+  {
+    "name": "Thới Hòa",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7875, 106.7065]
+    }
+  },
+  {
+    "name": "Long Sơn",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7876, 106.7066]
+    }
+  },
+  {
+    "name": "Hòa Hiệp",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7877, 106.7067]
+    }
+  },
+  {
+    "name": "Bình Châu",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7878, 106.7068]
+    }
+  },
+  {
+    "name": "Thạnh An",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7879, 106.7069]
+    }
+  },
+  {
+    "name": "Bình Hưng",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7880, 106.7070]
+    }
+  },
+  {
+    "name": "An Thới Đông",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7881, 106.7071]
+    }
+  },
+  {
+    "name": "Cần Giờ",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7882, 106.7072]
+    }
+  },
+  {
+    "name": "Củ Chi",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7883, 106.7073]
+    }
+  },
+  {
+    "name": "Nhà Bè",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7884, 106.7074]
+    }
+  },
+  {
+    "name": "Bà Điểm",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7885, 106.7075]
+    }
+  },
+  {
+    "name": "Tân Thới Nhì",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7886, 106.7076]
+    }
+  },
+  {
+    "name": "Xuân Thới Đông",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7887, 106.7077]
+    }
+  },
+  {
+    "name": "Xuân Thới Thượng",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7888, 106.7078]
+    }
+  },
+  {
+    "name": "Đông Thạnh",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7889, 106.7079]
+    }
+  },
+  {
+    "name": "Nhơn Đức",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7890, 106.7080]
+    }
+  },
+  {
+    "name": "Hiệp Phước",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7891, 106.7081]
+    }
+  },
+  {
+    "name": "Phú Xuân",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7892, 106.7082]
+    }
+  },
+  {
+    "name": "Long Thới",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7893, 106.7083]
+    }
+  },
+  {
+    "name": "Phước Kiển",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7894, 106.7084]
+    }
+  },
+  {
+    "name": "Phước Lộc",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7895, 106.7085]
+    }
+  },
+  {
+    "name": "An Thạnh",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7896, 106.7086]
+    }
+  },
+  {
+    "name": "An Nhơn Tây",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7897, 106.7087]
+    }
+  },
+  {
+    "name": "An Phú Tây",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7898, 106.7088]
+    }
+  },
+  {
+    "name": "Tân Quý Tây",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7899, 106.7089]
+    }
+  },
+  {
+    "name": "Bình Chánh",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7900, 106.7090]
+    }
+  },
+  {
+    "name": "Tân Kiên",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7901, 106.7091]
+    }
+  },
+  {
+    "name": "Tân Nhựt",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7902, 106.7092]
+    }
+  },
+  {
+    "name": "Vĩnh Lộc",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7903, 106.7093]
+    }
+  },
+  {
+    "name": "Tân Vĩnh Lộc",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7904, 106.7094]
+    }
+  },
+  {
+    "name": "Bình Lợi",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7905, 106.7095]
+    }
+  },
+  {
+    "name": "Ngãi Giao",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7906, 106.7096]
+    }
+  },
+  {
+    "name": "Kim Long",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7907, 106.7097]
+    }
+  },
+  {
+    "name": "Bình Giã",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7908, 106.7098]
+    }
+  },
+  {
+    "name": "Nghĩa Thành",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7909, 106.7099]
+    }
+  },
+  {
+    "name": "Xuân Sơn",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7910, 106.7100]
+    }
+  },
+  {
+    "name": "Châu Đức",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7911, 106.7101]
+    }
+  },
+  {
+    "name": "Châu Pha",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7912, 106.7102]
+    }
+  },
+  {
+    "name": "Hồ Tràm",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7913, 106.7103]
+    }
+  },
+  {
+    "name": "Xuyên Mộc",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7914, 106.7104]
+    }
+  },
+  {
+    "name": "Hòa Hội",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7915, 106.7105]
+    }
+  },
+  {
+    "name": "Bàu Lâm",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7916, 106.7106]
+    }
+  },
+  {
+    "name": "Đất Đỏ",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7917, 106.7107]
+    }
+  },
+  {
+    "name": "Long Hải",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7918, 106.7108]
+    }
+  },
+  {
+    "name": "Long Điền",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7919, 106.7109]
+    }
+  },
+  {
+    "name": "Tân Thạnh",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7920, 106.7110]
+    }
+  },
+  {
+    "name": "Phú Giáo",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7921, 106.7111]
+    }
+  },
+  {
+    "name": "An Ngãi",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7922, 106.7112]
+    }
+  },
+  {
+    "name": "Tam Phước",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7923, 106.7113]
+    }
+  },
+  {
+    "name": "Vĩnh Thanh",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7924, 106.7114]
+    }
+  },
+  {
+    "name": "Phước Hưng",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7925, 106.7115]
+    }
+  },
+  {
+    "name": "Phước Tỉnh",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7926, 106.7116]
+    }
+  },
+  {
+    "name": "Long Phước",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7927, 106.7117]
+    }
+  },
+  {
+    "name": "Lộc An",
+    "type": "xã",
+    "location": {
+      "coordinates": [10.7928, 106.7118]
+    }
+  },
+  {
+    "name": "Côn Đảo",
+    "type": "đặc khu",
+    "location": {
+      "coordinates": [10.7929, 106.7119]
+    }
+  }
 ]
