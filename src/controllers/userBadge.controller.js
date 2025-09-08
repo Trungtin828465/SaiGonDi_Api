@@ -1,5 +1,7 @@
 import { userBadgeService } from '~/services/userBadge.service.js'
 import PointHistory from '~/models/PointHistory.model.js'
+import UserBadge from '~/models/UserBadge.model.js'
+
 const getBadges = async (req, res, next) => {
   try {
     const userId = req.user.id
@@ -23,7 +25,6 @@ const getBadges = async (req, res, next) => {
     next(error)
   }
 }
-
 const getPointHistory = async (req, res) => {
   try {
     const userId = req.user.id // nếu bạn dùng middleware auth (JWT) thì lấy từ token
@@ -33,13 +34,35 @@ const getPointHistory = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit, 10))
-      .populate('badgeId', 'name description') // lấy thêm thông tin huy hiệu
+      .populate('badgeId', 'name description pointsRequired') // lấy thêm thông tin huy hiệu
 
     const total = await PointHistory.countDocuments({ userId })
 
+    const enrichedHistories = await Promise.all(
+      histories.map(async (h) => {
+        const userBadge = await UserBadge.findOne({
+          userId,
+          badgeId: h.badgeId._id
+        })
+
+        return {
+          _id: h._id,
+          userId: h.userId,
+          badgeId: h.badgeId._id,
+          badgeName: h.badgeId.name,
+          action: h.action,
+          points: h.points,
+          createdAt: h.createdAt,
+          currentPoints: userBadge?.currentPoints || 0,
+          requiredPoints: userBadge?.requiredPoints || h.badgeId.pointsRequired || 0,
+          status: userBadge?.status || 'in_progress'
+        }
+      })
+    )
+
     res.json({
       success: true,
-      data: histories,
+      data: enrichedHistories,
       pagination: {
         total,
         page: parseInt(page, 10),
@@ -51,6 +74,7 @@ const getPointHistory = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' })
   }
 }
+
 
 export const userBadgeController = {
   getBadges,
