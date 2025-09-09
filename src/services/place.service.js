@@ -161,10 +161,10 @@ const getPlaceDetails = async (placeId) => {
       })
       .populate({
         path: 'ward',
-        select: 'name location.coordinates' // Include ward name and coordinates
+        select: 'name location.coordinates'
       })
       .select(
-        'categories status name slug description address district ward avgRating totalRatings totalLikes likeBy images'
+        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images'
       );
 
     const returnPlace = place[0] || null;
