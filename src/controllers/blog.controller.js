@@ -36,7 +36,15 @@ const getBlogById = async (req, res, next) => {
     next(error)
   }
 }
-
+// lấy chi tiết một bài viết bằng slug
+const getBlogBySlug = async (req, res, next) => {
+  try {
+    const blog = await blogService.getBlogBySlug(req.params.slug, req.user)
+    res.status(StatusCodes.OK).json(blog)
+  } catch (error) {
+    next(error)
+  }
+}
 
 const getBlogsByAuthor = async (req, res, next) => {
   try {
@@ -199,6 +207,7 @@ const shareBlog = async (req, res, next) => {
 export const blogController = {
   getBlogs,
   getBlogById,
+  getBlogBySlug, 
   createBlog,
   updateBlogPrivacy,
   updateBlogStatus,
