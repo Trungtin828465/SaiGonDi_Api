@@ -49,6 +49,10 @@ const getApprovedPlaces = async (queryParams) => {
         path: 'categories',
         select: 'name icon'
       })
+      .populate({
+        path: 'ward',
+        select: 'name'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
@@ -89,11 +93,14 @@ const getPlacesMapdata = async (queryParams) => {
         path: 'categories',
         select: 'name icon'
       })
+      .populate({
+        path: 'ward',
+        select: 'name'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
       .select('name slug category address location avgRating images')
-
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
     const returnPlaces = {
@@ -127,6 +134,10 @@ const getAllPlaces = async (queryParams) => {
       .populate({
         path: 'categories',
         select: 'name icon'
+      })
+      .populate({
+        path: 'ward',
+        select: 'name'
       })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
@@ -376,18 +387,20 @@ const getUserCheckins = async (userId) => {
     const checkins = await CheckinModel.find({ userId })
       .populate({
         path: 'placeId',
-        select: 'name address ward district avgRating totalRatings'
-      })
-    return checkins
+        select: 'name address ward district avgRating totalRatings images',
+        populate: {
+          path: 'ward',
+          select: 'name'
+        }
+      });
+    return checkins;
   } catch (error) {
-    throw error
+    throw error;
   }
-}
-
+};
 const getNearbyPlaces = async (locationData) => {
   try {
     const { latitude, longitude, radius = 5000 } = locationData // Default radius 5km
-
     const places = await PlaceModel.find({
       status: 'approved',
       location: {
@@ -396,7 +409,7 @@ const getNearbyPlaces = async (locationData) => {
             type: 'Point',
             coordinates: [parseFloat(longitude), parseFloat(latitude)]
           },
-          $maxDistance: parseInt(radius) // Distance in meters
+          $maxDistance: parseInt(radius)
         }
       }
     })
@@ -404,8 +417,12 @@ const getNearbyPlaces = async (locationData) => {
         path: 'categories',
         select: 'name icon'
       })
+      .populate({
+        path: 'ward',
+        select: 'name'
+      })
       .select('name slug address avgRating totalRatings categories location images')
-      .limit(50) // Limit results for performance
+      .limit(50);
     return places
   } catch (error) {
     if (error.code === 27) {

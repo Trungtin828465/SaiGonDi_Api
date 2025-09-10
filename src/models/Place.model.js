@@ -34,20 +34,17 @@ const placeSchema = new mongoose.Schema({
     minlength: 5,
     maxlength: 200
   },
+  ward: { //đổi lại để ward 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'wards',
+    required: true
+  },
   district: {
     type: String,
     required: true,
-    trim: true,
-    minlength: 2,
-    maxlength: 50
+    trim: true
   },
-  ward: {
-    type: String,
-    required: true,
-    trim: true,
-    minlength: 2,
-    maxlength: 50
-  },
+
   location: {
     type: {
       type: String, // Don't do `{ location: { type: String } }`
