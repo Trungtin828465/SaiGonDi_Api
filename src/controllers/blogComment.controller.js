@@ -6,6 +6,11 @@ const createComment = async (req, res, next) => {
   try {
     const { blogId } = req.params
     const userId = req.user.id
+
+    if (req.cloudFiles?.images?.length) {
+      req.body.images = req.cloudFiles.images
+    }
+    
     const newComment = await blogCommentService.createComment(blogId, req.body, userId)
 
     res.status(StatusCodes.CREATED).json({

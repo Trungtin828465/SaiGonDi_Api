@@ -17,10 +17,14 @@ const createComment = async (blogId, commentData, userId) => {
     userId: userId
   })
 
+  const populatedComment = await BlogCommentModel.findById(newComment._id)
+    .populate('userId', 'firstName lastName avatar')
+    .exec()
+
   // Trigger badge action
   badgeActionService.handleUserAction(userId, 'comment', { blogId, commentId: newComment._id })
 
-  return newComment
+  return populatedComment
 }
 
 const getCommentsByBlog = async (blogId, queryParams) => {

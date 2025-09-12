@@ -4,6 +4,8 @@ import { blogCommentValidation } from '../validations/blogComment.validation.js'
 import { verifyToken } from '../middlewares/auth.middleware.js'
 
 import { commentRateLimiter } from '~/middlewares/limiter.middleware.js'
+import { uploadFiles } from '../middlewares/multer.middleware.js';
+import { uploadCommentImages } from '../middlewares/cloudinary.middleware.js';
 
 const router = express.Router()
 
@@ -12,6 +14,8 @@ router.post(
   '/:blogId',
   commentRateLimiter,
   verifyToken,
+  uploadFiles.array('images', 1),  
+  uploadCommentImages,
   blogCommentValidation.validateBlogId,
   blogCommentController.createComment
 )
