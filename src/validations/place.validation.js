@@ -160,50 +160,23 @@ const updatePlaceCoordinates = async (req, res, next) => {
 
 const checkinPlace = async (req, res, next) => {
   const checkinRule = Joi.object({
-    location: Joi.object({
-      type: Joi.string().valid('Point').required(),
-      coordinates: Joi.array().items(
-        Joi.number()
-          .min(-180)
-          .max(180)
-          .precision(8)
-          .required()
-          .messages({
-            'number.base': 'longitude must be an array of numbers',
-            'number.min': 'longitude must be between -180 and 180',
-            'number.max': 'longitude must be between -180 and 180'
-          }),
-        Joi.number()
-          .min(-90)
-          .max(90)
-          .precision(8)
-          .required()
-          .messages({
-            'number.base': 'latitude must be an array of numbers',
-            'number.min': 'latitude must be between -90 and 90',
-            'number.max': 'latitude must be between -90 and 90'
-          })
-      )
-        .length(2).required().messages({
-          'array.base': 'coordinates must be an array',
-          'array.length': 'coordinates must contain exactly 2 numbers',
-          'array.items': 'coordinates must be an array of longitude between -180 and 180 and latitude between -90 and 90'
-        })
-    }).required().messages({
-      'object.base': 'location must be an object',
-      'any.required': 'location is required'
-    })
-  })
+    note: Joi.string().max(500).optional(),
+    device: Joi.string().optional(),
+    imgList: Joi.array().items(Joi.string()).optional()
+  });
+
   try {
-    const data = req?.body ? req.body : {}
-    const placeIdData = req?.params || {}
-    await checkinRule.validateAsync(data, { abortEarly: false })
-    await idRule.validateAsync(placeIdData, { abortEarly: false })
-    next()
+    const data = req?.body || {};
+    const placeIdData = req?.params || {};
+
+    await checkinRule.validateAsync(data, { abortEarly: false });
+    await idRule.validateAsync(placeIdData, { abortEarly: false });
+
+    next();
   } catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message));
   }
-}
+};
 
 const nearbyPlaces = async (req, res, next) => {
   const nearbyRule = Joi.object({
