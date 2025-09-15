@@ -5,9 +5,9 @@ dotenv.config(); // Load .env
 
 // Config Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET
 });
 
 
@@ -76,6 +76,27 @@ export const uploadPlaceImages = async (req, res, next) => {
     // Thêm các URL mới vào req.body.images, giữ lại các URL cũ nếu có
     req.body.images = [...(req.body.images || []), ...imageUrls];
 
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Upload cho Comment (chỉ ảnh)
+export const uploadCommentImages = async (req, res, next) => {
+  try {
+    const files = req.files || [];
+    const urls = [];
+
+    for (const file of files) {
+      const url = await uploadToCloudinary(file.buffer, 'comments', 'image');
+      urls.push(url);
+    }
+
+    req.body = {
+      ...req.body,
+      images: [...(req.body.images || []), ...urls]
+    };
     next();
   } catch (error) {
     next(error);
