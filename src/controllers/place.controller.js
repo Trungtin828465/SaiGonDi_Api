@@ -141,7 +141,12 @@ const checkinPlace = async (req, res, next) => {
     const placeId = req.params.id
     const userId = req.user.id
     const data = req.body
-    const checkinData = await placeService.checkinPlace(placeId, userId, data)
+    const { note, device, imgList } = req.body;
+    const checkinData = await placeService.checkinPlace(placeId, userId, {
+      note,
+      device,
+      imgList
+    });
     res.status(StatusCodes.OK).json({
       'success': true,
       message: 'Đã check-in thành công',
