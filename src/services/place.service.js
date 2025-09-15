@@ -49,6 +49,10 @@ const getApprovedPlaces = async (queryParams) => {
         path: 'categories',
         select: 'name icon'
       })
+      .populate({
+        path: 'ward',
+        select: 'name'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
@@ -387,9 +391,45 @@ const getUserCheckins = async (userId) => {
         populate: {
           path: 'ward',
           select: 'name'
+<<<<<<< HEAD
         }
       });
     return checkins;
+=======
+        }
+      });
+    return checkins;
+  } catch (error) {
+    throw error;
+  }
+};
+const getNearbyPlaces = async (locationData) => {
+  try {
+    const { latitude, longitude, radius = 5000 } = locationData // Default radius 5km
+    const places = await PlaceModel.find({
+      status: 'approved',
+      location: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)]
+          },
+          $maxDistance: parseInt(radius)
+        }
+      }
+    })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
+      .populate({
+        path: 'ward',
+        select: 'name'
+      })
+      .select('name slug address avgRating totalRatings categories location images')
+      .limit(50);
+    return places
+>>>>>>> 120bf3669a00ee0434a49512af07f479ab210283
   } catch (error) {
     throw error;
   }

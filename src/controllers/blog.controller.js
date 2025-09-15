@@ -40,7 +40,10 @@ const getBlogById = async (req, res, next) => {
 const getBlogBySlug = async (req, res, next) => {
   try {
     const blog = await blogService.getBlogBySlug(req.params.slug, req.user)
-    res.status(StatusCodes.OK).json(blog)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: blog
+    })
   } catch (error) {
     next(error)
   }
@@ -146,7 +149,6 @@ const likeBlog = async (req, res, next) => {
     next(error)
   }
 }
-
 const updateBlog = async (req, res, next) => {
   try {
     const blogId = req.params.id

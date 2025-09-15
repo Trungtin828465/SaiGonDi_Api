@@ -17,21 +17,25 @@ const createComment = async (blogId, commentData, userId) => {
     userId: userId
   })
 
+  const populatedComment = await BlogCommentModel.findById(newComment._id)
+    .populate('userId', 'firstName lastName avatar')
+    .exec()
+
   // Trigger badge action
   badgeActionService.handleUserAction(userId, 'comment', { blogId, commentId: newComment._id })
 
-  return newComment
+  return populatedComment
 }
 
 const getCommentsByBlog = async (blogId, queryParams) => {
-  const page = parseInt(queryParams.page, 10) || 1
-  const limit = parseInt(queryParams.limit, 10) || 10
+  const page = parseInt(queryParams.page, 5) || 1
+  const limit = parseInt(queryParams.limit, 5) || 5
   const startIndex = (page - 1) * limit
 
   const query = { blogId }
 
   const comments = await BlogCommentModel.find(query)
-    .populate('userId', 'name avatar')
+    .populate('userId', 'firstName lastName avatar')
     .sort({ createdAt: -1 })
     .skip(startIndex)
     .limit(limit)
