@@ -71,6 +71,17 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: []
   },
+  currentLocation: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: [0, 0]
+    }
+  },
   points: {
     type: Number,
     default: 0
@@ -123,6 +134,8 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }
+
+userSchema.index({ currentLocation: '2dsphere' })
 
 const UserModel = mongoose.model('users', userSchema)
 

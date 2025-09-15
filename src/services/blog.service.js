@@ -5,6 +5,63 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError.js'
 import UserModel from '~/models/User.model.js'
 import { badgeActionService } from './badgeAction.service.js'
+import mongoose from 'mongoose'
+
+// Helper function to determine media type
+const getMediaType = (url) => {
+  if (!url) return null
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+  const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm']
+  const ext = url.substring(url.lastIndexOf('.')).toLowerCase()
+
+  if (imageExtensions.includes(ext)) {
+    return 'image'
+  } else if (videoExtensions.includes(ext)) {
+    return 'video'
+  }
+  return null // Unknown type
+}
+
+// Helper function to process album data
+const processAlbumData = (album) => {
+  if (!album || !Array.isArray(album)) {
+    return []
+  }
+  return album.map(item => {
+    // Ensure item is an object
+    if (typeof item !== 'object' || item === null) {
+      // If it's a string, try to infer type and create an object
+      if (typeof item === 'string') {
+        const type = getMediaType(item)
+        if (type) {
+          return { type, url: item, caption: null }
+        }
+      }
+      return null // Invalid item, will be filtered out
+    }
+
+    // If item is already an object
+    let url = item.url || null;
+    let type = item.type || null;
+    let caption = item.caption || null;
+
+    // If URL is present but type is missing, try to infer type
+    if (url && !type) {
+      type = getMediaType(url);
+    }
+
+    // Ensure type is valid or set to null if unknown
+    if (type && !['image', 'video'].includes(type)) {
+      type = null;
+    }
+
+    // Only return if both url and type are present
+    if (url && type) {
+      return { url, type, caption };
+    }
+    return null; // Invalid item, will be filtered out
+  }).filter(Boolean); // Remove null entries
+}
 
 // Lấy danh sách blogs
 const getBlogs = async (query, user) => {
@@ -17,11 +74,12 @@ const getBlogs = async (query, user) => {
   if (authorId) filter.authorId = authorId
   if (privacy) filter.privacy = privacy
 
-  // if (user.role !== 'admin') {
-  //   filter.status = 'approved'
-  // } else {
+  if (user && user.role === 'admin') { // Only apply status filter if user is admin
     if (status) filter.status = status
-  // }
+  } else { // For non-admin users, force public and approved
+    filter.privacy = 'public'
+    filter.status = 'approved'
+  }
 
   const skip = (page - 1) * limit
   const numericLimit = Number(limit)
@@ -29,12 +87,12 @@ const getBlogs = async (query, user) => {
   const totalBlogs = await Blog.countDocuments(filter)
   const blogs = await Blog.find(filter)
     .populate('authorId', 'firstName lastName avatar')
-    .populate('ward', 'name') 
+    .populate('ward', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
     .lean()
-  
+
   return {
     blogs,
     pagination: {
@@ -107,12 +165,14 @@ const createBlog = async (blogData, authorId) => {
     slug = `${baseSlug}-${count++}`
   }
 
+  const processedAlbum = processAlbumData(album)
+
   const newBlog = await Blog.create({
     title,
     slug,
-    mainImage: blogData.mainImage || (album?.find(m => m.type === 'image')?.url ?? null),
+    mainImage: blogData.mainImage || (processedAlbum?.find(m => m.type === 'image')?.url ?? null),
     content,
-    album,
+    album: processedAlbum,
     categories,
     tags,
     privacy,
@@ -190,22 +250,66 @@ const likeBlog = async (blogId, userId) => {
 
 // Share blog
 const shareBlogById = async (blogId, userId) => {
-  const blog = await Blog.findById(blogId)
-  if (!blog) throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết.')
+  const originalBlog = await Blog.findById(blogId)
+  if (!originalBlog) throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết gốc.')
 
-  if (blog.privacy !== 'public' || blog.status !== 'approved') {
+  if (originalBlog.privacy !== 'public' || originalBlog.status !== 'approved') {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bài viết này không thể chia sẻ.')
   }
 
-  blog.shareCount += 1
-  await blog.save()
+  // Increment shareCount on the original blog
+  originalBlog.shareCount += 1
+  await originalBlog.save()
 
-  await UserModel.findByIdAndUpdate(userId, {
-    $push: { sharedBlogs: { blog: blogId, sharedAt: new Date() } }
+  // Transform album to match schema
+  const transformedAlbum = originalBlog.album.map(item => {
+    if (typeof item === 'string') {
+      const type = getMediaType(item)
+      if (type) {
+        return { type, url: item, caption: null }
+      }
+      return null // Invalid item, will be filtered out
+    }
+    // If it's already an object, ensure it has type and url
+    if (item && item.type && item.url) {
+      return item
+    }
+    return null // Invalid item, will be filtered out
+  }).filter(Boolean) // Remove null entries
+
+  // Create a new blog post for the share/repost
+  let baseSlug = slugify(originalBlog.title, { lower: true, strict: true, trim: true })
+  let newSlug = `${baseSlug}-${Date.now()}` // Ensure unique slug for the new post
+
+  const newSharedBlog = await Blog.create({
+    title: `Chia sẻ: ${originalBlog.title}`, // Add a prefix to indicate it's a share
+    slug: newSlug,
+    mainImage: originalBlog.mainImage,
+    content: originalBlog.content,
+    album: transformedAlbum,
+    categories: originalBlog.categories,
+    tags: originalBlog.tags,
+    privacy: 'public', // Default to public for shared posts
+    totalLikes: 0, // New post starts with 0 likes
+    shareCount: 0, // New post starts with 0 shares
+    viewCount: 0, // New post starts with 0 views
+    authorId: userId, // The user who is sharing is the author of the new post
+    locationDetail: originalBlog.locationDetail,
+    ward: originalBlog.ward,
+    province: originalBlog.province,
+    originalPostId: originalBlog._id, // Link to the original post
+    status: 'pending', // New shared post might need approval
+    destroy: false,
+    deletedAt: null
   })
 
-  badgeActionService.handleUserAction(userId, 'share', { blogId })
-  return blog
+  // Update the user's sharedBlogs array (this part remains the same)
+  await UserModel.findByIdAndUpdate(userId, {
+    $push: { sharedBlogs: { blog: originalBlog._id, sharedAt: new Date() } }
+  })
+
+  badgeActionService.handleUserAction(userId, 'share', { blogId: newSharedBlog._id }) // Use the new blog's ID for badge action
+  return newSharedBlog // Return the newly created shared blog
 }
 
 // Cập nhật trạng thái
@@ -229,18 +333,14 @@ const updateBlog = async (blogId, updateData, user) => {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền sửa bài viết này')
   }
 
-  if (updateData.id_place) {
-    const place = await Place.findById(updateData.id_place)
-    if (!place) throw new ApiError(StatusCodes.NOT_FOUND, 'Địa điểm không tồn tại')
-    if (place.status !== 'approved') {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Địa điểm chưa được duyệt')
-    }
-  }
-
-  const allowedFields = ['title', 'content', 'album', 'mainImage', 'categories', 'tags', 'privacy', 'id_place', 'ward', 'district', 'province']
+  const allowedFields = ['title', 'content', 'album', 'mainImage', 'categories', 'tags', 'privacy', 'ward', 'district', 'province']
   Object.keys(updateData).forEach(key => {
     if (allowedFields.includes(key)) {
-      blog[key] = updateData[key]
+      if (key === 'album') {
+        blog[key] = processAlbumData(updateData[key])
+      } else {
+        blog[key] = updateData[key]
+      }
     }
   })
 
@@ -274,10 +374,125 @@ const getBlogsByAuthor = async (authorId, user) => {
   return blogs
 }
 
+const getBlogsByPlaceIdentifier = async (identifier, query, user) => {
+  const { page = 1, limit = 10, status } = query
+
+  let place = null
+
+  // Try to find place by ID
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    place = await Place.findById(identifier).populate('ward', 'name').lean()
+  }
+
+  // If not found by ID, try to find by slug
+  if (!place) {
+    place = await Place.findOne({ slug: identifier }).populate('ward', 'name').lean()
+  }
+
+  // If not found by slug, try to find by name (case-insensitive regex)
+  if (!place) {
+    place = await Place.findOne({ name: { $regex: identifier, $options: 'i' } }).populate('ward', 'name').lean()
+  }
+
+  const filter = { destroy: false }
+
+  // If a place is found, search for blogs related to that place by name or ward.
+  if (place) {
+    const orConditions = []
+    if (place.name) {
+      // Tách các từ trong tên địa điểm
+      const keywords = place.name.split(/\s+/).filter(Boolean)
+
+      keywords.forEach((word) => {
+        orConditions.push({ title: { $regex: word, $options: 'i' } })
+        orConditions.push({ slug: { $regex: slugify(word, { lower: true, strict: true, trim: true }), $options: 'i' } })
+      })
+    }
+
+    if (place.ward?._id) {
+      orConditions.push({ ward: place.ward._id })
+    }
+    if (orConditions.length > 0) {
+      filter.$or = orConditions
+    }
+  } else {
+    // If no place is found, assume the identifier is a search term for blog titles or slugs.
+    const searchTerm = slugify(identifier, { lower: true, strict: true, trim: true })
+    filter.$or = [
+      { title: { $regex: identifier, $options: 'i' } },
+      { slug: { $regex: searchTerm, $options: 'i' } }
+    ]
+  }
+
+  if (user && user.role === 'admin') { // Only apply status filter if user is admin
+    if (status) filter.status = status
+  } else { // For non-admin users, force public and approved
+    filter.privacy = 'public'
+    filter.status = 'approved'
+  }
+
+  const skip = (page - 1) * limit
+  const numericLimit = Number(limit)
+
+  const totalBlogs = await Blog.countDocuments(filter)
+  const blogs = await Blog.find(filter)
+    .select('title slug mainImage authorId ward createdAt totalLikes viewCount shareCount privacy status tags categories')
+    .populate('authorId', 'firstName lastName avatar')
+    .populate('ward', 'name')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(numericLimit)
+    .lean()
+
+  return {
+    blogs,
+    pagination: {
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalBlogs / numericLimit),
+      totalBlogs
+    }
+  }
+}
+
+const getBlogsByWard = async (wardId, query, user) => {
+  const { page = 1, limit = 10, status } = query
+
+  const filter = { destroy: false, ward: wardId }
+
+  if (user && user.role === 'admin') { // Only apply status filter if user is admin
+    if (status) filter.status = status
+  } else { // For non-admin users, force public and approved
+    filter.privacy = 'public'
+    filter.status = 'approved'
+  }
+
+  const skip = (page - 1) * limit
+  const numericLimit = Number(limit)
+
+  const totalBlogs = await Blog.countDocuments(filter)
+  const blogs = await Blog.find(filter)
+    .populate('authorId', 'firstName lastName avatar')
+    .populate('ward', 'name')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(numericLimit)
+    .lean()
+
+  return {
+    blogs,
+    pagination: {
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalBlogs / numericLimit),
+      totalBlogs
+    }
+  }
+}
+
+
 export const blogService = {
   getBlogs,
   getBlogById,
-  getBlogBySlug,  
+  getBlogBySlug,
   createBlog,
   updateBlogPrivacy,
   getBlogsByAuthor,
@@ -285,5 +500,7 @@ export const blogService = {
   likeBlog,
   updateBlogStatus,
   updateBlog,
-  shareBlogById
+  shareBlogById,
+  getBlogsByPlaceIdentifier,
+  getBlogsByWard
 }

@@ -218,6 +218,20 @@ const resetPassword = async (req, res, next) => {
   }
 }
 
+const updateUserLocation = async (req, res, next) => {
+  const validationRule = Joi.object({
+    longitude: Joi.number().required(),
+    latitude: Joi.number().required()
+  });
+
+  try {
+    await validationRule.validateAsync(req.body, { abortEarly: false });
+    next();
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message));
+  }
+};
+
 export const userValidation = {
   register,
   login,
@@ -226,5 +240,6 @@ export const userValidation = {
   changePassword,
   sendOTP,
   verifyOTP,
-  updateUserProfile
+  updateUserProfile,
+  updateUserLocation
 }

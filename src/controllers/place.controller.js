@@ -195,7 +195,7 @@ const getAdminPlaceDetails = async (req, res, next) => {
 
 const getNearbyPlaces = async (req, res, next) => {
   try {
-    const nearbyPlaces = await placeService.getNearbyPlaces(req.body)
+    const nearbyPlaces = await placeService.getNearbyPlaces(req.query)
     res.status(StatusCodes.OK).json({
       'success': true,
       'data': nearbyPlaces

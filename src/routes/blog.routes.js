@@ -9,7 +9,7 @@ import { uploadBlogFiles } from '../middlewares/cloudinary.middleware.js';
 
 const Router = express.Router()
 
-Router.get('/', verifyToken, blogController.getBlogs)
+Router.get('/', blogController.getBlogs)
 Router.post('/', blogRateLimiter, verifyToken, uploadFiles.array('files'), uploadBlogFiles, blogValidation.createBlog, blogController.createBlog)
 
 Router.get('/slug/:slug', blogController.getBlogBySlug)
@@ -18,6 +18,8 @@ Router.patch('/:id/privacy', verifyToken, blogValidation.updateBlogPrivacy, blog
 Router.delete('/:id', verifyToken, blogController.deleteBlog)
 Router.put('/:id', verifyToken,uploadFiles.array('files'), uploadBlogFiles, blogValidation.updateBlog, blogController.updateBlog)
 Router.patch('/:id/like', verifyToken, blogController.likeBlog)
-Router.post('/:id/share', shareRateLimiter, verifyToken, blogController.shareBlog)
+Router.patch('/:id/share', shareRateLimiter, verifyToken, blogController.shareBlog)
+Router.get('/place/:identifier', blogController.getBlogsByPlaceIdentifier)
+Router.get('/ward/:wardId', blogController.getBlogsByWard)
 
 export const blogRoute = Router

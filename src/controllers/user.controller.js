@@ -166,6 +166,20 @@ const resetPassword = async (req, res, next) => {
   }
 }
 
+const updateUserLocation = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { longitude, latitude } = req.body;
+    const result = await userService.updateUserLocation(userId, longitude, latitude);
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: result.message
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const userController = {
   register,
   login,
@@ -179,5 +193,6 @@ export const userController = {
   verifyOTP,
   getProfile,
   banUser,
-  destroyUser
+  destroyUser,
+  updateUserLocation
 }

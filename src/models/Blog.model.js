@@ -48,23 +48,27 @@ const blogSchema = new mongoose.Schema(
     ],
 
     // Album (ảnh và video)
-    album: [
-      {
-        type: {
-          type: String,
-          enum: ['image', 'video'],
-          required: true
-        },
-        url: {
-          type: String, // link sau khi upload (Cloudinary/S3/local storage)
-          required: true
-        },
-        caption: {
-          type: String, // mô tả do user nhập
-          default: null
+    album: {
+      type: [
+        {
+          type: {
+            type: String,
+            enum: ['image', 'video'],
+            required: false
+          },
+          url: {
+            type: String,
+            required: false
+          },
+          caption: {
+            type: String,
+            default: null
+          }
         }
-      }
-    ],
+      ],
+      default: []
+    },
+
 
     // Categories: phân loại (du lịch, ẩm thực, review…)
     categories: {

@@ -46,38 +46,12 @@ const createNew = async (req, res, next) => {
       'string.min': 'ward must be at least 2 characters long'
     }),
     location: Joi.object({
-      type: Joi.string().valid('Point').required(),
-      coordinates: Joi.array().items(
-        Joi.number()
-          .min(-180)
-          .max(180)
-          .precision(8)
-          .required()
-          .messages({
-            'number.base': 'longitude must be an array of numbers',
-            'number.min': 'longitude must be between -180 and 180',
-            'number.max': 'longitude must be between -180 and 180'
-          }),
-        Joi.number()
-          .min(-90)
-          .max(90)
-          .precision(8)
-          .required()
-          .messages({
-            'number.base': 'latitude must be an array of numbers',
-            'number.min': 'latitude must be between -90 and 90',
-            'number.max': 'latitude must be between -90 and 90'
-          })
-      )
-        .length(2).required().messages({
-          'array.base': 'coordinates must be an array',
-          'array.length': 'coordinates must contain exactly 2 numbers',
-          'array.items': 'coordinates must be an array of longitude between -180 and 180 and latitude between -90 and 90'
-        })
-    }).required().messages({
-      'object.base': 'location must be an object',
-      'any.required': 'location is required'
-    }),
+      type: Joi.string().valid('Point').default('Point'),
+      coordinates: Joi.array().ordered(
+        Joi.number().min(-180).max(180).required(),
+        Joi.number().min(-90).max(90).required()
+      ).length(2).required()
+    }).required(),
     images: Joi.array().items(
       Joi.string().uri().messages({
         'string.base': 'each image must be a string',
@@ -119,33 +93,8 @@ const pagingValidate = async (req, res, next) => {
 
 const updatePlaceCoordinates = async (req, res, next) => {
   const validationRule = Joi.object({
-    coordinates: Joi.array().items(
-      Joi.number()
-        .min(-180)
-        .max(180)
-        .precision(8)
-        .required()
-        .messages({
-          'number.base': 'longitude must be an array of numbers',
-          'number.min': 'longitude must be between -180 and 180',
-          'number.max': 'longitude must be between -180 and 180'
-        }),
-      Joi.number()
-        .min(-90)
-        .max(90)
-        .precision(8)
-        .required()
-        .messages({
-          'number.base': 'latitude must be an array of numbers',
-          'number.min': 'latitude must be between -90 and 90',
-          'number.max': 'latitude must be between -90 and 90'
-        })
-    )
-      .length(2).required().messages({
-        'array.base': 'coordinates must be an array',
-        'array.length': 'coordinates must contain exactly 2 numbers',
-        'array.items': 'coordinates must be an array of longitude between -180 and 180 and latitude between -90 and 90'
-      })
+    latitude: Joi.number().min(-90).max(90).required(),
+    longitude: Joi.number().min(-180).max(180).required()
   })
   try {
     const placeIdData = req?.params || {}
@@ -161,38 +110,12 @@ const updatePlaceCoordinates = async (req, res, next) => {
 const checkinPlace = async (req, res, next) => {
   const checkinRule = Joi.object({
     location: Joi.object({
-      type: Joi.string().valid('Point').required(),
-      coordinates: Joi.array().items(
-        Joi.number()
-          .min(-180)
-          .max(180)
-          .precision(8)
-          .required()
-          .messages({
-            'number.base': 'longitude must be an array of numbers',
-            'number.min': 'longitude must be between -180 and 180',
-            'number.max': 'longitude must be between -180 and 180'
-          }),
-        Joi.number()
-          .min(-90)
-          .max(90)
-          .precision(8)
-          .required()
-          .messages({
-            'number.base': 'latitude must be an array of numbers',
-            'number.min': 'latitude must be between -90 and 90',
-            'number.max': 'latitude must be between -90 and 90'
-          })
-      )
-        .length(2).required().messages({
-          'array.base': 'coordinates must be an array',
-          'array.length': 'coordinates must contain exactly 2 numbers',
-          'array.items': 'coordinates must be an array of longitude between -180 and 180 and latitude between -90 and 90'
-        })
-    }).required().messages({
-      'object.base': 'location must be an object',
-      'any.required': 'location is required'
-    })
+      type: Joi.string().valid('Point').default('Point'),
+      coordinates: Joi.array().ordered(
+        Joi.number().min(-180).max(180).required(),
+        Joi.number().min(-90).max(90).required()
+      ).length(2).required()
+    }).required()
   })
   try {
     const data = req?.body ? req.body : {}
@@ -205,39 +128,7 @@ const checkinPlace = async (req, res, next) => {
   }
 }
 
-const nearbyPlaces = async (req, res, next) => {
-  const nearbyRule = Joi.object({
-    longitude: Joi.number()
-      .min(-180)
-      .max(180)
-      .precision(8)
-      .required()
-      .messages({
-        'number.base': 'longitude must be a number',
-        'number.min': 'longitude must be between -180 and 180',
-        'number.max': 'longitude must be between -180 and 180'
-      }),
-    latitude: Joi.number()
-      .min(-90)
-      .max(90)
-      .precision(8)
-      .required()
-      .messages({
-        'number.base': 'latitude must be a number',
-        'number.min': 'latitude must be between -90 and 90',
-        'number.max': 'latitude must be between -90 and 90'
-      }),
-    radius: Joi.number().integer().min(1).max(10000).default(5000)
-  })
-  try {
-    const data = req?.body ? req.body : {}
-    const validatedData = await nearbyRule.validateAsync(data, { abortEarly: false })
-    req.body = validatedData
-    next()
-  } catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
-  }
-}
+
 
 const searchValidate = async (req, res, next) => {
   const searchRule = Joi.object({
@@ -281,11 +172,26 @@ const searchValidate = async (req, res, next) => {
   }
 }
 
+const nearbyPlaces = async (req, res, next) => {
+  const nearbyRule = Joi.object({
+    latitude: Joi.number().min(-90).max(90).required(),
+    longitude: Joi.number().min(-180).max(180).required(),
+    distance: Joi.number().min(1).default(1000) // distance in meters
+  })
+  try {
+    const data = req?.query ? req.query : {}
+    await nearbyRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const placeValidation = {
   createNew,
   pagingValidate,
   updatePlaceCoordinates,
   checkinPlace,
-  nearbyPlaces,
-  searchValidate
+  searchValidate,
+  nearbyPlaces
 }
