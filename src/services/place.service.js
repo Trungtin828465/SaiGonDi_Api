@@ -89,11 +89,14 @@ const getPlacesMapdata = async (queryParams) => {
         path: 'categories',
         select: 'name icon'
       })
+      .populate({
+        path: 'ward',
+        select: 'name'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
       .select('name slug category address location avgRating images')
-
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
     const returnPlaces = {
@@ -127,6 +130,10 @@ const getAllPlaces = async (queryParams) => {
       .populate({
         path: 'categories',
         select: 'name icon'
+      })
+      .populate({
+        path: 'ward',
+        select: 'name'
       })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
@@ -324,8 +331,7 @@ const updatePlaceCoordinates = async (placeId, latitude, longitude) => {
     if (!place) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
     }
-    place.location.latitude = latitude
-    place.location.longitude = longitude
+    place.location.coordinates = [longitude, latitude]
     await place.save()
     return place
   } catch (error) {
@@ -377,13 +383,19 @@ const getUserCheckins = async (userId) => {
     const checkins = await CheckinModel.find({ userId })
       .populate({
         path: 'placeId',
-        select: 'name address ward district avgRating totalRatings'
-      })
-    return checkins
+        select: 'name address ward district avgRating totalRatings images',
+        populate: {
+          path: 'ward',
+          select: 'name'
+        }
+      });
+    return checkins;
   } catch (error) {
-    throw error
+    throw error;
   }
-}
+};
+
+
 
 
 
@@ -394,11 +406,9 @@ const searchPlaces = async (filterCriteria) => {
       query.name = { $regex: filterCriteria.name, $options: 'i' } // Case-insensitive search
     }
     if (filterCriteria.category) {
-      const category = await CategoryModel.findOne({ name: filterCriteria.category }).select('_id')
+      const category = await CategoryModel.findOne({ $or: [{ slug: filterCriteria.category }, { _id: filterCriteria.category }] }).select('_id')
       if (category) {
         query.categories = category._id
-      } else {
-        query.categories = null
       }
     }
     if (filterCriteria.address) {

@@ -115,18 +115,25 @@ const checkinPlace = async (req, res, next) => {
         Joi.number().min(-180).max(180).required(),
         Joi.number().min(-90).max(90).required()
       ).length(2).required()
-    }).required()
-  })
+    }).required(),
+    note: Joi.string().max(500).optional(),
+    device: Joi.string().optional(),
+    imgList: Joi.array().items(Joi.string()).optional()
+  });
+
   try {
-    const data = req?.body ? req.body : {}
-    const placeIdData = req?.params || {}
-    await checkinRule.validateAsync(data, { abortEarly: false })
-    await idRule.validateAsync(placeIdData, { abortEarly: false })
-    next()
+    const data = req?.body || {};
+    const placeIdData = req?.params || {};
+
+    await checkinRule.validateAsync(data, { abortEarly: false });
+    await idRule.validateAsync(placeIdData, { abortEarly: false });
+
+    next();
   } catch (error) {
-    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message));
   }
-}
+};
+
 
 
 
