@@ -19,4 +19,7 @@ router.patch('/:id', verifyToken, reviewValidation.updateReview, reviewControlle
 // Xoá một đánh giá (yêu cầu đăng nhập)
 router.delete('/:id', verifyToken, reviewValidation.deleteReview, reviewController.deleteReview)
 
+// Báo cáo một đánh giá (yêu cầu đăng nhập)
+router.post('/:id/report', verifyToken, reviewValidation.reportReview, reviewController.reportReview)
+
 export const reviewRouter = router

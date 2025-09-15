@@ -142,10 +142,36 @@ const likeReview = async (reviewId, userId) => {
   return review
 }
 
+const reportReview = async (reviewId, userId, reportReason) => {
+  try {
+    const review = await ReviewModel.findById(reviewId)
+    if (!review) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy đánh giá.')
+    }
+
+    // Check if the user has already reported this review
+    const alreadyReported = review.reports.some(
+      (report) => report.userId.toString() === userId.toString()
+    )
+
+    if (alreadyReported) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Bạn đã báo cáo đánh giá này rồi.')
+    }
+
+    review.reports.push({ userId, reason: reportReason })
+    await review.save()
+    return { success: true, message: 'Báo cáo đã được gửi thành công.' }
+  } catch (error) {
+    throw error
+  }
+}
+
 export const reviewService = {
   createReview,
   getReviewsByPlaceId,
   deleteReview,
   updateReview,
-  likeReview
+  likeReview,
+  reportReview
 }
+

@@ -1,5 +1,18 @@
 import mongoose from 'mongoose'
 
+const reportSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users',
+    required: true
+  },
+  reason: {
+    type: String,
+    required: true,
+    trim: true
+  }
+}, { timestamps: true })
+
 const blogCommentSchema = new mongoose.Schema(
   {
     blogId: {
@@ -28,6 +41,15 @@ const blogCommentSchema = new mongoose.Schema(
     likeBy: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
       default: []
+    },
+    reports: {
+      type: [reportSchema],
+      default: []
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
     }
   },
   {

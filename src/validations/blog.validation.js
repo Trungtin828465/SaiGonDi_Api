@@ -98,10 +98,30 @@ const updateBlogStatusSchema = Joi.object({
   status: Joi.string().valid('pending', 'approved', 'hidden', 'deleted').required()
 })
 
+const validateId = (req, res, next) => {
+  const { id } = req.params
+  if (!id || Joi.string().regex(/^[0-9a-fA-F]{24}$/).required().validate(id).error) {
+    return next(new ApiError(StatusCodes.BAD_REQUEST, 'ID không hợp lệ!'))
+  }
+  next()
+}
+
+const reportBlogSchema = Joi.object({
+  reason: Joi.string().min(5).max(500).required().messages({
+    'string.base': 'Lý do báo cáo phải là chuỗi.',
+    'string.empty': 'Lý do báo cáo không được để trống.',
+    'string.min': 'Lý do báo cáo phải có ít nhất {{#limit}} ký tự.',
+    'string.max': 'Lý do báo cáo không được vượt quá {{#limit}} ký tự.',
+    'any.required': 'Lý do báo cáo là bắt buộc.'
+  })
+})
+
 // Xuất ra middleware
 export const blogValidation = {
   createBlog: validate(createBlogSchema),
   updateBlog: validate(updateBlogSchema),
   updateBlogPrivacy: validate(updateBlogPrivacySchema),
-  updateBlogStatus: validate(updateBlogStatusSchema)
+  updateBlogStatus: validate(updateBlogStatusSchema),
+  validateBlogId: validateId,
+  validateReport: validate(reportBlogSchema)
 }

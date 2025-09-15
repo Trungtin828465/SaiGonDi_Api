@@ -10,7 +10,7 @@ const createComment = async (req, res, next) => {
     if (req.cloudFiles?.images?.length) {
       req.body.images = req.cloudFiles.images
     }
-    
+
     const newComment = await blogCommentService.createComment(blogId, req.body, userId)
 
     res.status(StatusCodes.CREATED).json({
@@ -73,11 +73,24 @@ const likeComment = async (req, res, next) => {
   }
 }
 
+const reportComment = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id
+    const { reason } = req.body
+    const updatedComment = await blogCommentService.reportComment(id, userId, reason)
+    res.status(StatusCodes.OK).json({ success: true, data: updatedComment })
+  } catch (error) {
+    next(error)
+  }
+}
+
 
 export const blogCommentController = {
   createComment,
   getCommentsByBlog,
   updateComment,
   deleteComment,
-  likeComment
+  likeComment,
+  reportComment
 }

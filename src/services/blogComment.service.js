@@ -105,10 +105,28 @@ const likeComment = async (commentId, userId) => {
   return comment
 }
 
+const reportComment = async (commentId, userId, reason) => {
+  const comment = await BlogCommentModel.findById(commentId)
+  if (!comment) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bình luận.')
+  }
+
+  const alreadyReported = comment.reports.find((report) => report.userId.toString() === userId.toString())
+  if (alreadyReported) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Bạn đã báo cáo bình luận này rồi.')
+  }
+
+  comment.reports.push({ userId, reason })
+  await comment.save()
+
+  return comment
+}
+
 export const blogCommentService = {
   createComment,
   getCommentsByBlog,
   updateComment,
   deleteComment,
-  likeComment
+  likeComment,
+  reportComment
 }

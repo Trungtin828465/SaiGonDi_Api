@@ -87,9 +87,30 @@ const updateReview = async (req, res, next) => {
   }
 }
 
+const reportReview = async (req, res, next) => {
+  const reportReviewRule = Joi.object({
+    reason: Joi.string().required().min(10).trim().messages({
+      'string.empty': 'Lý do báo cáo không được để trống.',
+      'string.min': 'Lý do báo cáo phải có ít nhất 10 ký tự.',
+      'any.required': 'Lý do báo cáo là trường bắt buộc.',
+    }),
+  })
+
+  try {
+    const reviewIdData = req?.params || {}
+    const data = req?.body || {}
+    await idRule.validateAsync(reviewIdData, { abortEarly: false })
+    await reportReviewRule.validateAsync(data, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const reviewValidation = {
   createReview,
   deleteReview,
   getReviewsByPlaceId,
-  updateReview
+  updateReview,
+  reportReview
 }

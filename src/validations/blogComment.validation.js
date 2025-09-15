@@ -62,9 +62,26 @@ const validateBlogId = async (req, res, next) => {
   }
 }
 
+const validateReport = async (req, res, next) => {
+  const validationRule = Joi.object({
+    reason: Joi.string().required().trim().messages({
+      'string.empty': 'Lý do không được để trống.',
+      'any.required': 'Lý do là trường bắt buộc.'
+    })
+  })
+
+  try {
+    await validationRule.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 export const blogCommentValidation = {
   createComment,
   updateComment,
   validateCommentId,
-  validateBlogId
+  validateBlogId,
+  validateReport
 }

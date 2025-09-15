@@ -128,6 +128,13 @@ const blogSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'hidden', 'deleted'],
       default: 'pending'
     },
+    reports: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
+        reason: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
     destroy: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null }
   },

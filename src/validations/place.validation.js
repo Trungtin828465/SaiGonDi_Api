@@ -61,7 +61,6 @@ const createNew = async (req, res, next) => {
       'array.base': 'images must be an array of strings',
       'array.min': 'at least 1 image is required'
     }),
-
   })
   try {
     if (req.body.location && typeof req.body.location === 'string') {
@@ -133,10 +132,6 @@ const checkinPlace = async (req, res, next) => {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message));
   }
 };
-
-
-
-
 const searchValidate = async (req, res, next) => {
   const searchRule = Joi.object({
     name: Joi.string().min(3).messages({

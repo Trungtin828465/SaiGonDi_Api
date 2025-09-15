@@ -489,6 +489,23 @@ const getBlogsByWard = async (wardId, query, user) => {
   }
 }
 
+const reportBlog = async (blogId, userId, reason) => {
+  const blog = await Blog.findById(blogId)
+  if (!blog) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết.')
+  }
+
+  const alreadyReported = blog.reports.find((report) => report.userId.toString() === userId.toString())
+  if (alreadyReported) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Bạn đã báo cáo bài viết này rồi.')
+  }
+
+  blog.reports.push({ userId, reason })
+  await blog.save()
+
+  return blog
+}
+
 
 export const blogService = {
   getBlogs,
@@ -503,5 +520,7 @@ export const blogService = {
   updateBlog,
   shareBlogById,
   getBlogsByPlaceIdentifier,
-  getBlogsByWard
+  getBlogsByWard,
+  reportBlog
 }
+

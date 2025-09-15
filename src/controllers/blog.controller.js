@@ -236,6 +236,18 @@ const getBlogsByWard = async (req, res, next) => {
   }
 }
 
+const reportBlog = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id
+    const { reason } = req.body
+    const updatedBlog = await blogService.reportBlog(id, userId, reason)
+    res.status(StatusCodes.OK).json({ success: true, data: updatedBlog })
+  } catch (error) {
+    next(error)
+  }
+}
+
 
 export const blogController = {
   getBlogs,
@@ -250,5 +262,6 @@ export const blogController = {
   getBlogsByAuthor,
   shareBlog,
   getBlogsByPlaceIdentifier,
-  getBlogsByWard
+  getBlogsByWard,
+  reportBlog
 }
