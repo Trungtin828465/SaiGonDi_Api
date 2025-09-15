@@ -41,6 +41,11 @@ const updateComment = async (req, res, next) => {
   try {
     const { id } = req.params
     const userId = req.user.id
+
+    if (req.cloudFiles?.images?.length) {
+      req.body.images = req.cloudFiles.images
+    }
+    
     const updatedComment = await blogCommentService.updateComment(id, userId, req.body)
     res.status(StatusCodes.OK).json({ success: true, data: updatedComment })
   } catch (error) {

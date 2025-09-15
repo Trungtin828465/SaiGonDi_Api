@@ -40,6 +40,8 @@ router.get(
 router.patch(
   '/:id',
   verifyToken,
+  uploadFiles.array('images', 1),
+  uploadCommentImages,
   blogCommentValidation.validateCommentId,
   blogCommentController.updateComment
 )
