@@ -206,6 +206,49 @@ const shareBlog = async (req, res, next) => {
   }
 }
 
+const getBlogsByPlaceIdentifier = async (req, res, next) => {
+  try {
+    const { identifier } = req.params
+    const { blogs, pagination } = await blogService.getBlogsByPlaceIdentifier(identifier, req.query, req.user)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      count: blogs.length,
+      pagination,
+      data: blogs
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getBlogsByWard = async (req, res, next) => {
+  try {
+    const { wardId } = req.params
+    const { blogs, pagination } = await blogService.getBlogsByWard(wardId, req.query, req.user)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      count: blogs.length,
+      pagination,
+      data: blogs
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const reportBlog = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id
+    const { reason } = req.body
+    const updatedBlog = await blogService.reportBlog(id, userId, reason)
+    res.status(StatusCodes.OK).json({ success: true, data: updatedBlog })
+  } catch (error) {
+    next(error)
+  }
+}
+
+
 export const blogController = {
   getBlogs,
   getBlogById,
@@ -217,5 +260,8 @@ export const blogController = {
   likeBlog,
   updateBlog,
   getBlogsByAuthor,
-  shareBlog
+  shareBlog,
+  getBlogsByPlaceIdentifier,
+  getBlogsByWard,
+  reportBlog
 }

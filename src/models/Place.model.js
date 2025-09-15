@@ -47,8 +47,8 @@ const placeSchema = new mongoose.Schema({
 
   location: {
     type: {
-      type: String, // Don't do `{ location: { type: String } }`
-      enum: ['Point'], // 'location.type' must be 'Point'
+      type: String,
+      enum: ['Point'],
       required: true
     },
     coordinates: {
@@ -142,6 +142,8 @@ placeSchema.pre('save', async function (next) {
   }
   next()
 })
+
+placeSchema.index({ location: '2dsphere' })
 
 placeSchema.methods.updateTotalLikes = async function () {
   this.totalLikes = this.likeBy.length

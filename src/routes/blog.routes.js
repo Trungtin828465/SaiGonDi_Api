@@ -18,6 +18,9 @@ Router.patch('/:id/privacy', verifyToken, blogValidation.updateBlogPrivacy, blog
 Router.delete('/:id', verifyToken, blogController.deleteBlog)
 Router.put('/:id', verifyToken,uploadFiles.array('files'), uploadBlogFiles, blogValidation.updateBlog, blogController.updateBlog)
 Router.patch('/:id/like', verifyToken, blogController.likeBlog)
-Router.post('/:id/share', shareRateLimiter, verifyToken, blogController.shareBlog)
+Router.patch('/:id/share', shareRateLimiter, verifyToken, blogController.shareBlog)
+Router.post('/report/:id', verifyToken, blogValidation.validateBlogId, blogValidation.validateReport, blogController.reportBlog)
+Router.get('/place/:identifier', blogController.getBlogsByPlaceIdentifier)
+Router.get('/ward/:wardId', blogController.getBlogsByWard)
 
 export const blogRoute = Router

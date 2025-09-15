@@ -48,23 +48,27 @@ const blogSchema = new mongoose.Schema(
     ],
 
     // Album (ảnh và video)
-    album: [
-      {
-        type: {
-          type: String,
-          enum: ['image', 'video'],
-          required: true
-        },
-        url: {
-          type: String, // link sau khi upload (Cloudinary/S3/local storage)
-          required: true
-        },
-        caption: {
-          type: String, // mô tả do user nhập
-          default: null
+    album: {
+      type: [
+        {
+          type: {
+            type: String,
+            enum: ['image', 'video'],
+            required: false
+          },
+          url: {
+            type: String,
+            required: false
+          },
+          caption: {
+            type: String,
+            default: null
+          }
         }
-      }
-    ],
+      ],
+      default: []
+    },
+
 
     // Categories: phân loại (du lịch, ẩm thực, review…)
     categories: {
@@ -124,6 +128,13 @@ const blogSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'hidden', 'deleted'],
       default: 'pending'
     },
+    reports: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
+        reason: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
     destroy: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null }
   },

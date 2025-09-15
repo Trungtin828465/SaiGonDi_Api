@@ -171,10 +171,10 @@ const getPlaceDetails = async (placeId) => {
       })
       .populate({
         path: 'ward',
-        select: 'name location.coordinates' // Include ward name and coordinates
+        select: 'name'
       })
       .select(
-        'categories status name slug description address district ward avgRating totalRatings totalLikes likeBy images'
+        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images'
       );
 
     const returnPlace = place[0] || null;
@@ -329,13 +329,13 @@ const approvePlace = async (placeId, adminId) => {
   }
 }
 
-const updatePlaceCoordinates = async (placeId, coordinates) => {
+const updatePlaceCoordinates = async (placeId, latitude, longitude) => {
   try {
     const place = await PlaceModel.findById(placeId)
     if (!place) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
     }
-    place.location.coordinates = coordinates
+    place.location.coordinates = [longitude, latitude]
     await place.save()
     return place
   } catch (error) {
@@ -398,39 +398,7 @@ const getUserCheckins = async (userId) => {
     throw error;
   }
 };
-const getNearbyPlaces = async (locationData) => {
-  try {
-    const { latitude, longitude, radius = 5000 } = locationData // Default radius 5km
-    const places = await PlaceModel.find({
-      status: 'approved',
-      location: {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [parseFloat(longitude), parseFloat(latitude)]
-          },
-          $maxDistance: parseInt(radius)
-        }
-      }
-    })
-      .populate({
-        path: 'categories',
-        select: 'name icon'
-      })
-      .populate({
-        path: 'ward',
-        select: 'name'
-      })
-      .select('name slug address avgRating totalRatings categories location images')
-      .limit(50);
-    return places
-  } catch (error) {
-    if (error.code === 27) {
-      throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Geospatial index not found. Please contact administrator.')
-    }
-    throw error
-  }
-}
+
 
 const searchPlaces = async (filterCriteria) => {
   try {
@@ -439,11 +407,9 @@ const searchPlaces = async (filterCriteria) => {
       query.name = { $regex: filterCriteria.name, $options: 'i' } // Case-insensitive search
     }
     if (filterCriteria.category) {
-      const category = await CategoryModel.findOne({ name: filterCriteria.category }).select('_id')
+      const category = await CategoryModel.findOne({ $or: [{ slug: filterCriteria.category }, { _id: filterCriteria.category }] }).select('_id')
       if (category) {
         query.categories = category._id
-      } else {
-        query.categories = null
       }
     }
     if (filterCriteria.address) {
@@ -473,6 +439,34 @@ const searchPlaces = async (filterCriteria) => {
     throw error
   }
 }
+
+const getNearbyPlaces = async (queryParams) => {
+  try {
+    const { latitude, longitude, distance } = queryParams;
+    const places = await PlaceModel.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)]
+          },
+          $maxDistance: parseInt(distance)
+        }
+      },
+      status: 'approved'
+    })
+      .populate({
+        path: 'categories',
+        select: 'name icon'
+      })
+      .select('name slug address avgRating images location')
+      .limit(20); // Limit results for performance
+
+    return places;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const placeService = {
   createNew,

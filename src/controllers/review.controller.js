@@ -51,9 +51,23 @@ const updateReview = async (req, res, next) => {
   }
 }
 
+const reportReview = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id
+    const { reason } = req.body
+
+    const result = await reviewService.reportReview(id, userId, reason)
+    res.status(StatusCodes.OK).json({ success: true, message: result.message })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const reviewController = {
   createReview,
   getReviewsByPlaceId,
   deleteReview,
-  updateReview
+  updateReview,
+  reportReview
 }

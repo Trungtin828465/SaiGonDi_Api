@@ -293,6 +293,23 @@ const getScoreAndTitle = async (userId) => {
   }
 }
 
+const updateUserLocation = async (userId, longitude, latitude) => {
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+    }
+    user.currentLocation = {
+      type: 'Point',
+      coordinates: [longitude, latitude]
+    };
+    await user.save();
+    return { message: 'User location updated successfully' };
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const userService = {
   register,
   login,
@@ -308,6 +325,7 @@ export const userService = {
   banUser,
   destroyUser,
   getUserReviews,
-  updateUserProfile,
-  getScoreAndTitle
+    updateUserProfile,
+  getScoreAndTitle,
+  updateUserLocation
 }

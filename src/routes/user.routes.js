@@ -17,6 +17,7 @@ Router.post('/login', loginRateLimiter, userValidation.login, userController.log
 Router.post('/logout', verifyToken, userController.logout)
 Router.post('/request-token', userValidation.requestToken, userController.requestToken)
 Router.put('/change-password', verifyToken, userValidation.changePassword, userController.changePassword)
+Router.put('/location', verifyToken, userValidation.updateUserLocation, userController.updateUserLocation)
 Router.post('/send-otp', verifyOtpRateLimiter, userValidation.sendOTP, userController.sendOTP)
 Router.post('/verify-otp', userValidation.verifyOTP, userController.verifyOTP)
 
