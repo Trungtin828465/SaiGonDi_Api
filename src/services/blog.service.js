@@ -523,4 +523,3 @@ export const blogService = {
   getBlogsByWard,
   reportBlog
 }
-
