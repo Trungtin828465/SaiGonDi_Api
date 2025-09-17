@@ -184,7 +184,8 @@ const getUserProfile = async (userId) => {
       email: user.email,
       fullName: `${user.firstName} ${user.lastName}`,
       phoneVerified: user.phoneVerified,
-      emailVerified: user.emailVerified
+      emailVerified: user.emailVerified,
+      favorites: user.favorites
     }
     return profile
   } catch (error) {

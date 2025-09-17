@@ -507,6 +507,19 @@ const reportBlog = async (blogId, userId, reason) => {
 }
 
 
+const getHotBlogs = async (limit = 2) => {
+  try {
+    const hotBlogs = await Blog.find({ status: 'approved', privacy: 'public', destroy: false })
+      .sort({ viewCount: -1 }) // Sort by viewCount in descending order
+      .limit(limit)
+      .select('title slug mainImage authorId createdAt viewCount totalLikes') // Select relevant fields
+      .populate('authorId', 'firstName lastName avatar')
+    return hotBlogs
+  } catch (error) {
+    throw error
+  }
+}
+
 export const blogService = {
   getBlogs,
   getBlogById,
@@ -521,6 +534,7 @@ export const blogService = {
   shareBlogById,
   getBlogsByPlaceIdentifier,
   getBlogsByWard,
-  reportBlog
+  reportBlog,
+  getHotBlogs
 }
 

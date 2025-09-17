@@ -468,6 +468,18 @@ const getNearbyPlaces = async (queryParams) => {
   }
 };
 
+const getHotPlaces = async (limit = 1) => {
+  try {
+    const hotPlaces = await PlaceModel.find({ status: 'approved' })
+      .sort({ totalLikes: -1 }) // Sort by totalLikes in descending order
+      .limit(limit)
+      .select('name slug address avgRating images totalLikes') // Select relevant fields
+    return hotPlaces
+  } catch (error) {
+    throw error
+  }
+}
+
 export const placeService = {
   createNew,
   getAllPlaces,
@@ -487,5 +499,7 @@ export const placeService = {
   approvePlace,
   updatePlaceCoordinates,
   getUserCheckins,
-  getNearbyPlaces
+  getNearbyPlaces,
+  getHotPlaces
 }
+

@@ -40,10 +40,10 @@ const createNew = async (req, res, next) => {
       'string.empty': 'district cannot be empty',
       'string.min': 'district must be at least 2 characters long'
     }),
-    ward: Joi.string().min(2).required().messages({
+    ward: Joi.string().pattern(OBJECT_ID_RULE).required().messages({
       'string.base': 'ward must be a string',
       'string.empty': 'ward cannot be empty',
-      'string.min': 'ward must be at least 2 characters long'
+      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
     }),
     location: Joi.object({
       type: Joi.string().valid('Point').default('Point'),
@@ -65,6 +65,12 @@ const createNew = async (req, res, next) => {
   try {
     if (req.body.location && typeof req.body.location === 'string') {
       req.body.location = JSON.parse(req.body.location)
+    }
+    if (req.body.categories && typeof req.body.categories === 'string') {
+      req.body.categories = JSON.parse(req.body.categories)
+    }
+    if (req.body.ward && typeof req.body.ward === 'string') {
+      req.body.ward = JSON.parse(req.body.ward)[0]
     }
     const data = req?.body ? req.body : {}
     await validationRule.validateAsync(data, { abortEarly: false })
