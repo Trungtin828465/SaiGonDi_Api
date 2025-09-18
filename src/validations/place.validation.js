@@ -110,11 +110,8 @@ const checkinPlace = async (req, res, next) => {
   const checkinRule = Joi.object({
     location: Joi.object({
       type: Joi.string().valid('Point').default('Point'),
-      coordinates: Joi.array().ordered(
-        Joi.number().min(-180).max(180).required(),
-        Joi.number().min(-90).max(90).required()
-      ).length(2).required()
-    }).required(),
+      coordinates: Joi.array().items(Joi.number()).length(2)
+    }).optional(),
     note: Joi.string().max(500).optional(),
     device: Joi.string().optional(),
     imgList: Joi.array().items(Joi.string()).optional()

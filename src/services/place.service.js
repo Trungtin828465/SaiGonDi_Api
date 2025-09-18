@@ -466,7 +466,51 @@ const getNearbyPlaces = async (queryParams) => {
   } catch (error) {
     throw error;
   }
-};
+}
+const getHotPlaces = async () => {
+  try {
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    const hotPlaces = await CheckinModel.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfMonth, $lte: now }
+        }
+      },
+      {
+        $group: {
+          _id: '$placeId',
+          totalCheckins: { $sum: 1 }
+        }
+      },
+      { $sort: { totalCheckins: -1 } },
+      {
+        $lookup: {
+          from: 'places', // tên collection
+          localField: '_id',
+          foreignField: '_id',
+          as: 'place'
+        }
+      },
+      { $unwind: '$place' },
+      {
+        $project: {
+          _id: 0,
+          placeId: '$_id',
+          totalCheckins: 1,
+          name: '$place.name',
+          address: '$place.address',
+          image: { $arrayElemAt: ['$place.images', 0] }
+        }
+      }
+    ])
+
+    return hotPlaces
+  } catch (error) {
+    throw error
+  }
+}
 
 export const placeService = {
   createNew,
@@ -487,5 +531,6 @@ export const placeService = {
   approvePlace,
   updatePlaceCoordinates,
   getUserCheckins,
-  getNearbyPlaces
+  getNearbyPlaces,
+  getHotPlaces
 }

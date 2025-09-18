@@ -49,11 +49,12 @@ const placeSchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ['Point'],
-      required: true
+      default: 'Point',
+      required: false
     },
     coordinates: {
       type: [Number],
-      required: true
+      default: []
     }
   },
   images: {

@@ -10,6 +10,7 @@ import { uploadBlogFiles } from '../middlewares/cloudinary.middleware.js';
 const Router = express.Router()
 
 Router.get('/', blogController.getBlogs)
+Router.get('/popular', blogController.getPopularBlogs)
 Router.post('/', blogRateLimiter, verifyToken, uploadFiles.array('files'), uploadBlogFiles, blogValidation.createBlog, blogController.createBlog)
 
 Router.get('/slug/:slug', blogController.getBlogBySlug)

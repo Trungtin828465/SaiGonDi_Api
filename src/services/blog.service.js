@@ -102,6 +102,38 @@ const getBlogs = async (query, user) => {
     }
   }
 }
+// Lấy danh sách blogs có lượt xem nhiều
+const getPopularBlogs = async (query, user) => {
+  const { page = 1, limit = 10 } = query;
+
+  const filter = { destroy: false };
+
+  if (!user || user.role !== 'admin') {
+    filter.privacy = 'public';
+    filter.status = 'approved';
+  }
+
+  const skip = (page - 1) * limit;
+  const numericLimit = Number(limit);
+
+  const totalBlogs = await Blog.countDocuments(filter);
+  const blogs = await Blog.find(filter)
+    .populate('authorId', 'firstName lastName avatar')
+    .populate('ward', 'name')
+    .sort({ viewCount: -1 }) 
+    .skip(skip)
+    .limit(numericLimit)
+    .lean();
+
+  return {
+    blogs,
+    pagination: {
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalBlogs / numericLimit),
+      totalBlogs
+    }
+  };
+};
 
 // Lấy chi tiết blog
 const getBlogById = async (id, user) => {
@@ -509,6 +541,7 @@ const reportBlog = async (blogId, userId, reason) => {
 
 export const blogService = {
   getBlogs,
+  getPopularBlogs,
   getBlogById,
   getBlogBySlug,
   createBlog,
@@ -521,6 +554,5 @@ export const blogService = {
   shareBlogById,
   getBlogsByPlaceIdentifier,
   getBlogsByWard,
-  reportBlog
+  reportBlog,
 }
-
