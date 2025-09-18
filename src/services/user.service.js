@@ -7,6 +7,7 @@ import ReviewModel from '~/models/Review.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
 import RefreshTokenModel from '~/models/RefreshToken.model'
 import sendMail from '~/utils/sendMail.js'
+import BlogModel from '~/models/Blog.model.js'
 
 const generateAndSaveOTP = async (email) => {
   if (!email) {
@@ -311,6 +312,65 @@ const updateUserLocation = async (userId, longitude, latitude) => {
   }
 };
 
+const getOutstandingBloggers = async () => {
+  try {
+    const outstandingBloggers = await BlogModel.aggregate([
+      {
+        $match: { status: { $ne: 'pending' } }
+      },
+      {
+        $group: {
+          _id: '$authorId',
+          totalBlogs: { $sum: 1 },
+          totalLikes: { $sum: '$totalLikes' },
+          totalShares: { $sum: '$shareCount' }
+        }
+      },
+      {
+        $match: {
+          totalBlogs: { $gt: 0 },
+          totalLikes: { $gte: 0 },
+          totalShares: { $gte: 0 }
+        }
+      },
+      {
+        $sort: {
+          totalBlogs: -1,
+          totalLikes: -1
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'author'
+        }
+      },
+      {
+        $unwind: '$author'
+      },
+      {
+        $project: {
+          _id: 0,
+          author: {
+            _id: '$author._id',
+            firstName: '$author.firstName',
+            lastName: '$author.lastName',
+            avatar: '$author.avatar'
+          },
+          totalBlogs: 1,
+          totalLikes: 1,
+          totalShares: 1
+        }
+      }
+    ])
+    return outstandingBloggers
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   register,
   login,
@@ -326,7 +386,8 @@ export const userService = {
   banUser,
   destroyUser,
   getUserReviews,
-    updateUserProfile,
+  updateUserProfile,
   getScoreAndTitle,
-  updateUserLocation
+  updateUserLocation,
+  getOutstandingBloggers
 }
