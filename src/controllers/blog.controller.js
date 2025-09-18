@@ -19,6 +19,24 @@ const getBlogs = async (req, res, next) => {
     next(error)
   }
 }
+/**
+ * @desc    Lấy danh sách bài viết được xem nhiều nhất (có phân trang)
+ * @route   GET /api/blogs/popular
+ * @access  Public
+ */
+const getPopularBlogs = async (req, res, next) => {
+  try {
+    const { blogs, pagination } = await blogService.getPopularBlogs(req.query, req.user)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      count: blogs.length,
+      pagination,
+      data: blogs
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 
 /**
  * @desc    Lấy chi tiết một bài viết
@@ -251,6 +269,7 @@ const reportBlog = async (req, res, next) => {
 
 export const blogController = {
   getBlogs,
+  getPopularBlogs,
   getBlogById,
   getBlogBySlug, 
   createBlog,
@@ -263,5 +282,5 @@ export const blogController = {
   shareBlog,
   getBlogsByPlaceIdentifier,
   getBlogsByWard,
-  reportBlog
+  reportBlog,
 }

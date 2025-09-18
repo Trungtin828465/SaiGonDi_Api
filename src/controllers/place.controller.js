@@ -221,6 +221,18 @@ const searchPlaces = async (req, res, next) => {
     next(error)
   }
 }
+const getHotPlaces = async (req, res, next) => {
+  try {
+    const hotPlaces = await placeService.getHotPlaces();
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: hotPlaces
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const placeController = {
   createNew,
@@ -238,5 +250,6 @@ export const placeController = {
   updatePlaceCoordinates,
   getAdminPlaceDetails,
   getPlacesMapdata,
-  getNearbyPlaces
+  getNearbyPlaces,
+  getHotPlaces
 }
