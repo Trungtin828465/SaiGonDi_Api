@@ -485,7 +485,6 @@ const getHotPlaces = async () => {
         }
       },
       { $sort: { totalCheckins: -1 } },
-      { $limit: 4 },
       {
         $lookup: {
           from: 'places', // tên collection
