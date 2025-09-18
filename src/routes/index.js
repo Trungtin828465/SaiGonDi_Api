@@ -7,6 +7,8 @@ import { reviewRouter } from './review.route.js'
 import { blogCommentRoute } from './blogComment.route.js'
 import { profileRoute } from './profile.routes.js'
 import { wardRoute } from './ward.routes.js'
+import { questionRoute } from './question.routes.js'
+import { hotRoute } from './hot.routes.js'
 
 import { placeRateLimiter } from '../middlewares/limiter.middleware.js'
 
@@ -30,6 +32,8 @@ Router.use('/places', placeRoute)
 
 Router.use('/admin', adminRoute)
 Router.use('/reviews', reviewRouter)
+Router.use('/questions', questionRoute)
+Router.use('/hot', hotRoute)
 
 
 export const APIs = Router

@@ -180,6 +180,18 @@ const updateUserLocation = async (req, res, next) => {
   }
 };
 
+const getOutstandingBloggers = async (req, res, next) => {
+  try {
+    const outstandingBloggers = await userService.getOutstandingBloggers()
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: outstandingBloggers
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   register,
   login,
@@ -194,5 +206,6 @@ export const userController = {
   getProfile,
   banUser,
   destroyUser,
-  updateUserLocation
+  updateUserLocation,
+  getOutstandingBloggers
 }

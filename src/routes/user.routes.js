@@ -27,4 +27,6 @@ Router.get('/profile', verifyToken, userController.getProfile)
 Router.get('/badges', verifyToken, userBadgeController.getBadges)
 Router.get('/badges/history', verifyToken, userBadgeController.getPointHistory)
 
+Router.get('/outstanding-bloggers', userController.getOutstandingBloggers)
+
 export const userRoute = Router

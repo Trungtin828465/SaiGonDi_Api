@@ -70,6 +70,11 @@ const placeSchema = new mongoose.Schema({
     min: 0,
     max: 5
   },
+  favorites: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Place',
+    default: [],
+  },
   totalRatings: {
     type: Number,
     default: 0
