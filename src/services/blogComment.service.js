@@ -65,6 +65,7 @@ const updateComment = async (commentId, userId, updateData) => {
   comment.images = updateData.images ?? comment.images
 
   await comment.save()
+  await comment.populate('userId', 'firstName lastName avatar') 
   return comment
 }
 
