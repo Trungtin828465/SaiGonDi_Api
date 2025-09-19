@@ -76,7 +76,9 @@ const createBlogSchema = Joi.object({
   mainImage: Joi.string().uri().allow(null).optional(),
   content: contentSchema,
   album: albumSchema.optional(),
-  categories: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
+    categories: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).max(2).optional().messages({
+    'array.max': 'Một bài viết chỉ có thể có tối đa 2 danh mục.'
+  }),
   tags: Joi.array().items(Joi.string()).optional(),
   privacy: Joi.string().valid('public', 'private', 'friends-only', 'pending').optional(),
   locationDetail: Joi.string().allow('').optional(),
@@ -90,7 +92,9 @@ const updateBlogSchema = Joi.object({
   mainImage: Joi.string().uri().allow(null).optional(),
   content: contentSchema.optional(),
   album: albumSchema.optional(),
-  categories: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
+    categories: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).max(2).optional().messages({
+    'array.max': 'Một bài viết chỉ có thể có tối đa 2 danh mục.'
+  }),
   tags: Joi.array().items(Joi.string()).optional(),
   privacy: Joi.string().valid('public', 'private', 'friends-only', 'pending').optional(),
   locationDetail: Joi.string().allow('').optional(),

@@ -92,11 +92,12 @@ const getBlogs = async (query, user) => {
   const blogs = await Blog.find(filter)
     .populate('authorId', 'firstName lastName avatar')
     .populate('ward', 'name')
+    .populate('categories', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
     .lean()
-
+  console.log(blogs)
   return {
     blogs,
     pagination: {
@@ -105,6 +106,7 @@ const getBlogs = async (query, user) => {
       totalBlogs
     }
   }
+
 }
 // Lấy danh sách blogs có lượt xem nhiều
 const getPopularBlogs = async (query, user) => {
@@ -220,7 +222,7 @@ const createBlog = async (blogData, authorId) => {
     mainImage: blogData.mainImage || (processedAlbum?.find(m => m.type === 'image')?.url ?? null),
     content,
     album: processedAlbum,
-    categories,
+    categories: categories ? categories.map(id => new mongoose.Types.ObjectId(id)) : [],
     tags,
     privacy,
     authorId,

@@ -3,19 +3,14 @@ const db = require('../config/db.js');
 const Category = require('../models/Category.model.js');
 
 const blogCategories = [
-  { name: 'Lịch trình', type: 'blog' },
-  { name: 'Kinh nghiệm', type: 'blog' },
-  { name: 'Sự kiện', type: 'blog' },
-  { name: 'Ảnh đẹp', type: 'blog' },
-  { name: 'Ẩm thực đặc sắc', type: 'blog' },
-  { name: 'Review chi tiết', type: 'blog' },
-  { name: 'Top-list gợi ý', type: 'blog' }
+  { name: 'Lịch trình', description: 'Các bài viết liên quan đến các lịch trình tại Sài Gòn.', type: 'blog' },
+  { name: 'Kinh nghiệm', description: 'Chia sẻ mẹo hữu ích, kinh nghiệm đi lại, ăn uống và vui chơi tại Sài Gòn.',type: 'blog' },
+  { name: 'Sự kiện', description: 'Khám phá những sự kiện tại Sài Gòn',type: 'blog' },
+  { name: 'Ảnh đẹp', description: 'Ảnh đẹp, vui chơi tại Sài Gòn',type: 'blog' },
+  { name: 'Ẩm thực đặc sắc', description: 'Khám phá món ngon và đặc sản Sài Gòn.',type: 'blog' },
+  { name: 'Review chi tiết', description: 'Đánh giá địa điểm, quán ăn và dịch vụ.',type: 'blog' },
+  { name: 'Top-list gợi ý', description: 'Danh sách gợi ý trải nghiệm thú vị ở Sài Gòn.',type: 'blog' }
 ];
-
-const getCategoryIds = async (categoryNames) => {
-  const categories = await Category.default.find({ name: { $in: categoryNames }, type: 'blog' }, '_id');
-  return categories.map(cat => cat._id);
-};
 
 const seedBlogCategories = async () => {
   try {
@@ -29,7 +24,6 @@ const seedBlogCategories = async () => {
     console.log('Inserting new blog categories...');
     const result = await Category.default.insertMany(blogCategories);
     console.log(`${result.length} blog categories have been successfully seeded.`);
-    result.forEach(cat => console.log(`Category: ${cat.name}, ID: ${cat._id}`));
     return result;
   } catch (error) {
     console.error('Error seeding blog categories:', error);

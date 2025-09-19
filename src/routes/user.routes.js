@@ -6,6 +6,7 @@ import { userController } from '~/controllers/user.controller.js'
 import { verifyToken, verifyAdmin } from '~/middlewares/auth.middleware.js'
 import { userBadgeController } from '~/controllers/userBadge.controller'
 import { categoryController } from '~/controllers/category.controller.js'
+
 import { loginRateLimiter, registerRateLimiter, verifyOtpRateLimiter } from '~/middlewares/limiter.middleware'
 
 const Router = express.Router()
@@ -20,7 +21,7 @@ Router.put('/change-password', verifyToken, userValidation.changePassword, userC
 Router.put('/location', verifyToken, userValidation.updateUserLocation, userController.updateUserLocation)
 Router.post('/send-otp', verifyOtpRateLimiter, userValidation.sendOTP, userController.sendOTP)
 Router.post('/verify-otp', userValidation.verifyOTP, userController.verifyOTP)
-Router.get('/categories', verifyToken, verifyAdmin, categoryController.getAllCategories)
+
 Router.get('/profile', verifyToken, userController.getProfile)
 // Router.post('/logout', userController.logout)
 
@@ -29,4 +30,5 @@ Router.get('/badges/history', verifyToken, userBadgeController.getPointHistory)
 
 Router.get('/outstanding-bloggers', userController.getOutstandingBloggers)
 
+Router.get('/categories', categoryController.getAllCategories)
 export const userRoute = Router
