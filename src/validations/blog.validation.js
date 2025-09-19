@@ -47,9 +47,18 @@ const contentSchema = Joi.array().items(
 })
 
 // Helper validate chung
-const validate = (schema) => async (req, res, next) => {
+const validateBody = (schema) => async (req, res, next) => {
   try {
     await schema.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message))
+  }
+}
+
+const validateQuery = (schema) => async (req, res, next) => {
+  try {
+    await schema.validateAsync(req.query, { abortEarly: false })
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message))
@@ -67,7 +76,9 @@ const createBlogSchema = Joi.object({
   mainImage: Joi.string().uri().allow(null).optional(),
   content: contentSchema,
   album: albumSchema.optional(),
-  categories: Joi.array().items(Joi.string()).optional(),
+    categories: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).max(2).optional().messages({
+    'array.max': 'Một bài viết chỉ có thể có tối đa 2 danh mục.'
+  }),
   tags: Joi.array().items(Joi.string()).optional(),
   privacy: Joi.string().valid('public', 'private', 'friends-only', 'pending').optional(),
   locationDetail: Joi.string().allow('').optional(),
@@ -81,7 +92,9 @@ const updateBlogSchema = Joi.object({
   mainImage: Joi.string().uri().allow(null).optional(),
   content: contentSchema.optional(),
   album: albumSchema.optional(),
-  categories: Joi.array().items(Joi.string()).optional(),
+    categories: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)).max(2).optional().messages({
+    'array.max': 'Một bài viết chỉ có thể có tối đa 2 danh mục.'
+  }),
   tags: Joi.array().items(Joi.string()).optional(),
   privacy: Joi.string().valid('public', 'private', 'friends-only', 'pending').optional(),
   locationDetail: Joi.string().allow('').optional(),
@@ -116,12 +129,25 @@ const reportBlogSchema = Joi.object({
   })
 })
 
+const getBlogsSchema = Joi.object({
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
+  sort: Joi.string().valid('createdAt', 'updatedAt', 'title', 'views'),
+  order: Joi.string().valid('asc', 'desc').default('desc'),
+  search: Joi.string().allow('').optional(),
+  category: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+  author: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+  status: Joi.string().valid('pending', 'approved', 'hidden', 'deleted').optional(),
+  privacy: Joi.string().valid('public', 'private', 'friends-only').optional()
+})
+
 // Xuất ra middleware
 export const blogValidation = {
-  createBlog: validate(createBlogSchema),
-  updateBlog: validate(updateBlogSchema),
-  updateBlogPrivacy: validate(updateBlogPrivacySchema),
-  updateBlogStatus: validate(updateBlogStatusSchema),
+  getBlogs: validateQuery(getBlogsSchema),
+  createBlog: validateBody(createBlogSchema),
+  updateBlog: validateBody(updateBlogSchema),
+  updateBlogPrivacy: validateBody(updateBlogPrivacySchema),
+  updateBlogStatus: validateBody(updateBlogStatusSchema),
   validateBlogId: validateId,
-  validateReport: validate(reportBlogSchema)
+  validateReport: validateBody(reportBlogSchema)
 }

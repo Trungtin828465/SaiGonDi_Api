@@ -1,5 +1,8 @@
 import { blogService } from '../services/blog.service.js'
+import Category from '../models/Category.model.js'
 import { StatusCodes } from 'http-status-codes'
+import mongoose from 'mongoose'
+import ApiError from '../utils/ApiError.js'
 
 /**
  * @desc    Lấy danh sách bài viết công khai (có phân trang)
@@ -88,15 +91,29 @@ const getBlogsByAuthor = async (req, res, next) => {
 
 const createBlog = async (req, res, next) => {
   try {
-    const blogData = {
+    let blogData = {
       ...req.body,
       mainImage: req.cloudFiles?.mainImage,
-      album: req.cloudFiles?.album,
+      album: req.cloudFiles?.album || req.body.album,
       content: [
         ...(req.body.content || []),
         ...(req.cloudFiles?.content || [])
       ]
     };
+
+    // Handle categories being sent as a string
+    if (blogData.categories && typeof blogData.categories === 'string') {
+      blogData.categories = blogData.categories.split(',').map(id => id.trim());
+    }
+
+    if (blogData.categories && Array.isArray(blogData.categories)) {
+      // Ensure all provided category IDs are valid ObjectIds
+      const validCategoryIds = blogData.categories.filter(id => mongoose.Types.ObjectId.isValid(id));
+      if (validCategoryIds.length !== blogData.categories.length) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid category ID(s) provided.');
+      }
+      blogData.categories = validCategoryIds;
+    }
 
     // authorId được lấy từ token đã xác thực, không phải từ req.body
     const newBlog = await blogService.createBlog(blogData, req.user.id)
@@ -175,11 +192,24 @@ const updateBlog = async (req, res, next) => {
     const updateData = {
       ...req.body,
       mainImage: req.cloudFiles?.mainImage || req.body.mainImage || null,
-      album: req.cloudFiles?.album || req.body.album || [],
+      album: req.cloudFiles?.album || req.body.album,
       content: [
         ...(req.body.content || []),
         ...(req.cloudFiles?.content || [])
       ]
+    }
+
+    // Handle categories being sent as a string
+    if (updateData.categories && typeof updateData.categories === 'string') {
+      updateData.categories = updateData.categories.split(',').map(id => id.trim());
+    }
+
+    if (updateData.categories && Array.isArray(updateData.categories)) {
+      const validCategoryIds = updateData.categories.filter(id => mongoose.Types.ObjectId.isValid(id));
+      if (validCategoryIds.length !== updateData.categories.length) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid category ID(s) provided.');
+      }
+      updateData.categories = validCategoryIds;
     }
 
     const updatedBlog = await blogService.updateBlog(blogId, updateData, user)

@@ -32,7 +32,7 @@ const register = async (req, res, next) => {
       'string.empty': 'password cannot be empty',
       'string.min': 'password must be at least 6 characters long'
     })
-  })
+  }).unknown(true)
 
   try {
     const data = req?.body ? req.body : {}
@@ -113,7 +113,7 @@ const sendOTP = async (req, res, next) => {
       'string.empty': 'email cannot be empty',
       'string.email': 'email must be a valid email address'
     })
-  })
+  }).unknown(true)
 
   try {
     const data = req?.body ? req.body : {}

@@ -21,7 +21,7 @@ Router.put('/change-password', verifyToken, userValidation.changePassword, userC
 Router.put('/location', verifyToken, userValidation.updateUserLocation, userController.updateUserLocation)
 Router.post('/send-otp', verifyOtpRateLimiter, userValidation.sendOTP, userController.sendOTP)
 Router.post('/verify-otp', userValidation.verifyOTP, userController.verifyOTP)
-Router.get('/categories', categoryController.getAllCategories)
+
 Router.get('/profile', verifyToken, userController.getProfile)
 // Router.post('/logout', userController.logout)
 
@@ -30,4 +30,5 @@ Router.get('/badges/history', verifyToken, userBadgeController.getPointHistory)
 
 Router.get('/outstanding-bloggers', userController.getOutstandingBloggers)
 
+Router.get('/categories', categoryController.getAllCategories)
 export const userRoute = Router
