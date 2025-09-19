@@ -72,7 +72,8 @@ const blogSchema = new mongoose.Schema(
 
     // Categories: phân loại (du lịch, ẩm thực, review…)
     categories: {
-      type: [String],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'categories',
       default: []
     },
 

@@ -1,5 +1,6 @@
 import Blog from '../models/Blog.model.js'
 import Place from '../models/Place.model.js'
+import Category from '../models/Category.model.js'
 import slugify from 'slugify'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError.js'
@@ -65,10 +66,13 @@ const processAlbumData = (album) => {
 
 // Lấy danh sách blogs
 const getBlogs = async (query, user) => {
-  const { tag, category, authorId, status, privacy, page = 1, limit = 10 } = query
+  const { search, tag, category, authorId, status, privacy, page = 1, limit = 10 } = query
 
   const filter = { destroy: false }
 
+  if (search) {
+    filter.title = { $regex: search, $options: 'i' };
+  }
   if (tag) filter.tags = tag
   if (category) filter.categories = category
   if (authorId) filter.authorId = authorId
@@ -190,6 +194,16 @@ const getBlogBySlug = async (slug, user) => {
 // Tạo blog mới
 const createBlog = async (blogData, authorId) => {
   const { title, content, album, categories, tags, privacy, locationDetail, ward, province } = blogData
+
+  if (categories && categories.length > 0) {
+    const validCategories = await Category.countDocuments({
+      _id: { $in: categories },
+      type: 'blog'
+    });
+    if (validCategories !== categories.length) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'One or more categories are invalid or not blog categories.');
+    }
+  }
 
   let baseSlug = slugify(title, { lower: true, strict: true, trim: true })
   let slug = baseSlug
@@ -361,6 +375,16 @@ const updateBlogStatus = async (blogId, newStatus, user) => {
 const updateBlog = async (blogId, updateData, user) => {
   const blog = await Blog.findById(blogId)
   if (!blog) throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
+
+  if (updateData.categories) {
+    const validCategories = await Category.countDocuments({
+      _id: { $in: updateData.categories },
+      type: 'blog'
+    });
+    if (validCategories !== updateData.categories.length) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'One or more categories are invalid or not blog categories.');
+    }
+  }
 
   if (blog.authorId.toString() !== user.id.toString() && user.role !== 'admin') {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền sửa bài viết này')
