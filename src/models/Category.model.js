@@ -23,6 +23,12 @@ const categorySchema = new mongoose.Schema({
     maxlength: 500,
     default: ''
   },
+  type: {
+    type: String,
+    enum: ['place', 'blog'],
+    required: true,
+    default: 'place'
+  },
   createdAt: {
     type: Date,
     default: Date.now
