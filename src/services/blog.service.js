@@ -97,7 +97,7 @@ const getBlogs = async (query, user) => {
     .skip(skip)
     .limit(numericLimit)
     .lean()
-  console.log(blogs)
+
   return {
     blogs,
     pagination: {
@@ -174,6 +174,7 @@ const getBlogBySlug = async (slug, user) => {
   const blog = await Blog.findOne({ slug })
     .populate('authorId', 'firstName lastName avatar')
     // .populate("ward", "name")
+    .populate('categories', 'name')
     .lean()
 
   if (!blog) {
