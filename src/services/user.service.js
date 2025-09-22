@@ -173,26 +173,39 @@ const resetPassword = async (reqBody) => {
 // Aggregate user details after implementing other modals (Places, Checkins, etc.)
 const getUserProfile = async (userId) => {
   try {
-    const user = await UserModel.findById(userId)
+    const user = await UserModel.findById(userId).select('-password');
     if (!user || user.role !== 'user' || user._destroyed) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
     }
     if (user.banned) {
-      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned')
+      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned');
     }
-    const profile = {
+
+    const checkins = await CheckinModel.find({ userId });
+    const blogs = await BlogModel.find({ authorId: userId }).sort({ createdAt: -1 });
+    const reviews = await ReviewModel.find({ userId });
+
+    return {
       userId: user._id,
       email: user.email,
+      phone: user.phone,
       fullName: `${user.firstName} ${user.lastName}`,
-      phoneVerified: user.phoneVerified,
-      emailVerified: user.emailVerified,
-      favorites: user.favorites
+      avatar: user.avatar || null,
+      cover: user.cover || null,
+      badges: user.badges || [],
+      favorites: user.favorites || [],
+
+      checkinCount: checkins.length,
+      blogCount: blogs.length,
+      reviewCount: reviews.length,
+
+      blogs
     }
-    return profile
   } catch (error) {
     throw error
   }
 }
+
 
 const getUserDetails = async (userId) => {
   try {
