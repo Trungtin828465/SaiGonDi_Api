@@ -29,4 +29,7 @@ Router.get('/badges/history', verifyToken, userBadgeController.getPointHistory)
 
 Router.get('/outstanding-bloggers', userController.getOutstandingBloggers)
 
+Router.put('/me/ban', verifyToken, userController.banSelf)
+
+
 export const userRoute = Router

@@ -173,17 +173,62 @@ const resetPassword = async (reqBody) => {
 // Aggregate user details after implementing other modals (Places, Checkins, etc.)
 const getUserProfile = async (userId) => {
   try {
-    const user = await UserModel.findById(userId).select('-password');
+    const user = await UserModel.findById(userId).select('-password')
     if (!user || user.role !== 'user' || user._destroyed) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     }
     if (user.banned) {
-      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned');
+      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned')
     }
 
-    const checkins = await CheckinModel.find({ userId });
-    const blogs = await BlogModel.find({ authorId: userId }).sort({ createdAt: -1 });
+    // Thời gian cho tháng hiện tại và tháng trước
+    const now = new Date()
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+    // -------- Checkins --------
+    const thisMonthCheckins = await CheckinModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfThisMonth }
+    });
+    const lastMonthCheckins = await CheckinModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    });
+    const checkinGrowth =
+      lastMonthCheckins > 0
+        ? Math.round(((thisMonthCheckins - lastMonthCheckins) / lastMonthCheckins) * 100)
+        : thisMonthCheckins > 0 ? 100 : 0
+
+    // -------- Blogs --------
+    const blogs = await BlogModel.find({ authorId: userId }).sort({ createdAt: -1 })
+    const thisMonthBlogs = await BlogModel.countDocuments({
+      authorId: userId,
+      createdAt: { $gte: startOfThisMonth }
+    })
+    const lastMonthBlogs = await BlogModel.countDocuments({
+      authorId: userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    })
+    const blogGrowth =
+      lastMonthBlogs > 0
+        ? Math.round(((thisMonthBlogs - lastMonthBlogs) / lastMonthBlogs) * 100)
+        : thisMonthBlogs > 0 ? 100 : 0
+
+    // -------- Reviews --------
+    const thisMonthReviews = await ReviewModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfThisMonth }
+    })
+    const lastMonthReviews = await ReviewModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    })
     const reviews = await ReviewModel.find({ userId });
+    const reviewGrowth =
+      lastMonthReviews > 0
+        ? Math.round(((thisMonthReviews - lastMonthReviews) / lastMonthReviews) * 100)
+        : thisMonthReviews > 0 ? 100 : 0
 
     return {
       userId: user._id,
@@ -195,9 +240,12 @@ const getUserProfile = async (userId) => {
       badges: user.badges || [],
       favorites: user.favorites || [],
 
-      checkinCount: checkins.length,
-      blogCount: blogs.length,
-      reviewCount: reviews.length,
+      checkinCount: thisMonthCheckins,
+      checkinGrowth,
+      blogCount: thisMonthBlogs,
+      blogGrowth,
+      reviewCount: thisMonthReviews,
+      reviewGrowth,
 
       blogs
     }
@@ -205,7 +253,6 @@ const getUserProfile = async (userId) => {
     throw error
   }
 }
-
 
 const getUserDetails = async (userId) => {
   try {
@@ -238,6 +285,22 @@ const banUser = async (userId) => {
     }
     user.banned = true
     await user.save()
+  } catch (error) {
+    throw error
+  }
+}
+const banSelf = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId)
+    if (!user || user.role !== 'user') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (user.banned) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Tài khoản đã bị khóa trước đó');
+    }
+    user.banned = true
+    await user.save()
+    return { message: 'Tài khoản của bạn đã được khóa thành công'};
   } catch (error) {
     throw error
   }
@@ -397,6 +460,7 @@ export const userService = {
   getUserDetails,
   getUserProfile,
   banUser,
+  banSelf,
   destroyUser,
   getUserReviews,
   updateUserProfile,

@@ -140,6 +140,20 @@ const banUser = async (req, res, next) => {
     next(error)
   }
 }
+const banSelf = async (req, res, next) => {
+  try {
+    const userId = req.user.id; 
+    await userService.banUser(userId);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Tài khoản của bạn đã bị khóa thành công'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 const destroyUser = async (req, res, next) => {
   try {
@@ -205,6 +219,7 @@ export const userController = {
   verifyOTP,
   getProfile,
   banUser,
+  banSelf,
   destroyUser,
   updateUserLocation,
   getOutstandingBloggers
