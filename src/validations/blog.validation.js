@@ -25,7 +25,8 @@ const contentSchema = Joi.array().items(
       'any.required': 'Loại nội dung là bắt buộc'
     }),
     value: Joi.string(),
-    url: Joi.string().uri()
+    url: Joi.string().uri(),
+    caption: Joi.string().allow('').optional()
   }).when(Joi.object({ type: 'text' }).unknown(), {
     then: Joi.object({
       value: Joi.required().messages({
