@@ -169,7 +169,6 @@ const resetPassword = async (reqBody) => {
     throw error
   }
 }
-
 // Aggregate user details after implementing other modals (Places, Checkins, etc.)
 const getUserProfile = async (userId) => {
   try {
@@ -266,12 +265,12 @@ const getUserDetails = async (userId) => {
       throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
     }
     if (user.banned) {
-      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned');
+      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned')
     }
 
     const now = new Date()
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
 
     const totalCheckins = await CheckinModel.countDocuments({ userId });
     const thisMonthCheckins = await CheckinModel.countDocuments({
@@ -285,10 +284,10 @@ const getUserDetails = async (userId) => {
     const checkinGrowth =
       lastMonthCheckins > 0
         ? Math.round(((thisMonthCheckins - lastMonthCheckins) / lastMonthCheckins) * 100)
-        : thisMonthCheckins > 0 ? 100 : 0;
+        : thisMonthCheckins > 0 ? 100 : 0
 
-    const blogs = await BlogModel.find({ authorId: userId }).sort({ createdAt: -1 });
-    const totalBlogs = blogs.length;
+    const blogs = await BlogModel.find({ authorId: userId }).sort({ createdAt: -1 })
+    const totalBlogs = blogs.length
     const thisMonthBlogs = await BlogModel.countDocuments({
       authorId: userId,
       createdAt: { $gte: startOfThisMonth }
@@ -300,10 +299,10 @@ const getUserDetails = async (userId) => {
     const blogGrowth =
       lastMonthBlogs > 0
         ? Math.round(((thisMonthBlogs - lastMonthBlogs) / lastMonthBlogs) * 100)
-        : thisMonthBlogs > 0 ? 100 : 0;
+        : thisMonthBlogs > 0 ? 100 : 0
 
     const reviews = await ReviewModel.find({ userId });
-    const totalReviews = reviews.length;
+    const totalReviews = reviews.length
     const thisMonthReviews = await ReviewModel.countDocuments({
       userId,
       createdAt: { $gte: startOfThisMonth }
@@ -315,7 +314,7 @@ const getUserDetails = async (userId) => {
     const reviewGrowth =
       lastMonthReviews > 0
         ? Math.round(((thisMonthReviews - lastMonthReviews) / lastMonthReviews) * 100)
-        : thisMonthReviews > 0 ? 100 : 0;
+        : thisMonthReviews > 0 ? 100 : 0
 
     const badges = await userBadgeService.getBadgesForUser(userId);
 
@@ -343,7 +342,7 @@ const getUserDetails = async (userId) => {
       badges
     };
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 

@@ -1,5 +1,33 @@
 import { adminService } from '../services/admin.service.js'
 import { StatusCodes } from 'http-status-codes'
+import ApiError from '../utils/ApiError.js'
+import UserModel from '../models/User.model.js'
+
+const getMe = async (req, res, next) => {
+  try {
+    const adminId = req.user?.id
+    if (!adminId) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Không tìm thấy ID trong token')
+    }
+
+    const admin = await UserModel.findById(adminId)
+      .select('firstName lastName fullName email avatar role')
+
+    if (!admin || admin.role !== 'admin') {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền truy cập hoặc admin không tồn tại')
+    }
+
+    res.status(StatusCodes.OK).json({
+      id: admin._id,
+      email: admin.email,
+      fullName: admin.fullName || `${admin.firstName} ${admin.lastName}`,
+      avatar: admin.avatar,
+      role: admin.role
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 
 const getOverviewStats = async (req, res, next) => {
   try {
@@ -76,6 +104,7 @@ const hideReview = async (req, res, next) => {
 }
 
 export const adminController = {
+  getMe,
   getOverviewStats,
   getDailyStats,
   getPopularStats,

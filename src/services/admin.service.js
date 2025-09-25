@@ -3,16 +3,35 @@ import PlaceModel from '~/models/Place.model.js'
 import BlogModel from '~/models/Blog.model.js'
 import BlogCommentModel from '~/models/BlogComment.model.js'
 import ReviewModel from '~/models/Review.model.js'
+const getMe = async (adminId) => {
+  const admin = await UserModel.findById(adminId).select('firstName lastName fullName email avatar role')
+  if (!admin || admin.role !== 'admin') {
+    return null
+  }
+  return {
+    id: admin._id,
+    email: admin.email,
+    fullName: admin.fullName || `${admin.firstName} ${admin.lastName}`,
+    avatar: admin.avatar,
+    role: admin.role
+  }
+}
 const getOverviewStats = async () => {
   try {
     const userCount = await UserModel.countDocuments()
     const placeCount = await PlaceModel.countDocuments()
     const blogCount = await BlogModel.countDocuments()
 
+    const blogViews = await BlogModel.aggregate([
+      { $group: { _id: null, total: { $sum: '$viewCount' } } }
+    ])
+    const totalViews = blogViews[0]?.total || 0
+
     return {
       users: userCount,
       places: placeCount,
-      blogs: blogCount
+      blogs: blogCount,
+      views: totalViews
     }
   } catch (error) {
     throw error
@@ -147,6 +166,7 @@ const hideReview = async (id) => {
 }
 
 export const adminService = {
+  getMe,
   getOverviewStats,
   getDailyStats,
   getPopularStats,

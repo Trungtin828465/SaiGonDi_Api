@@ -24,6 +24,7 @@ import { uploadPlaceImages } from '~/middlewares/cloudinary.middleware.js'
 
 const Router = express.Router()
 
+Router.get('/me', verifyToken, verifyAdmin, adminController.getMe);
 Router.post('/login', userValidation.login, userController.login)
 Router.post('/places', verifyToken, verifyAdmin, uploadFiles.array('images', 10), uploadPlaceImages, placeValidation.createNew, placeController.createNew)
 Router.get('/places', verifyToken, verifyAdmin, placeValidation.pagingValidate, placeController.getAllPlaces)
