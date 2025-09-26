@@ -3,6 +3,7 @@ import Category from '../models/Category.model.js'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import ApiError from '../utils/ApiError.js'
+import Blog from '../models/Blog.model.js'; 
 
 /**
  * @desc    Lấy danh sách bài viết công khai (có phân trang)
@@ -244,10 +245,13 @@ const shareBlog = async (req, res, next) => {
 
     const sharedBlog = await blogService.shareBlogById(blogId, userId)
 
+    const originalBlog = await Blog.findById(blogId)
+
     res.status(StatusCodes.OK).json({
       success: true,
       message: 'Chia sẻ bài viết thành công',
-      data: sharedBlog
+      data: sharedBlog,
+      shareCount: originalBlog.shareCount
     })
   } catch (error) {
     next(error)
