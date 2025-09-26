@@ -7,22 +7,28 @@ const getMe = async (req, res, next) => {
   try {
     const adminId = req.user?.id
     if (!adminId) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Không tìm thấy ID trong token')
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Token không hợp lệ hoặc thiếu ID')
     }
 
-    const admin = await UserModel.findById(adminId)
-      .select('firstName lastName fullName email avatar role')
+    const admin = await adminService.getMe(adminId)
 
-    if (!admin || admin.role !== 'admin') {
-      throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền truy cập hoặc admin không tồn tại')
+    if (!admin) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Không tìm thấy user')
+    }
+
+    if (!admin.isAdmin) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền admin')
     }
 
     res.status(StatusCodes.OK).json({
-      id: admin._id,
-      email: admin.email,
-      fullName: admin.fullName || `${admin.firstName} ${admin.lastName}`,
-      avatar: admin.avatar,
-      role: admin.role
+      success: true,
+      data: {
+        id: admin.id,
+        email: admin.email,
+        fullName: admin.fullName,
+        avatar: admin.avatar,
+        role: admin.role
+      }
     })
   } catch (error) {
     next(error)
@@ -52,6 +58,17 @@ const getDailyStats = async (req, res, next) => {
     next(error)
   }
 }
+const getTopViewedPlaces = async (req, res, next) => {
+  try {
+    const places = await adminService.getTopViewedPlaces()
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: places
+    })
+  } catch (error) {
+    next(error)
+  }
+};
 
 const getPopularStats = async (req, res, next) => {
   try {
@@ -110,5 +127,6 @@ export const adminController = {
   getPopularStats,
   getFilteredReviews,
   deleteReview,
-  hideReview
+  hideReview,
+  getTopViewedPlaces
 }

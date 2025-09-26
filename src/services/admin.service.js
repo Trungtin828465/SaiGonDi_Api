@@ -3,19 +3,43 @@ import PlaceModel from '~/models/Place.model.js'
 import BlogModel from '~/models/Blog.model.js'
 import BlogCommentModel from '~/models/BlogComment.model.js'
 import ReviewModel from '~/models/Review.model.js'
+
 const getMe = async (adminId) => {
-  const admin = await UserModel.findById(adminId).select('firstName lastName fullName email avatar role')
-  if (!admin || admin.role !== 'admin') {
-    return null
-  }
+  const admin = await UserModel.findById(adminId).select(
+    'firstName lastName fullName email avatar role'
+  )
+
+  if (!admin) return null
+
   return {
     id: admin._id,
     email: admin.email,
     fullName: admin.fullName || `${admin.firstName} ${admin.lastName}`,
     avatar: admin.avatar,
-    role: admin.role
+    role: admin.role,
+    isAdmin: admin.role?.toLowerCase() === 'admin'
   }
 }
+const getLoginStats = async () => {
+  try {
+    const totalLogins = await UserModel.aggregate([
+      { $group: { _id: null, total: { $sum: '$loginCount' } } }
+    ])
+
+    const topUsersByLogin = await UserModel.find()
+      .sort({ loginCount: -1 })
+      .limit(5)
+      .select('fullName email avatar loginCount')
+
+    return {
+      totalLogins: totalLogins[0]?.total || 0,
+      topUsersByLogin
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
 const getOverviewStats = async () => {
   try {
     const userCount = await UserModel.countDocuments()
@@ -155,6 +179,17 @@ const deleteReview = async (id) => {
     throw error
   }
 }
+const getTopViewedPlaces = async () => {
+  try {
+    const topPlaces = await PlaceModel.find({ status: 'approved' })
+      .sort({ viewCount: -1 })
+      .limit(6)
+      .select('name address images avgRating viewCount');
+    return topPlaces;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const hideReview = async (id) => {
   try {
@@ -172,5 +207,6 @@ export const adminService = {
   getPopularStats,
   getFilteredReviews,
   deleteReview,
-  hideReview
+  hideReview,
+  getTopViewedPlaces
 }

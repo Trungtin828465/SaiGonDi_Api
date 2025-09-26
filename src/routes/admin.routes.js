@@ -21,7 +21,6 @@ import { uploadFiles } from '~/middlewares/multer.middleware.js'
 import { uploadPlaceImages } from '~/middlewares/cloudinary.middleware.js'
 
 
-
 const Router = express.Router()
 
 Router.get('/me', verifyToken, verifyAdmin, adminController.getMe);
@@ -53,6 +52,8 @@ Router.delete('/posts/:id', verifyToken, verifyAdmin, blogController.deleteBlog)
 Router.get('/stats/overview', verifyToken, verifyAdmin, adminController.getOverviewStats)
 Router.get('/stats/daily', verifyToken, verifyAdmin, adminController.getDailyStats)
 Router.get('/stats/popular', verifyToken, verifyAdmin, adminController.getPopularStats)
+Router.get('/stats/topViewedPlaces', verifyToken, verifyAdmin, adminController.getTopViewedPlaces) 
+
 
 Router.get('/badges', verifyToken, verifyAdmin, badgeController.getAllBadges)
 Router.post('/badges', verifyToken, verifyAdmin, badgeController.createBadge)

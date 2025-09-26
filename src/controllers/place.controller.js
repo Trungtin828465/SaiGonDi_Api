@@ -174,8 +174,9 @@ const approvePlace = async (req, res, next) => {
 const updatePlaceCoordinates = async (req, res, next) => {
   try {
     const placeId = req.params.id
-    const coordinates = req.body.coordinates
-    const updatedPlace = await placeService.updatePlaceCoordinates(placeId, coordinates)
+    const { latitude, longitude } = req.body
+    const updatedPlace = await placeService.updatePlaceCoordinates(placeId, latitude, longitude)
+
     res.status(StatusCodes.OK).json({
       message: 'Đã cập nhật tọa độ địa điểm thành công',
       data: updatedPlace
@@ -184,6 +185,7 @@ const updatePlaceCoordinates = async (req, res, next) => {
     next(error)
   }
 }
+
 
 const getAdminPlaceDetails = async (req, res, next) => {
   try {
