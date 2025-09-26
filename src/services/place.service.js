@@ -403,8 +403,8 @@ const getUserCheckins = async (userId) => {
 const searchPlaces = async (filterCriteria) => {
   try {
     const query = {}
-    if (filterCriteria.name) {
-      query.name = { $regex: filterCriteria.name, $options: 'i' } // Case-insensitive search
+    if (filterCriteria.query) {
+      query.name = { $regex: filterCriteria.query, $options: 'i' } // Case-insensitive search
     }
     if (filterCriteria.category) {
       const category = await CategoryModel.findOne({ $or: [{ slug: filterCriteria.category }, { _id: filterCriteria.category }] }).select('_id')

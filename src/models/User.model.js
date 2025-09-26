@@ -98,6 +98,26 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+
+  facebookId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+
+  displayName: String,
+  provider: {
+    type: String,
+    enum: ['local', 'facebook', 'google'],
+    default: 'local'
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

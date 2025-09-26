@@ -134,7 +134,7 @@ const getBlogsSchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(10),
   sort: Joi.string().valid('createdAt', 'updatedAt', 'title', 'views'),
   order: Joi.string().valid('asc', 'desc').default('desc'),
-  search: Joi.string().allow('').optional(),
+  query: Joi.string().allow('').optional(),
   category: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   author: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   status: Joi.string().valid('pending', 'approved', 'hidden', 'deleted').optional(),

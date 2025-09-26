@@ -296,6 +296,19 @@ const reportBlog = async (req, res, next) => {
   }
 }
 
+const searchBlogs = async (req, res, next) => {
+  try {
+    const { blogs, pagination } = await blogService.searchBlogs(req.query, req.user)
+    res.status(StatusCodes.OK).json({
+      success: true,
+      count: blogs.length,
+      pagination,
+      data: blogs
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 
 export const blogController = {
   getBlogs,
@@ -313,4 +326,5 @@ export const blogController = {
   getBlogsByPlaceIdentifier,
   getBlogsByWard,
   reportBlog,
+  searchBlogs
 }

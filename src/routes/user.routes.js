@@ -1,12 +1,12 @@
 import express from 'express'
-
+import passport from 'passport' 
 import { generalValidation } from '~/validations/general.validation'
 import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
 import { verifyToken, verifyAdmin } from '~/middlewares/auth.middleware.js'
 import { userBadgeController } from '~/controllers/userBadge.controller'
 import { categoryController } from '~/controllers/category.controller.js'
-
+import { userService } from '~/services/user.service.js'
 import { loginRateLimiter, registerRateLimiter, verifyOtpRateLimiter } from '~/middlewares/limiter.middleware'
 
 const Router = express.Router()
@@ -31,4 +31,19 @@ Router.get('/badges/history', verifyToken, userBadgeController.getPointHistory)
 Router.get('/outstanding-bloggers', userController.getOutstandingBloggers)
 
 Router.get('/categories', categoryController.getAllCategories)
+
+// Route for Facebook login
+Router.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
+Router.get('/auth/facebook/callback', passport.authenticate('facebook', {
+  successRedirect: '/profile',
+  failureRedirect: '/login'
+}))
+
+// Route for Google login
+Router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
+Router.get('/auth/google/callback', passport.authenticate('google', {
+  successRedirect: '/profile',
+  failureRedirect: '/login'
+}))
+
 export const userRoute = Router

@@ -43,6 +43,10 @@ const blogSchema = new mongoose.Schema(
           required: function () {
             return ['image', 'video'].includes(this.type)
           }
+        },
+        caption: {
+          type: String,
+          default: null
         }
       }
     ],
