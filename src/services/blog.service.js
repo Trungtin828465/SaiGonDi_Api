@@ -243,6 +243,7 @@ const getBlogById = async (id, user) => {
 const getBlogBySlug = async (slug, user) => {
   const blog = await Blog.findOne({ slug })
     .populate('authorId', 'firstName lastName avatar')
+    // .populate("ward", "name")
     .populate('categories', 'name')
     .lean()
 

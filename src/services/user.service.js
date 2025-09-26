@@ -383,7 +383,8 @@ const getOutstandingBloggers = async () => {
             _id: '$author._id',
             firstName: '$author.firstName',
             lastName: '$author.lastName',
-            avatar: '$author.avatar'
+            avatar: '$author.avatar',
+            bio: '$author.bio'
           },
           totalBlogs: 1,
           totalLikes: 1,

@@ -25,7 +25,7 @@ const createNew = async (req, res, next) => {
     categories: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).required().messages({
       'string.base': 'categories must be a string',
       'string.empty': 'categories cannot be empty',
-      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
+      'string.pattern.base': OBJECT_ID_RULE_MESSAGE 
     })).required().messages({
       'array.base': 'categories must be an array',
       'array.items': 'categories must contain valid ObjectId strings'
@@ -34,6 +34,14 @@ const createNew = async (req, res, next) => {
       'string.base': 'address must be a string',
       'string.empty': 'address cannot be empty',
       'string.min': 'address must be at least 5 characters long'
+    }),
+    services: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).required().messages({
+      'string.base': 'services must be a string',
+      'string.empty': 'services cannot be empty',
+      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
+    })).required().messages({
+      'array.base': 'services must be an array',
+      'array.items': 'services must contain valid ObjectId strings'
     }),
     district: Joi.string().min(2).required().messages({
       'string.base': 'district must be a string',
@@ -51,7 +59,7 @@ const createNew = async (req, res, next) => {
         Joi.number().min(-180).max(180).required(),
         Joi.number().min(-90).max(90).required()
       ).length(2).required()
-    }).required(),
+    }),
     images: Joi.array().items(
       Joi.string().uri().messages({
         'string.base': 'each image must be a string',
@@ -68,6 +76,9 @@ const createNew = async (req, res, next) => {
     }
     if (req.body.categories && typeof req.body.categories === 'string') {
       req.body.categories = JSON.parse(req.body.categories)
+    }
+    if (req.body.services && typeof req.body.services === 'string') {
+      req.body.services = JSON.parse(req.body.services)
     }
     if (req.body.ward && typeof req.body.ward === 'string') {
       req.body.ward = JSON.parse(req.body.ward)[0]
