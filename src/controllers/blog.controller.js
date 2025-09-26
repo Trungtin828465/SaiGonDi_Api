@@ -312,5 +312,5 @@ export const blogController = {
   shareBlog,
   getBlogsByPlaceIdentifier,
   getBlogsByWard,
-  reportBlog,
+  reportBlog
 }
