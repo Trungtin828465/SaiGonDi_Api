@@ -25,7 +25,7 @@ import { uploadPlaceImages } from '~/middlewares/cloudinary.middleware.js'
 const Router = express.Router()
 
 Router.post('/login', userValidation.login, userController.login)
-Router.post('/places', verifyToken, verifyAdmin, uploadFiles.array('images', 10), uploadPlaceImages, placeValidation.createNew, placeController.createNew)
+Router.post('/places', verifyToken, uploadFiles.array('images', 10), uploadPlaceImages, placeValidation.createNew, placeController.createNew)
 Router.get('/places', verifyToken, verifyAdmin, placeValidation.pagingValidate, placeController.getAllPlaces)
 Router.get('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.getAdminPlaceDetails)
 Router.patch('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.updatePlace)
@@ -33,8 +33,8 @@ Router.put('/places/:id/approve', verifyToken, verifyAdmin, generalValidation.pa
 Router.put('/places/:id/coordinates', verifyToken, verifyAdmin, placeValidation.updatePlaceCoordinates, placeController.updatePlaceCoordinates)
 Router.delete('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.destroyPlace)
 
-Router.post('/categories', verifyToken, verifyAdmin, categoryValidation.createNew, categoryController.createNew)
-Router.get('/categories', verifyToken, verifyAdmin, categoryController.getAllCategories)
+Router.post('/categories', verifyToken, categoryValidation.createNew, categoryController.createNew)
+Router.get('/categories', categoryController.getAllCategories)
 Router.patch('/categories/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, categoryController.updateCategory)
 Router.delete('/categories/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, categoryController.deleteCategory)
 

@@ -1,4 +1,5 @@
-import mongoose from 'mongoose'
+import { required } from 'joi'
+import mongoose, { mongo } from 'mongoose'
 import slugify from 'slugify'
 
 const placeSchema = new mongoose.Schema({
@@ -25,6 +26,12 @@ const placeSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     required: true,
     ref: 'categories',
+    default: []
+  },
+  services: {
+    type: [mongoose.Schema.Types.ObjectId],
+    required: true,
+    ref: 'services',
     default: []
   },
   address: {

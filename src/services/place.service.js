@@ -17,13 +17,12 @@ const queryGenerate = async (id) => {
 }
 
 
-const createNew = async (placeData, userId, adminId) => {
+const createNew = async (placeData, userId) => {
   try {
     const newPlace = await PlaceModel.create({
       ...placeData,
       createdBy: userId,
-      verifiedBy: adminId,
-      status: adminId ? 'approved' : 'pending'
+      status: 'pending'
     })
     return newPlace
   } catch (error) {
@@ -56,7 +55,7 @@ const getApprovedPlaces = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug address avgRating images')
+      .select('name slug address avgRating images services')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -100,7 +99,7 @@ const getPlacesMapdata = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug category address location avgRating images')
+      .select('name slug category address location avgRating images services')
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
     const returnPlaces = {
@@ -139,6 +138,10 @@ const getAllPlaces = async (queryParams) => {
         path: 'ward',
         select: 'name'
       })
+      .populate({
+        path: 'services',
+        select:'name description'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
@@ -174,7 +177,7 @@ const getPlaceDetails = async (placeId) => {
         select: 'name'
       })
       .select(
-        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images'
+        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images services'
       );
 
     const returnPlace = place[0] || null;
@@ -506,18 +509,6 @@ const getHotPlaces = async () => {
       }
     ])
 
-    return hotPlaces
-  } catch (error) {
-    throw error
-  }
-}
-
-const getHotPlaces = async (limit = 1) => {
-  try {
-    const hotPlaces = await PlaceModel.find({ status: 'approved' })
-      .sort({ totalLikes: -1 }) // Sort by totalLikes in descending order
-      .limit(limit)
-      .select('name slug address avgRating images totalLikes') // Select relevant fields
     return hotPlaces
   } catch (error) {
     throw error

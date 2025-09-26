@@ -11,6 +11,7 @@ import { questionRoute } from './question.routes.js'
 import { hotRoute } from './hot.routes.js'
 
 import { placeRateLimiter } from '../middlewares/limiter.middleware.js'
+import { serviceRoute } from './service.routes.js'
 
 
 const Router = express.Router()
@@ -23,6 +24,7 @@ Router.get('/status', (req, res) => {
 Router.use('/blogs', blogRoute)
 Router.use('/comments', blogCommentRoute)
 Router.use('/wards', wardRoute)
+Router.use('/services', serviceRoute)
 Router.use('/users', userRoute)
 
 Router.use('/me', profileRoute)
