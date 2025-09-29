@@ -52,7 +52,11 @@ Router.delete('/posts/:id', verifyToken, verifyAdmin, blogController.deleteBlog)
 Router.get('/stats/overview', verifyToken, verifyAdmin, adminController.getOverviewStats)
 Router.get('/stats/daily', verifyToken, verifyAdmin, adminController.getDailyStats)
 Router.get('/stats/popular', verifyToken, verifyAdmin, adminController.getPopularStats)
-Router.get('/stats/topViewedPlaces', verifyToken, verifyAdmin, adminController.getTopViewedPlaces) 
+Router.get('/stats/topViewedPlaces', verifyToken, verifyAdmin, adminController.getTopViewedPlaces)
+Router.get('/stats/logins', adminController.getLoginStats)
+Router.get('/stats/categories', verifyToken, adminController.getCategoryStats)
+Router.get('/stats/monthlyUsers', verifyToken, verifyAdmin, adminController.getUserMonthlyStats)
+Router.get('/stats/topUsers', verifyToken, verifyAdmin, adminController.getTopUsers)
 
 
 Router.get('/badges', verifyToken, verifyAdmin, badgeController.getAllBadges)

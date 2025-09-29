@@ -58,6 +58,18 @@ const getDailyStats = async (req, res, next) => {
     next(error)
   }
 }
+const getLoginStats = async (req, res, next) => {
+  try {
+    const stats = await adminService.getLoginStats()
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: stats
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getTopViewedPlaces = async (req, res, next) => {
   try {
     const places = await adminService.getTopViewedPlaces()
@@ -68,7 +80,7 @@ const getTopViewedPlaces = async (req, res, next) => {
   } catch (error) {
     next(error)
   }
-};
+}
 
 const getPopularStats = async (req, res, next) => {
   try {
@@ -119,6 +131,40 @@ const hideReview = async (req, res, next) => {
     next(error)
   }
 }
+const getCategoryStats = async (req, res, next) => {
+  try {
+    const data = await adminService.getCategoryStats();
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    next(error)
+  }
+}
+const getUserMonthlyStats = async (req, res, next) => {
+  try {
+    const stats = await adminService.getUserMonthlyStats()
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: stats
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getTopUsers = async (req, res, next) => {
+  try {
+    const topUsers = await adminService.getTopUsers()
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: topUsers
+    });
+  } catch (error) {
+    next(error)
+  }
+}
 
 export const adminController = {
   getMe,
@@ -128,5 +174,9 @@ export const adminController = {
   getFilteredReviews,
   deleteReview,
   hideReview,
-  getTopViewedPlaces
+  getTopViewedPlaces,
+  getLoginStats,
+  getCategoryStats,
+  getUserMonthlyStats,
+  getTopUsers
 }

@@ -71,6 +71,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: []
   },
+  loginCount: {
+    type: Number,
+    default: 0
+  },
   currentLocation: {
     type: {
       type: String,
