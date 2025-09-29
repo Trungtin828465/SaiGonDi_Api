@@ -69,6 +69,32 @@ const login = async (loginData) => {
   }
 }
 
+const handleOAuthLogin = async (user, ipAddress, device) => {
+  try {
+    if (!user) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'User information is missing from OAuth provider.');
+    }
+    if (user.banned) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been banned');
+    }
+
+    const { AcessToken, RefreshToken } = jwtGenerate({ id: user._id, email: user.email, role: user.role });
+
+    await RefreshTokenModel.create({ userId: user._id, token: RefreshToken });
+    await user.saveLog(ipAddress, device);
+
+    const userData = {
+      userId: user._id,
+      role: user.role,
+      email: user.email,
+      fullName: user.firstName + ' ' + user.lastName
+    };
+    return { userData, accessToken: AcessToken, refreshToken: RefreshToken };
+  } catch (error) {
+    throw error;
+  }
+};
+
 const requestToken = async ({ refreshToken }) => {
   try {
     const refreshTokenDoc = await RefreshTokenModel.findOne({ token: refreshToken })
@@ -357,7 +383,8 @@ const getOutstandingBloggers = async () => {
             _id: '$author._id',
             firstName: '$author.firstName',
             lastName: '$author.lastName',
-            avatar: '$author.avatar'
+            avatar: '$author.avatar',
+            bio: '$author.bio'
           },
           totalBlogs: 1,
           totalLikes: 1,
@@ -374,6 +401,7 @@ const getOutstandingBloggers = async () => {
 export const userService = {
   register,
   login,
+  handleOAuthLogin,
   resetPassword,
   requestToken,
   revokeRefreshToken,
