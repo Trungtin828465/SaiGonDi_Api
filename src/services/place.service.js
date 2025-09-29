@@ -17,13 +17,12 @@ const queryGenerate = async (id) => {
 }
 
 
-const createNew = async (placeData, userId, adminId) => {
+const createNew = async (placeData, userId) => {
   try {
     const newPlace = await PlaceModel.create({
       ...placeData,
       createdBy: userId,
-      verifiedBy: adminId,
-      status: adminId ? 'approved' : 'pending'
+      status: 'pending'
     })
     return newPlace
   } catch (error) {
@@ -56,7 +55,7 @@ const getApprovedPlaces = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug address avgRating images')
+      .select('name slug address avgRating images services')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -100,7 +99,7 @@ const getPlacesMapdata = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug category address location avgRating images')
+      .select('name slug category address location avgRating images services')
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
     const returnPlaces = {
@@ -139,6 +138,10 @@ const getAllPlaces = async (queryParams) => {
         path: 'ward',
         select: 'name'
       })
+      .populate({
+        path: 'services',
+        select:'name description'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
@@ -170,8 +173,8 @@ const getPlaceDetails = async (placeId) => {
       .populate({ path: 'likeBy', select: 'firstName lastName avatar' })
       .populate({ path: 'ward', select: 'name' })
       .select(
-        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images viewCount'
-      )
+        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images viewCount services'
+      );
 
     if (!place || place.status !== 'approved') {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
@@ -402,8 +405,8 @@ const getUserCheckins = async (userId) => {
 const searchPlaces = async (filterCriteria) => {
   try {
     const query = {}
-    if (filterCriteria.name) {
-      query.name = { $regex: filterCriteria.name, $options: 'i' } // Case-insensitive search
+    if (filterCriteria.query) {
+      query.name = { $regex: filterCriteria.query, $options: 'i' } // Case-insensitive search
     }
     if (filterCriteria.category) {
       const category = await CategoryModel.findOne({ $or: [{ slug: filterCriteria.category }, { _id: filterCriteria.category }] }).select('_id')

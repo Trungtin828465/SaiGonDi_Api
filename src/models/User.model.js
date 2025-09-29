@@ -6,14 +6,14 @@ import LoginLogModel from './LoginLog.model'
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: true,
+    required: function() { return this.provider === 'local'; },
     trim: true,
     minlength: 1,
     maxlength: 50
   },
   lastName: {
     type: String,
-    required: true,
+    required: function() { return this.provider === 'local'; },
     trim: true,
     minlength: 1,
     maxlength: 50
@@ -31,11 +31,12 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true,
+    required: function() { return this.provider === 'local'; },
     unique: true,
+    sparse: true, // Allows multiple documents to have a null value for phone
     trim: true,
     validate: {
-      validator: (v) => PHONE_RULE.test(v),
+      validator: (v) => !v || PHONE_RULE.test(v), // Validator should allow null/undefined
       message: PHONE_RULE_MESSAGE
     }
   },
@@ -45,7 +46,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() { return this.provider === 'local'; },
     minlength: 6
   },
   avatar: {
@@ -102,6 +103,26 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+
+  facebookId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+
+  displayName: String,
+  provider: {
+    type: String,
+    enum: ['local', 'facebook', 'google'],
+    default: 'local'
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

@@ -1,11 +1,21 @@
 import Blog from '../models/Blog.model.js'
 import Place from '../models/Place.model.js'
+import Category from '../models/Category.model.js'
 import slugify from 'slugify'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError.js'
 import UserModel from '~/models/User.model.js'
 import { badgeActionService } from './badgeAction.service.js'
 import mongoose from 'mongoose'
+
+// Helper function to transform categories array to a comma-separated string of names
+const transformCategoriesToString = (blog) => {
+  if (blog && blog.categories && Array.isArray(blog.categories) && blog.categories.length > 0) {
+    // Assuming categories are populated and have a 'name' property
+    blog.categories = blog.categories.map(cat => cat.name).join(', ');
+  }
+  return blog;
+};
 
 // Helper function to determine media type
 const getMediaType = (url) => {
@@ -65,10 +75,13 @@ const processAlbumData = (album) => {
 
 // Lấy danh sách blogs
 const getBlogs = async (query, user) => {
-  const { tag, category, authorId, status, privacy, page = 1, limit = 10 } = query
+  const { search, tag, category, authorId, status, privacy, page = 1, limit = 10 } = query
 
   const filter = { destroy: false }
 
+  if (search) {
+    filter.title = { $regex: search, $options: 'i' };
+  }
   if (tag) filter.tags = tag
   if (category) filter.categories = category
   if (authorId) filter.authorId = authorId
@@ -88,13 +101,71 @@ const getBlogs = async (query, user) => {
   const blogs = await Blog.find(filter)
     .populate('authorId', 'firstName lastName avatar')
     .populate('ward', 'name')
+    .populate('categories', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
     .lean()
 
+  const transformedBlogs = blogs.map(transformCategoriesToString);
+
   return {
-    blogs,
+    blogs: transformedBlogs,
+    pagination: {
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalBlogs / numericLimit),
+      totalBlogs
+    }
+  }
+
+}
+
+const searchBlogs = async (query, user) => {
+  const { query: searchTerm, category, author, status, privacy, page = 1, limit = 10, sort, order } = query
+
+  const filter = { destroy: false }
+
+  if (searchTerm) {
+    filter.$or = [
+      { title: { $regex: searchTerm, $options: 'i' } },
+      { tags: { $regex: searchTerm, $options: 'i' } }
+    ]
+  }
+  if (category) filter.categories = category
+  if (author) filter.authorId = author
+  if (privacy) filter.privacy = privacy
+
+  if (user && user.role === 'admin') {
+    if (status) filter.status = status
+  } else {
+    filter.privacy = 'public'
+    filter.status = 'approved'
+  }
+
+  const skip = (page - 1) * limit
+  const numericLimit = Number(limit)
+
+  const sortCriteria = {}
+  if (sort) {
+    sortCriteria[sort] = order === 'asc' ? 1 : -1
+  } else {
+    sortCriteria.createdAt = -1 // Default sort
+  }
+
+  const totalBlogs = await Blog.countDocuments(filter)
+  const blogs = await Blog.find(filter)
+    .populate('authorId', 'firstName lastName avatar')
+    .populate('ward', 'name')
+    .populate('categories', 'name')
+    .sort(sortCriteria)
+    .skip(skip)
+    .limit(numericLimit)
+    .lean()
+
+  const transformedBlogs = blogs.map(transformCategoriesToString);
+
+  return {
+    blogs: transformedBlogs,
     pagination: {
       currentPage: Number(page),
       totalPages: Math.ceil(totalBlogs / numericLimit),
@@ -102,6 +173,7 @@ const getBlogs = async (query, user) => {
     }
   }
 }
+
 // Lấy danh sách blogs có lượt xem nhiều
 const getPopularBlogs = async (query, user) => {
   const { page = 1, limit = 10 } = query;
@@ -120,13 +192,16 @@ const getPopularBlogs = async (query, user) => {
   const blogs = await Blog.find(filter)
     .populate('authorId', 'firstName lastName avatar')
     .populate('ward', 'name')
+    .populate('categories', 'name')
     .sort({ viewCount: -1 }) 
     .skip(skip)
     .limit(numericLimit)
     .lean();
 
+  const transformedBlogs = blogs.map(transformCategoriesToString);
+
   return {
-    blogs,
+    blogs: transformedBlogs,
     pagination: {
       currentPage: Number(page),
       totalPages: Math.ceil(totalBlogs / numericLimit),
@@ -139,6 +214,7 @@ const getPopularBlogs = async (query, user) => {
 const getBlogById = async (id, user) => {
   const blog = await Blog.findById(id)
     .populate('authorId', 'firstName lastName avatar')
+    .populate('categories', 'name')
     .lean()
 
   if (!blog) {
@@ -160,14 +236,14 @@ const getBlogById = async (id, user) => {
   }
 
   Blog.updateOne({ _id: id }, { $inc: { viewCount: 1 } }).exec()
-  return blog
+  return transformCategoriesToString(blog);
 }
 
 // Lấy chi tiết blog theo slug
 const getBlogBySlug = async (slug, user) => {
   const blog = await Blog.findOne({ slug })
     .populate('authorId', 'firstName lastName avatar')
-    // .populate("ward", "name")
+    .populate('categories', 'name')
     .lean()
 
   if (!blog) {
@@ -184,12 +260,22 @@ const getBlogBySlug = async (slug, user) => {
   }
 
   Blog.updateOne({ _id: blog._id }, { $inc: { viewCount: 1 } }).exec()
-  return blog
+  return transformCategoriesToString(blog);
 }
 
 // Tạo blog mới
 const createBlog = async (blogData, authorId) => {
   const { title, content, album, categories, tags, privacy, locationDetail, ward, province } = blogData
+
+  if (categories && categories.length > 0) {
+    const validCategories = await Category.countDocuments({
+      _id: { $in: categories },
+      type: 'blog'
+    });
+    if (validCategories !== categories.length) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'One or more categories are invalid or not blog categories.');
+    }
+  }
 
   let baseSlug = slugify(title, { lower: true, strict: true, trim: true })
   let slug = baseSlug
@@ -206,7 +292,7 @@ const createBlog = async (blogData, authorId) => {
     mainImage: blogData.mainImage || (processedAlbum?.find(m => m.type === 'image')?.url ?? null),
     content,
     album: processedAlbum,
-    categories,
+    categories: categories ? categories.map(id => new mongoose.Types.ObjectId(id)) : [],
     tags,
     privacy,
     authorId,
@@ -283,7 +369,7 @@ const likeBlog = async (blogId, userId) => {
 
 // Share blog
 const shareBlogById = async (blogId, userId) => {
-  const originalBlog = await Blog.findById(blogId)
+  const originalBlog = await Blog.findById(blogId).populate('categories', 'name').lean();
   if (!originalBlog) throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết gốc.')
 
   if (originalBlog.privacy !== 'public' || originalBlog.status !== 'approved') {
@@ -291,8 +377,8 @@ const shareBlogById = async (blogId, userId) => {
   }
 
   // Increment shareCount on the original blog
-  originalBlog.shareCount += 1
-  await originalBlog.save()
+  await Blog.updateOne({ _id: blogId }, { $inc: { shareCount: 1 } });
+
 
   // Transform album to match schema
   const transformedAlbum = originalBlog.album.map(item => {
@@ -320,7 +406,7 @@ const shareBlogById = async (blogId, userId) => {
     mainImage: originalBlog.mainImage,
     content: originalBlog.content,
     album: transformedAlbum,
-    categories: originalBlog.categories,
+    categories: originalBlog.categories.map(c => c._id), // Pass IDs to new blog
     tags: originalBlog.tags,
     privacy: 'public', // Default to public for shared posts
     totalLikes: 0, // New post starts with 0 likes
@@ -362,6 +448,16 @@ const updateBlog = async (blogId, updateData, user) => {
   const blog = await Blog.findById(blogId)
   if (!blog) throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy bài viết')
 
+  if (updateData.categories) {
+    const validCategories = await Category.countDocuments({
+      _id: { $in: updateData.categories },
+      type: 'blog'
+    });
+    if (validCategories !== updateData.categories.length) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'One or more categories are invalid or not blog categories.');
+    }
+  }
+
   if (blog.authorId.toString() !== user.id.toString() && user.role !== 'admin') {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền sửa bài viết này')
   }
@@ -401,10 +497,11 @@ const getBlogsByAuthor = async (authorId, user) => {
 
   const blogs = await Blog.find(filter)
     .populate('authorId', 'firstName lastName avatar')
+    .populate('categories', 'name')
     .sort({ createdAt: -1 })
     .lean()
 
-  return blogs
+  return blogs.map(transformCategoriesToString);
 }
 
 const getBlogsByPlaceIdentifier = async (identifier, query, user) => {
@@ -472,13 +569,16 @@ const getBlogsByPlaceIdentifier = async (identifier, query, user) => {
     .select('title slug mainImage authorId ward createdAt totalLikes viewCount shareCount privacy status tags categories')
     .populate('authorId', 'firstName lastName avatar')
     .populate('ward', 'name')
+    .populate('categories', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
     .lean()
 
+  const transformedBlogs = blogs.map(transformCategoriesToString);
+
   return {
-    blogs,
+    blogs: transformedBlogs,
     pagination: {
       currentPage: Number(page),
       totalPages: Math.ceil(totalBlogs / numericLimit),
@@ -506,13 +606,16 @@ const getBlogsByWard = async (wardId, query, user) => {
   const blogs = await Blog.find(filter)
     .populate('authorId', 'firstName lastName avatar')
     .populate('ward', 'name')
+    .populate('categories', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
     .lean()
 
+  const transformedBlogs = blogs.map(transformCategoriesToString);
+
   return {
-    blogs,
+    blogs: transformedBlogs,
     pagination: {
       currentPage: Number(page),
       totalPages: Math.ceil(totalBlogs / numericLimit),
@@ -544,9 +647,12 @@ const getHotBlogs = async (limit = 2) => {
     const hotBlogs = await Blog.find({ status: 'approved', privacy: 'public', destroy: false })
       .sort({ viewCount: -1 }) // Sort by viewCount in descending order
       .limit(limit)
-      .select('title slug mainImage authorId createdAt viewCount totalLikes') // Select relevant fields
+      .select('title slug mainImage authorId createdAt viewCount totalLikes categories') // Select relevant fields
       .populate('authorId', 'firstName lastName avatar')
-    return hotBlogs
+      .populate('categories', 'name')
+      .lean();
+
+    return hotBlogs.map(transformCategoriesToString);
   } catch (error) {
     throw error
   }
@@ -568,5 +674,6 @@ export const blogService = {
   getBlogsByPlaceIdentifier,
   getBlogsByWard,
   reportBlog,
-  getHotBlogs
+  getHotBlogs,
+  searchBlogs
 }

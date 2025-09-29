@@ -13,9 +13,13 @@ const createNew = async (categoryData) => {
   }
 }
 
-const getAllCategories = async () => {
+const getAllCategories = async (query) => {
   try {
-    const categories = await CategoryModel.find({})
+    const filter = {}
+    if (query && query.type) {
+      filter.type = query.type
+    }
+    const categories = await CategoryModel.find(filter)
     return categories
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)

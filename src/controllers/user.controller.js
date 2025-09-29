@@ -222,6 +222,7 @@ const getOutstandingBloggers = async (req, res, next) => {
   }
 }
 
+
 export const userController = {
   register,
   login,
