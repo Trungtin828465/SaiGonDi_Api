@@ -193,6 +193,24 @@ const getOutstandingBloggers = async (req, res, next) => {
 }
 
 
+const oAuthLoginCallback = async (req, res, next) => {
+  try {
+    const { accessToken, refreshToken } = await userService.handleOAuthLogin(
+      req.user,
+      req.ip,
+      req.headers['user-agent']
+    )
+
+    // Chuyển hướng đến CLIENT_URL với tokens dưới dạng query params
+    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}?accessToken=${accessToken}&refreshToken=${refreshToken}`
+    res.redirect(redirectUrl)
+  } catch (error) {
+    // Nếu có lỗi, chuyển hướng đến trang lỗi đăng nhập trên client
+    const failureRedirectUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/login-failure`
+    res.redirect(failureRedirectUrl)
+  }
+}
+
 export const userController = {
   register,
   login,
@@ -208,5 +226,6 @@ export const userController = {
   banUser,
   destroyUser,
   updateUserLocation,
-  getOutstandingBloggers
+  getOutstandingBloggers,
+  oAuthLoginCallback
 }
