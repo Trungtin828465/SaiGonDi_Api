@@ -15,6 +15,7 @@ const createNew = async (req, res, next) => {
 
 const getAllCategories = async (req, res, next) => {
   try {
+    console.log('GET /categories query:', req.query)
     const categories = await categoryService.getAllCategories(req.query)
     res.status(StatusCodes.OK).json({
       message: 'Categories retrieved successfully',
