@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import express from 'express'
 import cors from 'cors'
+import passport from 'passport'
+import '~/config/passport.js'
 import { connectDB } from '~/config/db.js'
 import { env } from '~/config/environment.js'
 import { APIs } from '~/routes/index.js'
@@ -13,6 +15,7 @@ const START_SERVER = async () => {
   app.use(cors())
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
+  app.use(passport.initialize())
   app.use('/api', APIs)
   app.use(errorHandler)
   app.listen(APP_PORT, APP_HOST, () => {

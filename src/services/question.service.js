@@ -5,11 +5,11 @@ import QuestionModel from '~/models/Question.model'
 import AnswerModel from '~/models/Answer.model'
 import { OBJECT_ID_RULE } from '~/utils/validators'
 
-const createQuestion = async (questionData, authorId) => {
+const createQuestion = async (questionData, userId) => {
   try {
     const newQuestion = await QuestionModel.create({
       ...questionData,
-      author: authorId
+      author: userId
     })
     return newQuestion
   } catch (error) {
@@ -25,16 +25,24 @@ const getQuestions = async (queryParams) => {
     const questions = await QuestionModel.find({ isDeleted: false })
       .populate({
         path: 'author',
-        select: 'firstName lastName avatar'
+        select: '_id firstName lastName avatar'
       })
       .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
       .skip(startIndex)
       .limit(limit)
+      .lean()
+
+    const formatted = questions.map(q => ({
+      ...q,
+      authorId: q.author?._id?.toString(),
+      authorName: `${q.author?.firstName || ''} ${q.author?.lastName || ''}`.trim(),
+      authorAvatar: q.author?.avatar || null,
+    }))
 
     const total = await QuestionModel.countDocuments({ isDeleted: false })
 
     return {
-      questions,
+      questions: formatted,
       pagination: {
         total,
         limit,
@@ -49,9 +57,6 @@ const getQuestions = async (queryParams) => {
 
 const getQuestionById = async (questionId) => {
   try {
-    if (!questionId.match(OBJECT_ID_RULE)) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Question not found')
-    }
     const question = await QuestionModel.findByIdAndUpdate(
       questionId,
       { $inc: { views: 1 } },
@@ -59,7 +64,7 @@ const getQuestionById = async (questionId) => {
     )
       .populate({
         path: 'author',
-        select: 'firstName lastName avatar'
+        select: '_id firstName lastName avatar'
       })
       .populate({
         path: 'answers',
@@ -68,12 +73,18 @@ const getQuestionById = async (questionId) => {
           select: 'firstName lastName avatar'
         }
       })
+      .lean()
 
     if (!question || question.isDeleted) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Question not found')
     }
 
-    return question
+    return {
+      ...question,
+      authorId: question.author?._id?.toString(),
+      authorName: `${question.author?.firstName || ''} ${question.author?.lastName || ''}`.trim(),
+      authorAvatar: question.author?.avatar || null,
+    }
   } catch (error) {
     throw error
   }

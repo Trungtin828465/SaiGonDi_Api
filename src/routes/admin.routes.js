@@ -21,11 +21,11 @@ import { uploadFiles } from '~/middlewares/multer.middleware.js'
 import { uploadPlaceImages } from '~/middlewares/cloudinary.middleware.js'
 
 
-
 const Router = express.Router()
 
+Router.get('/me', verifyToken, verifyAdmin, adminController.getMe);
 Router.post('/login', userValidation.login, userController.login)
-Router.post('/places', verifyToken, verifyAdmin, uploadFiles.array('images', 10), uploadPlaceImages, placeValidation.createNew, placeController.createNew)
+Router.post('/places', verifyToken, uploadFiles.array('images', 10), uploadPlaceImages, placeValidation.createNew, placeController.createNew)
 Router.get('/places', verifyToken, verifyAdmin, placeValidation.pagingValidate, placeController.getAllPlaces)
 Router.get('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.getAdminPlaceDetails)
 Router.patch('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.updatePlace)
@@ -33,8 +33,8 @@ Router.put('/places/:id/approve', verifyToken, verifyAdmin, generalValidation.pa
 Router.put('/places/:id/coordinates', verifyToken, verifyAdmin, placeValidation.updatePlaceCoordinates, placeController.updatePlaceCoordinates)
 Router.delete('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.destroyPlace)
 
-Router.post('/categories', verifyToken, verifyAdmin, categoryValidation.createNew, categoryController.createNew)
-Router.get('/categories', verifyToken, verifyAdmin, categoryController.getAllCategories)
+Router.post('/categories', verifyToken, categoryValidation.createNew, categoryController.createNew)
+Router.get('/categories', categoryController.getAllCategories)
 Router.patch('/categories/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, categoryController.updateCategory)
 Router.delete('/categories/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, categoryController.deleteCategory)
 
@@ -52,6 +52,12 @@ Router.delete('/posts/:id', verifyToken, verifyAdmin, blogController.deleteBlog)
 Router.get('/stats/overview', verifyToken, verifyAdmin, adminController.getOverviewStats)
 Router.get('/stats/daily', verifyToken, verifyAdmin, adminController.getDailyStats)
 Router.get('/stats/popular', verifyToken, verifyAdmin, adminController.getPopularStats)
+Router.get('/stats/topViewedPlaces', verifyToken, verifyAdmin, adminController.getTopViewedPlaces)
+Router.get('/stats/logins', adminController.getLoginStats)
+Router.get('/stats/categories', verifyToken, adminController.getCategoryStats)
+Router.get('/stats/monthlyUsers', verifyToken, verifyAdmin, adminController.getUserMonthlyStats)
+Router.get('/stats/topUsers', verifyToken, verifyAdmin, adminController.getTopUsers)
+
 
 Router.get('/badges', verifyToken, verifyAdmin, badgeController.getAllBadges)
 Router.post('/badges', verifyToken, verifyAdmin, badgeController.createBadge)
