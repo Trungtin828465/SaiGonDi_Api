@@ -9,7 +9,8 @@ const createNew = async (req, res, next) => {
       'string.base': 'name must be a string',
       'string.empty': 'name cannot be empty',
       'string.min': 'name must be at least 3 characters long'
-    })
+    }),
+    type: Joi.string().valid('place', 'blog').optional()
   })
   try {
     const data = req?.body ? req.body : {}

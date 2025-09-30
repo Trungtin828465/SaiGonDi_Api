@@ -31,8 +31,13 @@ const register = async (req, res, next) => {
       'string.base': 'password must be a string',
       'string.empty': 'password cannot be empty',
       'string.min': 'password must be at least 6 characters long'
+    }),
+    otp: Joi.string().required().length(6).messages({
+      'string.base': 'otp must be a string',
+      'string.empty': 'otp cannot be empty',
+      'string.length': 'otp must be exactly 6 characters long'
     })
-  })
+  }).unknown(true)
 
   try {
     const data = req?.body ? req.body : {}
@@ -113,7 +118,7 @@ const sendOTP = async (req, res, next) => {
       'string.empty': 'email cannot be empty',
       'string.email': 'email must be a valid email address'
     })
-  })
+  }).unknown(true)
 
   try {
     const data = req?.body ? req.body : {}

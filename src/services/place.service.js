@@ -17,13 +17,12 @@ const queryGenerate = async (id) => {
 }
 
 
-const createNew = async (placeData, userId, adminId) => {
+const createNew = async (placeData, userId) => {
   try {
     const newPlace = await PlaceModel.create({
       ...placeData,
       createdBy: userId,
-      verifiedBy: adminId,
-      status: adminId ? 'approved' : 'pending'
+      status: 'pending'
     })
     return newPlace
   } catch (error) {
@@ -56,7 +55,7 @@ const getApprovedPlaces = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug address avgRating images')
+      .select('name slug address avgRating images services')
 
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
@@ -100,7 +99,7 @@ const getPlacesMapdata = async (queryParams) => {
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug category address location avgRating images')
+      .select('name slug category address location avgRating images services')
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
     const returnPlaces = {
@@ -139,6 +138,10 @@ const getAllPlaces = async (queryParams) => {
         path: 'ward',
         select: 'name'
       })
+      .populate({
+        path: 'services',
+        select:'name description'
+      })
       .sort({ [sortByMapping[sortBy]]: sortOrder })
       .skip(startIndex)
       .limit(limit)
@@ -159,43 +162,39 @@ const getAllPlaces = async (queryParams) => {
 
 const getPlaceDetails = async (placeId) => {
   try {
-    const query = await queryGenerate(placeId);
-    const place = await PlaceModel.find({ ...query, status: 'approved' })
-      .populate({
-        path: 'categories',
-        select: 'name icon description'
-      })
-      .populate({
-        path: 'likeBy',
-        select: 'firstName lastName avatar'
-      })
-      .populate({
-        path: 'ward',
-        select: 'name'
-      })
+    const query = await queryGenerate(placeId)
+
+    const place = await PlaceModel.findOneAndUpdate(
+      { ...query, status: 'approved' },
+      { $inc: { viewCount: 1 } },
+      { new: true }
+    )
+      .populate({ path: 'categories', select: 'name icon description' })
+      .populate({ path: 'likeBy', select: 'firstName lastName avatar' })
+      .populate({ path: 'ward', select: 'name' })
       .select(
-        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images'
+        'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images viewCount services'
       );
 
-    const returnPlace = place[0] || null;
-    if (!returnPlace || returnPlace.status !== 'approved') {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found');
+    if (!place || place.status !== 'approved') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
     }
 
-    // Lấy danh sách đánh giá của địa điểm
-    const reviews = await ReviewModel.find({ placeId: returnPlace._id, _hidden: false })
-      .populate('userId', 'name avatar') // Lấy thông tin người dùng
-      .select('comment rating createdAt') // Chọn các trường cần thiết
-      .sort({ createdAt: -1 });
+    // Lấy danh sách đánh giá
+    const reviews = await ReviewModel.find({ placeId: place._id, _hidden: false })
+      .populate('userId', 'name avatar')
+      .select('comment rating createdAt')
+      .sort({ createdAt: -1 })
 
     return {
-      ...returnPlace.toObject(),
-      reviews // Thêm danh sách đánh giá vào kết quả trả về
-    };
+      ...place.toObject(),
+      reviews
+    }
   } catch (error) {
-    throw error;
+    throw error
   }
-};
+}
+
 
 const updatePlace = async (placeId, updateData) => {
   try {
@@ -335,8 +334,11 @@ const updatePlaceCoordinates = async (placeId, latitude, longitude) => {
     if (!place) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy địa điểm.')
     }
+
     place.location.coordinates = [longitude, latitude]
+    place.updatedAt = new Date()
     await place.save()
+
     return place
   } catch (error) {
     throw error
@@ -403,8 +405,8 @@ const getUserCheckins = async (userId) => {
 const searchPlaces = async (filterCriteria) => {
   try {
     const query = {}
-    if (filterCriteria.name) {
-      query.name = { $regex: filterCriteria.name, $options: 'i' } // Case-insensitive search
+    if (filterCriteria.query) {
+      query.name = { $regex: filterCriteria.query, $options: 'i' } // Case-insensitive search
     }
     if (filterCriteria.category) {
       const category = await CategoryModel.findOne({ $or: [{ slug: filterCriteria.category }, { _id: filterCriteria.category }] }).select('_id')
@@ -506,18 +508,6 @@ const getHotPlaces = async () => {
       }
     ])
 
-    return hotPlaces
-  } catch (error) {
-    throw error
-  }
-}
-
-const getHotPlaces = async (limit = 1) => {
-  try {
-    const hotPlaces = await PlaceModel.find({ status: 'approved' })
-      .sort({ totalLikes: -1 }) // Sort by totalLikes in descending order
-      .limit(limit)
-      .select('name slug address avgRating images totalLikes') // Select relevant fields
     return hotPlaces
   } catch (error) {
     throw error

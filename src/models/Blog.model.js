@@ -43,6 +43,10 @@ const blogSchema = new mongoose.Schema(
           required: function () {
             return ['image', 'video'].includes(this.type)
           }
+        },
+        caption: {
+          type: String,
+          default: null
         }
       }
     ],
@@ -72,7 +76,8 @@ const blogSchema = new mongoose.Schema(
 
     // Categories: phân loại (du lịch, ẩm thực, review…)
     categories: {
-      type: [String],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'categories',
       default: []
     },
 
@@ -85,7 +90,7 @@ const blogSchema = new mongoose.Schema(
     // Cài đặt quyền riêng tư
     privacy: {
       type: String,
-      enum: ['public', 'private', 'friends-only', 'pending'],
+      enum: ['public', 'private'], //, 'friends-only', 'pending'],
       default: 'public'
     },
 

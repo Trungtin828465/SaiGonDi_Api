@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const categorySchema = new mongoose.Schema({
+const serviceSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -23,12 +23,6 @@ const categorySchema = new mongoose.Schema({
     maxlength: 500,
     default: ''
   },
-  type: {
-    type: String,
-    enum: ['place', 'blog'],
-    required: true,
-    default: 'place'
-  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -45,6 +39,6 @@ const categorySchema = new mongoose.Schema({
   }
 })
 
-const CategoryModel = mongoose.model('categories', categorySchema)
+const ServiceModel = mongoose.model('services', serviceSchema)
 
-export default CategoryModel
+export default ServiceModel
