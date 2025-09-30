@@ -23,8 +23,32 @@ const generateAndSaveOTP = async (email) => {
   return otp
 }
 
+const sendRegistrationOtp = async (reqBody) => {
+  try {
+    const { email } = reqBody
+    const existingUser = await UserModel.findOne({ email: email })
+
+    if (existingUser) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Email is already exists')
+    }
+
+    const otp = await generateAndSaveOTP(email)
+    await sendMail(email, 'Your OTP Code for registration', `Your OTP code is ${otp}`)
+    return otp
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to sent send OTP email')
+  }
+}
+
 const register = async (registerData) => {
   try {
+    const { email, otp } = registerData
+    const otpRecord = await OTPModel.findOne({ email, otp })
+
+    if (!otpRecord) {
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid OTP')
+    }
+
     const existingUser = await UserModel.findOne({ email: registerData.email })
 
     if (existingUser) {
@@ -32,6 +56,7 @@ const register = async (registerData) => {
     }
 
     const newUser = await UserModel.create(registerData)
+    await OTPModel.deleteOne({ _id: otpRecord._id })
 
     return newUser
   } catch (error) { throw error }
@@ -547,6 +572,7 @@ const getOutstandingBloggers = async () => {
 }
 
 export const userService = {
+  sendRegistrationOtp,
   register,
   login,
   handleOAuthLogin,

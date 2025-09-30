@@ -11,6 +11,7 @@ import { loginRateLimiter, registerRateLimiter, verifyOtpRateLimiter } from '~/m
 
 const Router = express.Router()
 
+Router.post('/send-registration-otp', verifyOtpRateLimiter, generalValidation.emailValidation, userController.sendRegistrationOtp)
 Router.post('/forgot-password', verifyOtpRateLimiter, generalValidation.emailValidation, userController.sendOTP)
 Router.post('/reset-password', userValidation.resetPassword, userController.resetPassword)
 Router.post('/register', registerRateLimiter, userValidation.register, userController.register)

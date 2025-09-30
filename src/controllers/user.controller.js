@@ -2,6 +2,14 @@ import { StatusCodes } from 'http-status-codes'
 import { userService } from '~/services/user.service.js'
 import UserModel from '~/models/User.model.js'
 
+const sendRegistrationOtp = async (req, res, next) => {
+  try {
+    await userService.sendRegistrationOtp(req.body)
+    res.status(StatusCodes.OK).json({ message: 'OTP sent to email for registration' })
+  } catch (error) {
+    next(error)
+  }
+}
 
 const register = async (req, res, next) => {
   try {
@@ -242,6 +250,7 @@ const oAuthLoginCallback = async (req, res, next) => {
 }
 
 export const userController = {
+  sendRegistrationOtp,
   register,
   login,
   logout,
