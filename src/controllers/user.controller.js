@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { userService } from '~/services/user.service.js'
+import UserModel from '~/models/User.model.js'
+
 
 const register = async (req, res, next) => {
   try {
@@ -21,12 +23,25 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const { userData, accessToken, refreshToken } = await userService.login({ ...req.body, ipAddress: req.ip, device: req.headers['user-agent'] })
+    const { userData, accessToken, refreshToken } = await userService.login({
+      ...req.body,
+      ipAddress: req.ip,
+      device: req.headers['user-agent']
+    })
+
+    let updatedUser = null
+    if (userData && userData.userId) {
+      updatedUser = await UserModel.findByIdAndUpdate(
+        userData.userId,
+        { $inc: { loginCount: 1 } },
+        { new: true } 
+      ).select('firstName lastName email avatar role loginCount')
+    }
 
     res.status(StatusCodes.OK).json({
       success: true,
       message: 'Đăng nhập thành công',
-      user: userData,
+      user: updatedUser || userData,
       accessToken,
       refreshToken
     })
@@ -34,6 +49,7 @@ const login = async (req, res, next) => {
     next(error)
   }
 }
+
 
 const logout = async (req, res, next) => {
   try {
@@ -104,12 +120,12 @@ const verifyOTP = async (req, res, next) => {
 
 const getProfile = async (req, res, next) => {
   try {
-    const userId = req?.query?.userId || req.user.id
+    const userId = req?.query?.userId || req.user.id || req.user._id || req.user.userId
     const profile = await userService.getUserProfile(userId)
     res.status(StatusCodes.OK).json({
       success: true,
       user: profile
-    })
+    });
   } catch (error) {
     next(error)
   }
@@ -140,6 +156,20 @@ const banUser = async (req, res, next) => {
     next(error)
   }
 }
+const banSelf = async (req, res, next) => {
+  try {
+    const userId = req.user.id; 
+    await userService.banUser(userId);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Tài khoản của bạn đã bị khóa thành công'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 const destroyUser = async (req, res, next) => {
   try {
@@ -224,6 +254,7 @@ export const userController = {
   verifyOTP,
   getProfile,
   banUser,
+  banSelf,
   destroyUser,
   updateUserLocation,
   getOutstandingBloggers,

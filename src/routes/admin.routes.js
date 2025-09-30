@@ -21,9 +21,9 @@ import { uploadFiles } from '~/middlewares/multer.middleware.js'
 import { uploadPlaceImages } from '~/middlewares/cloudinary.middleware.js'
 
 
-
 const Router = express.Router()
 
+Router.get('/me', verifyToken, verifyAdmin, adminController.getMe);
 Router.post('/login', userValidation.login, userController.login)
 Router.post('/places', verifyToken, uploadFiles.array('images', 10), uploadPlaceImages, placeValidation.createNew, placeController.createNew)
 Router.get('/places', verifyToken, verifyAdmin, placeValidation.pagingValidate, placeController.getAllPlaces)
@@ -52,6 +52,12 @@ Router.delete('/posts/:id', verifyToken, verifyAdmin, blogController.deleteBlog)
 Router.get('/stats/overview', verifyToken, verifyAdmin, adminController.getOverviewStats)
 Router.get('/stats/daily', verifyToken, verifyAdmin, adminController.getDailyStats)
 Router.get('/stats/popular', verifyToken, verifyAdmin, adminController.getPopularStats)
+Router.get('/stats/topViewedPlaces', verifyToken, verifyAdmin, adminController.getTopViewedPlaces)
+Router.get('/stats/logins', adminController.getLoginStats)
+Router.get('/stats/categories', verifyToken, adminController.getCategoryStats)
+Router.get('/stats/monthlyUsers', verifyToken, verifyAdmin, adminController.getUserMonthlyStats)
+Router.get('/stats/topUsers', verifyToken, verifyAdmin, adminController.getTopUsers)
+
 
 Router.get('/badges', verifyToken, verifyAdmin, badgeController.getAllBadges)
 Router.post('/badges', verifyToken, verifyAdmin, badgeController.createBadge)

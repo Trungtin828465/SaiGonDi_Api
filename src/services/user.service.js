@@ -6,6 +6,7 @@ import OTPModel from '~/models/OTP.model.js'
 import ReviewModel from '~/models/Review.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
 import RefreshTokenModel from '~/models/RefreshToken.model'
+import { userBadgeService } from '~/services/userBadge.service.js'
 import sendMail from '~/utils/sendMail.js'
 import BlogModel from '~/models/Blog.model.js'
 
@@ -18,7 +19,6 @@ const generateAndSaveOTP = async (email) => {
     email,
     otp
   }
-  // Save OTP to the database (you need to implement this function)
   await OTPModel.create(otpData)
   return otp
 }
@@ -195,26 +195,86 @@ const resetPassword = async (reqBody) => {
     throw error
   }
 }
-
 // Aggregate user details after implementing other modals (Places, Checkins, etc.)
 const getUserProfile = async (userId) => {
   try {
-    const user = await UserModel.findById(userId)
+    const user = await UserModel.findById(userId).select('-password')
     if (!user || user.role !== 'user' || user._destroyed) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     }
     if (user.banned) {
       throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned')
     }
-    const profile = {
+    const now = new Date()
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+    const totalCheckins = await CheckinModel.countDocuments({ userId })
+    const thisMonthCheckins = await CheckinModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfThisMonth }
+    })
+    const lastMonthCheckins = await CheckinModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    })
+    const checkinGrowth =
+      lastMonthCheckins > 0
+        ? Math.round(((thisMonthCheckins - lastMonthCheckins) / lastMonthCheckins) * 100)
+        : thisMonthCheckins > 0 ? 100 : 0
+
+    const blogs = await BlogModel.find({ authorId: userId }).sort({ createdAt: -1 })
+    const totalBlogs = blogs.length
+    const thisMonthBlogs = await BlogModel.countDocuments({
+      authorId: userId,
+      createdAt: { $gte: startOfThisMonth }
+    })
+    const lastMonthBlogs = await BlogModel.countDocuments({
+      authorId: userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    })
+    const blogGrowth =
+      lastMonthBlogs > 0
+        ? Math.round(((thisMonthBlogs - lastMonthBlogs) / lastMonthBlogs) * 100)
+        : thisMonthBlogs > 0 ? 100 : 0
+
+    const reviews = await ReviewModel.find({ userId })
+    const totalReviews = reviews.length
+    const thisMonthReviews = await ReviewModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfThisMonth }
+    })
+    const lastMonthReviews = await ReviewModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    })
+    const reviewGrowth =
+      lastMonthReviews > 0
+        ? Math.round(((thisMonthReviews - lastMonthReviews) / lastMonthReviews) * 100)
+        : thisMonthReviews > 0 ? 100 : 0
+
+    const badges = await userBadgeService.getBadgesForUser(userId)
+
+    return {
       userId: user._id,
       email: user.email,
+      phone: user.phone,
       fullName: `${user.firstName} ${user.lastName}`,
-      phoneVerified: user.phoneVerified,
-      emailVerified: user.emailVerified,
-      favorites: user.favorites
+      avatar: user.avatar || null,
+      cover: user.cover || null,
+      favorites: user.favorites || [],
+
+      checkinCount: totalCheckins,
+      blogCount: totalBlogs,
+      reviewCount: totalReviews,
+
+      checkinGrowth,
+      blogGrowth,
+      reviewGrowth,
+
+      blogs,
+      badges
     }
-    return profile
   } catch (error) {
     throw error
   }
@@ -222,19 +282,91 @@ const getUserProfile = async (userId) => {
 
 const getUserDetails = async (userId) => {
   try {
-    const user = await UserModel.find({ _id: userId, role: 'user' })
+    const user = await UserModel.findById(userId)
+      .select('-password -__v') 
       .populate('favorites', 'name address avgRating totalRatings')
+      .populate('sharedBlogs', 'title content');
 
-      .populate('sharedBlogs', 'title content')
-      .select('-password -__v')
-
-    if (!user ||user.length === 0) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    if (!user || user.role !== 'user' || user._destroyed) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
     }
-    const returnedUser = user[0]
-    const userCheckins = await CheckinModel.find({ userId })
-      .populate('placeId', 'name address avgRating totalRatings')
-    return { ...returnedUser.toObject(), checkins: userCheckins }
+    if (user.banned) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'This account has been banned')
+    }
+
+    const now = new Date()
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+    const totalCheckins = await CheckinModel.countDocuments({ userId });
+    const thisMonthCheckins = await CheckinModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfThisMonth }
+    });
+    const lastMonthCheckins = await CheckinModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    });
+    const checkinGrowth =
+      lastMonthCheckins > 0
+        ? Math.round(((thisMonthCheckins - lastMonthCheckins) / lastMonthCheckins) * 100)
+        : thisMonthCheckins > 0 ? 100 : 0
+
+    const blogs = await BlogModel.find({ authorId: userId }).sort({ createdAt: -1 })
+    const totalBlogs = blogs.length
+    const thisMonthBlogs = await BlogModel.countDocuments({
+      authorId: userId,
+      createdAt: { $gte: startOfThisMonth }
+    });
+    const lastMonthBlogs = await BlogModel.countDocuments({
+      authorId: userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    });
+    const blogGrowth =
+      lastMonthBlogs > 0
+        ? Math.round(((thisMonthBlogs - lastMonthBlogs) / lastMonthBlogs) * 100)
+        : thisMonthBlogs > 0 ? 100 : 0
+
+    const reviews = await ReviewModel.find({ userId });
+    const totalReviews = reviews.length
+    const thisMonthReviews = await ReviewModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfThisMonth }
+    });
+    const lastMonthReviews = await ReviewModel.countDocuments({
+      userId,
+      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    });
+    const reviewGrowth =
+      lastMonthReviews > 0
+        ? Math.round(((thisMonthReviews - lastMonthReviews) / lastMonthReviews) * 100)
+        : thisMonthReviews > 0 ? 100 : 0
+
+    const badges = await userBadgeService.getBadgesForUser(userId);
+
+    return {
+      userId: user._id,
+      fullName: `${user.firstName} ${user.lastName}`,
+      avatar: user.avatar || null,
+      cover: user.cover || null,
+
+      email: user.email,
+      phone: user.phone,
+
+      favorites: user.favorites || [],
+      sharedBlogs: user.sharedBlogs || [],
+
+      checkinCount: totalCheckins,
+      blogCount: totalBlogs,
+      reviewCount: totalReviews,
+
+      checkinGrowth,
+      blogGrowth,
+      reviewGrowth,
+
+      blogs,
+      badges
+    };
   } catch (error) {
     throw error
   }
@@ -251,6 +383,22 @@ const banUser = async (userId) => {
     }
     user.banned = true
     await user.save()
+  } catch (error) {
+    throw error
+  }
+}
+const banSelf = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId)
+    if (!user || user.role !== 'user') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    if (user.banned) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Tài khoản đã bị khóa trước đó');
+    }
+    user.banned = true
+    await user.save()
+    return { message: 'Tài khoản của bạn đã được khóa thành công'};
   } catch (error) {
     throw error
   }
@@ -412,6 +560,7 @@ export const userService = {
   getUserDetails,
   getUserProfile,
   banUser,
+  banSelf,
   destroyUser,
   getUserReviews,
   updateUserProfile,
