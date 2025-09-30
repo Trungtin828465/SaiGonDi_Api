@@ -33,17 +33,19 @@ Router.get('/outstanding-bloggers', userController.getOutstandingBloggers)
 Router.get('/categories', categoryController.getAllCategories)
 
 // Route for Facebook login
-Router.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
-Router.get('/auth/facebook/callback', passport.authenticate('facebook', {
-  successRedirect: '/profile',
-  failureRedirect: '/login'
-}))
+Router.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'], session: false }))
+Router.get(
+  '/auth/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/login', session: false }),
+  userController.oAuthLoginCallback
+)
 
 // Route for Google login
-Router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
-Router.get('/auth/google/callback', passport.authenticate('google', {
-  successRedirect: '/profile',
-  failureRedirect: '/login'
-}))
+Router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }))
+Router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login', session: false }),
+  userController.oAuthLoginCallback
+)
 
 export const userRoute = Router
