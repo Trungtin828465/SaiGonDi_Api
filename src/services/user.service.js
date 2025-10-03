@@ -10,64 +10,103 @@ import { userBadgeService } from '~/services/userBadge.service.js'
 import sendMail from '~/utils/sendMail.js'
 import BlogModel from '~/models/Blog.model.js'
 
-const generateAndSaveOTP = async (email) => {
-  if (!email) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email is required to generate OTP')
-  }
-  const otp = Math.floor(100000 + Math.random() * 900000).toString()
-  const otpData = {
-    email,
-    otp
-  }
-  await OTPModel.create(otpData)
-  return otp
-}
-
-const sendRegistrationOtp = async (reqBody) => {
+const register = async (userData) => {
   try {
-    const { email } = reqBody
-    const existingUser = await UserModel.findOne({ email: email })
+    const { email, firstName, lastName, password, avatar } = userData;
+    let user = await UserModel.findOne({ email });
 
-    if (existingUser) {
-      throw new ApiError(StatusCodes.CONFLICT, 'Email is already exists')
+    if (user && user.emailVerified) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Email already exists');
     }
 
-    const otp = await generateAndSaveOTP(email)
-    await sendMail(email, 'Your OTP Code for registration', `Your OTP code is ${otp}`)
-    return otp
+    await OTPModel.deleteMany({ email: email, type: 'registration' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpData = {
+      email,
+      otp,
+      type: 'registration',
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+      registrationData: {
+        firstName,
+        lastName,
+        password,
+        avatar
+      }
+    };
+    await OTPModel.create(otpData);
+    await sendMail(email, 'Your OTP Code for Registration', `Your OTP code is ${otp}`);
+
+    return { message: 'Registration successful. Please check your email for the OTP to verify your account.' };
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to sent send OTP email')
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to register user');
   }
 }
 
-const register = async (registerData) => {
+
+const verifyEmail = async (verificationData) => {
   try {
-    const { email, otp } = registerData
-    const otpRecord = await OTPModel.findOne({ email, otp })
+    const { email, otp } = verificationData;
+    const otpRecord = await OTPModel.findOne({ email, otp, type: 'registration', expiresAt: { $gt: new Date() } });
 
     if (!otpRecord) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid OTP')
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid or expired OTP');
     }
 
-    const existingUser = await UserModel.findOne({ email: registerData.email })
+    const { firstName, lastName, password, avatar } = otpRecord.registrationData;
+    // Create user but don't save the password directly in the constructor
+    const newUser = new UserModel({ 
+      firstName,
+      lastName,
+      email,
+      avatar,
+      emailVerified: true
+    });
+    newUser.password = password; // Assign password separately to trigger the pre-save hook
+    newUser.markModified('password'); // Explicitly mark password as modified to ensure pre-save hook for hashing is triggered
+    await newUser.save();
 
-    if (existingUser) {
-      throw new ApiError(StatusCodes.CONFLICT, 'Email is already exists')
+    await OTPModel.deleteOne({ _id: otpRecord._id });
+
+    return { message: 'Email verified successfully. You can now log in.' };
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to verify email');
+  }
+};
+
+const sendPasswordResetOTP = async (email) => {
+  try {
+    const user = await UserModel.findOne({ email });
+    if (!user || !user.emailVerified) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found or email not verified');
     }
 
-    const newUser = await UserModel.create(registerData)
-    await OTPModel.deleteOne({ _id: otpRecord._id })
+    await OTPModel.deleteMany({ email: email, type: 'password-reset' });
 
-    return newUser
-  } catch (error) { throw error }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpData = { email, otp, type: 'password-reset', expiresAt: new Date(Date.now() + 5 * 60 * 1000) };
+    await OTPModel.create(otpData);
+
+    await sendMail(email, 'Your Password Reset OTP', `Your OTP code for password reset is ${otp}`);
+
+    return { message: 'Password reset OTP sent successfully.' };
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to send password reset OTP');
+  }
 }
 
 const login = async (loginData) => {
   try {
     const user = await UserModel.findOne({ email: loginData.email })
-      .select('_id role email firstName lastName password banned')
+      .select('_id role email firstName lastName password banned emailVerified')
     if (!user) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
+    }
+    if (!user.emailVerified) {
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Please verify your email before logging in.')
     }
     const isPasswordValid = await user.comparePassword(loginData.password)
     if (!isPasswordValid) {
@@ -170,39 +209,12 @@ const changePassword = async (userId, passwordData) => {
   }
 }
 
-const sendOTP = async (reqBody) => {
-  try {
-    const { email } = reqBody
-    const otp = await generateAndSaveOTP(email)
-    await sendMail(email, 'Your OTP Code', `Your OTP code is ${otp}`)
-    return otp
-  } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to sent send OTP email')
-  }
-}
-
-const verifyOTP = async (otpData) => {
-  try {
-    const { email, otp } = otpData
-    const otpRecord = await OTPModel.findOne({ email, otp })
-
-    if (!otpRecord) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid OTP')
-    }
-    await otpRecord.verifyOTP()
-
-    return { message: 'OTP verified successfully' }
-  } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to verify OTP')
-  }
-}
-
 const resetPassword = async (reqBody) => {
   try {
     const { email, otp, newPassword } = reqBody
-    const otpRecord = await OTPModel.findOne({ email, otp })
+    const otpRecord = await OTPModel.findOne({ email, otp, type: 'password-reset', expiresAt: { $gt: new Date() } })
 
-    if (!otpRecord || !otpRecord.isVerified) {
+    if (!otpRecord) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid or expired OTP')
     }
 
@@ -283,7 +295,6 @@ const getUserProfile = async (userId) => {
     return {
       userId: user._id,
       email: user.email,
-      phone: user.phone,
       fullName: `${user.firstName} ${user.lastName}`,
       avatar: user.avatar || null,
       cover: user.cover || null,
@@ -376,7 +387,6 @@ const getUserDetails = async (userId) => {
       cover: user.cover || null,
 
       email: user.email,
-      phone: user.phone,
 
       favorites: user.favorites || [],
       sharedBlogs: user.sharedBlogs || [],
@@ -423,7 +433,7 @@ const banSelf = async (userId) => {
     }
     user.banned = true
     await user.save()
-    return { message: 'Tài khoản của bạn đã được khóa thành công'};
+    return { message: 'Tài khoản của bạn đã được khóa thành công'}; 
   } catch (error) {
     throw error
   }
@@ -456,8 +466,6 @@ const updateUserProfile = async (userId, reqBody) => {
   try {
     const updateData = {
       ...reqBody,
-      emailVerified: reqBody?.emailVerified || false,
-      phoneVerified: reqBody?.phoneVerified || false,
       updatedAt: Date.now() // Update the updatedAt field
     }
     const user = await UserModel.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true })
@@ -572,7 +580,6 @@ const getOutstandingBloggers = async () => {
 }
 
 export const userService = {
-  sendRegistrationOtp,
   register,
   login,
   handleOAuthLogin,
@@ -581,8 +588,8 @@ export const userService = {
   revokeRefreshToken,
   getAllUsers,
   changePassword,
-  sendOTP,
-  verifyOTP,
+  verifyEmail,
+  sendPasswordResetOTP,
   getUserDetails,
   getUserProfile,
   banUser,

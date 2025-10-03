@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
-import { PHONE_RULE, PHONE_RULE_MESSAGE } from '~/utils/validators'
 import LoginLogModel from './LoginLog.model'
 
 const userSchema = new mongoose.Schema({
@@ -26,21 +25,6 @@ const userSchema = new mongoose.Schema({
     lowercase: true
   },
   emailVerified: {
-    type: Boolean,
-    default: false
-  },
-  phone: {
-    type: String,
-    required: function() { return this.provider === 'local'; },
-    unique: true,
-    sparse: true, // Allows multiple documents to have a null value for phone
-    trim: true,
-    validate: {
-      validator: (v) => !v || PHONE_RULE.test(v), // Validator should allow null/undefined
-      message: PHONE_RULE_MESSAGE
-    }
-  },
-  phoneVerified: {
     type: Boolean,
     default: false
   },
@@ -149,7 +133,7 @@ userSchema.methods.saveLog = async function (ipAddress, device) {
 }
 
 userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
+  if (this.isNew || this.isModified('password')) {
     const salt = await bcrypt.genSalt(10)
     this.password = await bcrypt.hash(this.password, salt)
   }
