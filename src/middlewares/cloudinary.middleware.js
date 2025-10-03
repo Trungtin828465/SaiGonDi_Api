@@ -102,3 +102,19 @@ export const uploadCommentImages = async (req, res, next) => {
     next(error);
   }
 };
+
+// Upload cho Avatar người dùng
+export const uploadAvatar = async (req, res, next) => {
+  try {
+    const file = req.file;
+    if (!file) return next();
+
+    const url = await uploadToCloudinary(file.buffer, 'avatars', 'image');
+
+    req.body.avatar = url;
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
