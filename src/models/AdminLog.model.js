@@ -33,6 +33,10 @@ const adminlogs = new mongoose.Schema({
   toJSON: {
     virtuals: true,
     versionKey: false
+  },
+  loginCount: {
+    type: Number,
+    default: 0
   }
 })
 
