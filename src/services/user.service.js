@@ -287,6 +287,7 @@ const getUserProfile = async (userId) => {
       fullName: `${user.firstName} ${user.lastName}`,
       avatar: user.avatar || null,
       cover: user.cover || null,
+      bio: user.bio || '',
       favorites: user.favorites || [],
 
       checkinCount: totalCheckins,

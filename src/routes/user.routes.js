@@ -30,7 +30,7 @@ Router.get('/badges', verifyToken, userBadgeController.getBadges)
 Router.get('/badges/history', verifyToken, userBadgeController.getPointHistory)
 
 Router.get('/outstanding-bloggers', userController.getOutstandingBloggers)
-
+Router.get('/categories', categoryController.getAllCategories)
 Router.put('/me/ban', verifyToken, userController.banSelf)
 Router.get('/:id', userController.getUserDetails)
 
