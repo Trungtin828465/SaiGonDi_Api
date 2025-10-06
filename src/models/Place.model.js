@@ -107,6 +107,10 @@ const placeSchema = new mongoose.Schema({
     ref: 'users',
     required: true
   },
+  viewCount: {
+    type: Number,
+    default: 0
+  },
   verifiedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'users',

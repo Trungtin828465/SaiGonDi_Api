@@ -33,33 +33,45 @@ const createNew = async (placeData, userId) => {
 const getApprovedPlaces = async (queryParams) => {
   try {
     const sortByMapping = {
-      // location: 'location',
-      latest: 'createdAt',
-      rating: 'avgRating'
+      'popular': 'viewCount',
+      'newest': 'createdAt',
+      'rating': 'avgRating',
     }
+    
     const page = parseInt(queryParams.page, 10) || 1
     const limit = parseInt(queryParams.limit, 10) || 10
     const startIndex = (page - 1) * limit
 
-    const sortBy = queryParams.sortBy || 'createdAt'
-    const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
-    const places = await PlaceModel.find({ status: 'approved' })
+    const sortBy = queryParams.sortBy || 'rating'
+    const sortOrder = -1
+
+    let matchConditions = { status: 'approved' }
+    if (queryParams.category && queryParams.category !== 'all') {
+      matchConditions.categories = queryParams.category
+    }
+    
+    
+    if (queryParams.services && queryParams.services.length > 0) {
+      matchConditions.services = { $in: queryParams.services }
+    }
+
+    const places = await PlaceModel.find(matchConditions)
       .populate({
         path: 'categories',
-        select: 'name icon'
+        select: 'name icon _id'  
       })
       .populate({
         path: 'ward',
         select: 'name'
       })
-      .sort({ [sortByMapping[sortBy]]: sortOrder })
+      .sort({ [sortByMapping[sortBy] || 'rating']: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .select('name slug address avgRating images services')
+      .select('name slug address avgRating images services categories ward viewCount createdAt totalRatings')
 
-    const total = await PlaceModel.countDocuments({ status: 'approved' })
+    const total = await PlaceModel.countDocuments(matchConditions)  
 
-    const returnPlaces = {
+    return {
       places,
       pagination: {
         total,
@@ -68,7 +80,6 @@ const getApprovedPlaces = async (queryParams) => {
         totalPages: Math.ceil(total / limit)
       }
     }
-    return returnPlaces
   } catch (error) {
     throw error
   }
@@ -255,6 +266,20 @@ const addToFavorites = async (placeId, userId) => {
     user.favorites.push(placeId)
     await user.save()
     return user
+  } catch (error) {
+    throw error
+  }
+}
+
+const addViewCount = async (placeId, userId) => {
+  try {
+    const place = await PlaceModel.findById(placeId)
+    if (!place || place.status !== 'approved') {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
+    }
+    place.viewCount += 1
+    await place.save()
+    return place
   } catch (error) {
     throw error
   }
@@ -521,6 +546,7 @@ export const placeService = {
   getApprovedPlaces,
   searchPlaces,
   getPlacesMapdata,
+  addViewCount,
   getUserSuggestedPlaces,
   getAdminPlaceDetails,
   getPlaceDetails,

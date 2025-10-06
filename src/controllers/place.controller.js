@@ -120,6 +120,20 @@ const addToFavorites = async (req, res, next) => {
   }
 }
 
+const addViewCount = async (req, res, next) => {
+  try {
+    const placeId = req.params.id
+    const place = await placeService.addViewCount(placeId)
+    res.status(StatusCodes.OK).json({
+      'success': true,
+      message: 'Đã tăng view count thành công',
+      place
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const removeFromFavorites = async (req, res, next) => {
   try {
     const placeId = req.params.id
@@ -241,6 +255,7 @@ export const placeController = {
   getPlaceDetails,
   updatePlace,
   destroyPlace,
+  addViewCount,
   likePlace,
   addToFavorites,
   removeFromFavorites,
