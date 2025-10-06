@@ -5,6 +5,7 @@ import { userValidation } from '~/validations/user.validation.js'
 import { userController } from '~/controllers/user.controller.js'
 import { verifyToken } from '~/middlewares/auth.middleware.js'
 import { userBadgeController } from '~/controllers/userBadge.controller'
+import { categoryController } from '~/controllers/category.controller'
 import { loginRateLimiter, registerRateLimiter, verifyOtpRateLimiter } from '~/middlewares/limiter.middleware'
 
 const Router = express.Router()
@@ -21,8 +22,14 @@ Router.post('/forgot-password', verifyOtpRateLimiter, generalValidation.emailVal
 Router.post('/reset-password', userValidation.resetPassword, userController.resetPassword)
 Router.put('/change-password', verifyToken, userValidation.changePassword, userController.changePassword)
 
-// --- OAuth Authentication ---
-// Facebook login
+Router.get('/profile', verifyToken, userController.getProfile)
+// Router.post('/logout', userController.logout)
+
+// --- Category Routes ---
+Router.get('/categories', categoryController.getAllCategories)
+
+
+// Route for Facebook login
 Router.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'], session: false }))
 Router.get(
   '/auth/facebook/callback',
