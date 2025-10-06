@@ -95,7 +95,7 @@ const pagingValidate = async (req, res, next) => {
   const pagingRule = Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10),
-    sortBy: Joi.string().valid('latest', 'rating', 'location').default('latest'),
+    sortBy: Joi.string().valid('newest', 'rating', 'popular').default('rating'),
     sortOrder: Joi.string().valid('asc', 'desc').default('desc')
   })
   try {
