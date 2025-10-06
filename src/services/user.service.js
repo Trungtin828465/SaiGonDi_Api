@@ -10,6 +10,7 @@ import { userBadgeService } from '~/services/userBadge.service.js'
 import sendMail from '~/utils/sendMail.js'
 import BlogModel from '~/models/Blog.model.js'
 
+
 const register = async (userData) => {
   try {
     const { email, firstName, lastName, password, avatar } = userData;
@@ -33,10 +34,9 @@ const register = async (userData) => {
         password,
         avatar
       }
-    };
+    }; 
     await OTPModel.create(otpData);
     await sendMail(email, 'Your OTP Code for Registration', `Your OTP code is ${otp}`);
-
     return { message: 'Registration successful. Please check your email for the OTP to verify your account.' };
   } catch (error) {
     if (error instanceof ApiError) throw error;
@@ -47,34 +47,55 @@ const register = async (userData) => {
 
 const verifyEmail = async (verificationData) => {
   try {
-    const { email, otp } = verificationData;
-    const otpRecord = await OTPModel.findOne({ email, otp, type: 'registration', expiresAt: { $gt: new Date() } });
+    const { email, otp } = verificationData
+    const otpRecord = await OTPModel.findOne({ email, otp, type: 'registration', expiresAt: { $gt: new Date() } })
 
     if (!otpRecord) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid or expired OTP');
+      throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid or expired OTP')
     }
 
-    const { firstName, lastName, password, avatar } = otpRecord.registrationData;
-    // Create user but don't save the password directly in the constructor
-    const newUser = new UserModel({ 
-      firstName,
-      lastName,
-      email,
-      avatar,
-      emailVerified: true
-    });
-    newUser.password = password; // Assign password separately to trigger the pre-save hook
-    newUser.markModified('password'); // Explicitly mark password as modified to ensure pre-save hook for hashing is triggered
-    await newUser.save();
+    const { firstName, lastName, password, avatar } = otpRecord.registrationData
 
-    await OTPModel.deleteOne({ _id: otpRecord._id });
+    // Find user by email
+    let user = await UserModel.findOne({ email })
 
-    return { message: 'Email verified successfully. You can now log in.' };
+    if (user) {
+      // User exists (should be unverified based on register logic)
+      if (user.emailVerified) {
+        // Should not happen if register logic is correct
+        throw new ApiError(StatusCodes.CONFLICT, 'Email is already verified.')
+      }
+      // Update existing unverified user
+      user.firstName = firstName
+      user.lastName = lastName
+      user.password = password // This will be hashed on save by the pre-save hook
+      user.avatar = avatar
+      user.emailVerified = true
+    } else {
+      // User does not exist, create a new one
+      user = new UserModel({
+        firstName,
+        lastName,
+        email,
+        avatar,
+        password,
+        emailVerified: true
+      })
+    }
+
+    await user.save() // Save either the updated or the new user
+
+    await OTPModel.deleteOne({ _id: otpRecord._id })
+    return { message: 'Email verified successfully. You can now log in.' }
   } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to verify email');
+    if (error instanceof ApiError) throw error
+    // Check for duplicate key error
+    if (error.code === 11000) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Email already exists.')
+    }
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to verify email')
   }
-};
+}
 
 const sendPasswordResetOTP = async (email) => {
   try {
@@ -108,7 +129,7 @@ const login = async (loginData) => {
     if (!user.emailVerified) {
       throw new ApiError(StatusCodes.FORBIDDEN, 'Please verify your email before logging in.')
     }
-    const isPasswordValid = await user.comparePassword(loginData.password)
+    const isPasswordValid = await user.comparePassword(String(loginData.password).trim())
     if (!isPasswordValid) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid email or password')
     }

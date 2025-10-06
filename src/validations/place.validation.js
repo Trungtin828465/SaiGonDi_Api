@@ -148,9 +148,9 @@ const checkinPlace = async (req, res, next) => {
 };
 const searchValidate = async (req, res, next) => {
   const searchRule = Joi.object({
-    name: Joi.string().min(3).messages({
-      'string.base': 'name must be a string',
-      'string.min': 'name must be at least 3 characters long'
+    query: Joi.string().min(3).messages({
+      'string.base': 'query must be a string',
+      'string.min': 'query must be at least 3 characters long'
     }).optional(),
     category: Joi.string().pattern(OBJECT_ID_RULE).messages({
       'string.base': 'category must be a string',
@@ -178,9 +178,9 @@ const searchValidate = async (req, res, next) => {
       'string.base': 'ward must be a string',
       'string.min': 'ward must be at least 2 characters long'
     }).optional()
-  })
+  }).unknown(true)
   try {
-    const data = req?.params ? req.params : {}
+    const data = req?.query ? req.query : {}
     await searchRule.validateAsync(data, { abortEarly: false })
     next()
   } catch (error) {

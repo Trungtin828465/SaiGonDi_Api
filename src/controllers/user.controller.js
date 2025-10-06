@@ -2,32 +2,42 @@ import { StatusCodes } from 'http-status-codes'
 import { userService } from '~/services/user.service.js'
 import UserModel from '~/models/User.model.js'
 
-const sendRegistrationOtp = async (req, res, next) => {
-  try {
-    await userService.sendRegistrationOtp(req.body)
-    res.status(StatusCodes.OK).json({ message: 'OTP sent to email for registration' })
-  } catch (error) {
-    next(error)
-  }
-}
-
 const register = async (req, res, next) => {
   try {
-    const newUser = await userService.register(req.body)
+    const result = await userService.register(req.body)
 
     res.status(StatusCodes.CREATED).json({
       success: true,
-      message: 'Đăng ký thành công',
-      user: {
-        userId: newUser._id,
-        email: newUser.email,
-        fullName: newUser.firstName + ' ' + newUser.lastName
-      }
+      message: result.message
     })
   } catch (error) {
     next(error)
   }
 }
+
+const verifyEmail = async (req, res, next) => {
+  try {
+    const result = await userService.verifyEmail(req.body);
+    res.status(StatusCodes.OK).json({ 
+      success: true, 
+      message: result.message 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const sendPasswordResetOTP = async (req, res, next) => {
+  try {
+    const result = await userService.sendPasswordResetOTP(req.body.email);
+    res.status(StatusCodes.OK).json({ 
+      success: true, 
+      message: result.message 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const login = async (req, res, next) => {
   try {
@@ -103,24 +113,6 @@ const changePassword = async (req, res, next) => {
       success: true,
       message: 'Đổi mật khẩu thành công'
     })
-  } catch (error) {
-    next(error)
-  }
-}
-
-const sendOTP = async (req, res, next) => {
-  try {
-    await userService.sendOTP(req.body)
-    res.status(StatusCodes.OK).json({ message: 'OTP sent to email' })
-  } catch (error) {
-    next(error)
-  }
-}
-
-const verifyOTP = async (req, res, next) => {
-  try {
-    await userService.verifyOTP(req.body)
-    res.status(StatusCodes.OK).json({ message: 'OTP verified successfully' })
   } catch (error) {
     next(error)
   }
@@ -250,7 +242,6 @@ const oAuthLoginCallback = async (req, res, next) => {
 }
 
 export const userController = {
-  sendRegistrationOtp,
   register,
   login,
   logout,
@@ -259,8 +250,8 @@ export const userController = {
   getAllUsers,
   getUserDetails,
   changePassword,
-  sendOTP,
-  verifyOTP,
+  verifyEmail,
+  sendPasswordResetOTP,
   getProfile,
   banUser,
   banSelf,
