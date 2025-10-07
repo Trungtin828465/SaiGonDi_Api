@@ -16,6 +16,7 @@ Router.get('/:id', generalValidation.paramSlugValidate, placeController.getPlace
 Router.patch('/:id', verifyToken, generalValidation.paramIdValidate, placeController.likePlace)
 
 Router.post('/:id/favorite', verifyToken, generalValidation.paramIdValidate, placeController.addToFavorites)
+Router.post('/:id/view', placeController.addViewCount)
 Router.delete('/:id/favorite', verifyToken, generalValidation.paramIdValidate, placeController.removeFromFavorites)
 Router.post('/:id/checkin', verifyToken, placeValidation.checkinPlace, placeController.checkinPlace)
 

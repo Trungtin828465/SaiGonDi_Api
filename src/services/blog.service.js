@@ -107,10 +107,11 @@ const getBlogs = async (query, user) => {
     .limit(numericLimit)
     .lean()
 
-  const transformedBlogs = blogs.map(transformCategoriesToString);
+  // const transformedBlogs = blogs.map(transformCategoriesToString);
 
   return {
-    blogs: transformedBlogs,
+    // blogs: transformedBlogs,
+    blogs,
     pagination: {
       currentPage: Number(page),
       totalPages: Math.ceil(totalBlogs / numericLimit),
@@ -260,7 +261,8 @@ const getBlogBySlug = async (slug, user) => {
   }
 
   Blog.updateOne({ _id: blog._id }, { $inc: { viewCount: 1 } }).exec()
-  return transformCategoriesToString(blog);
+  // return transformCategoriesToString(blog);
+  return (blog);
 }
 
 // Tạo blog mới

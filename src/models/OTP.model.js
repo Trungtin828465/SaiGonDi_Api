@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import UserModel from './User.model'
+import bcrypt from 'bcrypt'
 
 const otpSchema = new mongoose.Schema({
   email: {
@@ -14,14 +14,27 @@ const otpSchema = new mongoose.Schema({
     minlength: 6,
     maxlength: 6
   },
+  type: {
+    type: String,
+    required: true,
+    enum: ['registration', 'password-reset', 'general']
+  },
   isVerified: {
     type: Boolean,
     default: false
   },
   createdAt: {
     type: Date,
-    default: Date.now,
-    expires: '5m' // OTP expires in 5 minutes
+    default: Date.now
+  },
+  expiresAt: {
+    type: Date,
+    default: () => Date.now() + 5 * 60 * 1000, // 5 minutes from creation
+  },
+  registrationData: {
+    firstName: { type: String },
+    lastName: { type: String },
+    password: { type: String },
   }
 })
 
