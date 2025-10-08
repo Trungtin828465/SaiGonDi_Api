@@ -7,7 +7,7 @@ import { verifyToken } from '~/middlewares/auth.middleware.js'
 import { userBadgeController } from '~/controllers/userBadge.controller'
 import { categoryController } from '~/controllers/category.controller'
 import { loginRateLimiter, registerRateLimiter, verifyOtpRateLimiter } from '~/middlewares/limiter.middleware'
-
+import { blogController } from '~/controllers/blog.controller'  
 const Router = express.Router()
 
 // --- Authentication & Authorization ---
@@ -53,7 +53,8 @@ Router.put('/location', verifyToken, userValidation.updateUserLocation, userCont
 Router.put('/me/ban', verifyToken, userController.banSelf)
 
 // --- General User Routes ---
+Router.get('/blogs', verifyToken, userController.getUserBlogs)
+
 // This parameterized route must be last to avoid overriding other specific GET routes.
 Router.get('/:id', userController.getUserDetails)
-
 export const userRoute = Router
