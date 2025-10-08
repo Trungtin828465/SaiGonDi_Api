@@ -601,6 +601,18 @@ const getOutstandingBloggers = async () => {
   }
 }
 
+const getUserBlogs = async (userId) => {
+  try {
+    const blogs = await BlogModel.find({
+      authorId: userId,
+      status: { $in: ['pending', 'approved'] }
+    }).sort({ createdAt: -1 });
+    return blogs;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const userService = {
   register,
   login,
@@ -621,5 +633,6 @@ export const userService = {
   updateUserProfile,
   getScoreAndTitle,
   updateUserLocation,
-  getOutstandingBloggers
+  getOutstandingBloggers,
+  getUserBlogs
 }
