@@ -111,29 +111,12 @@ const changePassword = async (req, res, next) => {
 
 const sendOTP = async (req, res, next) => {
   const sendOTPRule = Joi.object({
-    firstName: Joi.string().min(1).max(30).required().messages({
-      'string.base': 'first name must be a string',
-      'string.empty': 'first name cannot be empty',
-      'string.min': 'first name must be at least 1 character long',
-      'string.max': 'first name must not exceed 30 characters'
-    }),
-    lastName: Joi.string().min(1).max(30).required().messages({
-      'string.base': 'last name must be a string',
-      'string.empty': 'last name cannot be empty',
-      'string.min': 'last name must be at least 1 character long',
-      'string.max': 'last name must not exceed 30 characters'
-    }),
     email: Joi.string().email().required().messages({
       'string.base': 'email must be a string',
       'string.empty': 'email cannot be empty',
       'string.email': 'email must be a valid email address'
-    }),
-    password: Joi.string().min(6).required().messages({
-      'string.base': 'password must be a string',
-      'string.empty': 'password cannot be empty',
-      'string.min': 'password must be at least 6 characters long'
     })
-  }).unknown(true)
+  })
 
   try {
     const data = req?.body ? req.body : {}
