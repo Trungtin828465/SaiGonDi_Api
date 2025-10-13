@@ -25,7 +25,7 @@ const getTopSearchKeywords = async () => {
         }
       },
       {
-        $limit: 5
+        $limit: 3
       },
       {
         $project: {
