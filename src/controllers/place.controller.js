@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { placeService } from '~/services/place.service.js'
+import SearchLogModel from '~/models/SearchLog.model.js'
 
 
 const createNew = async (req, res, next) => {
@@ -227,6 +228,12 @@ const getNearbyPlaces = async (req, res, next) => {
 
 const searchPlaces = async (req, res, next) => {
   try {
+    if (req.query.query) {
+      const keyword = req.query.query.toString().trim()
+      if (keyword) {
+        SearchLogModel.create({ keyword }).catch(err => console.error('Failed to log search keyword:', err));
+      }
+    }
     const filteredPlaces = await placeService.searchPlaces(req.query)
     res.status(StatusCodes.OK).json({
       'success': true,

@@ -1,18 +1,24 @@
 import { StatusCodes } from 'http-status-codes'
-import { placeService } from '~/services/place.service.js'
-import { blogService } from '~/services/blog.service.js'
+import { hotService } from '~/services/hot.service.js'
 
 const getHotData = async (req, res, next) => {
   try {
-    const hotPlace = await placeService.getHotPlaces(1)
-    const hotBlogs = await blogService.getHotBlogs(2)
-
+    const hotData = await hotService.getHotData()
     res.status(StatusCodes.OK).json({
       message: 'Hot data retrieved successfully',
-      data: {
-        hotPlace: hotPlace[0] || null,
-        hotBlogs: hotBlogs || []
-      }
+      data: hotData
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getTopSearchKeywords = async (req, res, next) => {
+  try {
+    const topKeywords = await hotService.getTopSearchKeywords()
+    res.status(StatusCodes.OK).json({
+      message: 'Top search keywords retrieved successfully',
+      data: topKeywords
     })
   } catch (error) {
     next(error)
@@ -20,5 +26,6 @@ const getHotData = async (req, res, next) => {
 }
 
 export const hotController = {
-  getHotData
+  getHotData,
+  getTopSearchKeywords
 }
