@@ -97,7 +97,7 @@ const pagingValidate = async (req, res, next) => {
     limit: Joi.number().integer().min(1).max(100).default(10),
     sortBy: Joi.string().valid('newest', 'rating', 'popular').default('rating'),
     sortOrder: Joi.string().valid('asc', 'desc').default('desc')
-  })
+  }).unknown(true)
   try {
     const data = req?.query ? req.query : {}
     await pagingRule.validateAsync(data, { abortEarly: false })
