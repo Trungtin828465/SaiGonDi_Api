@@ -10,7 +10,7 @@ const searchLogSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: '30d' // Automatically delete logs after 30 days
+    expires: '30d' 
   }
 })
 
