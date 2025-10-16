@@ -132,8 +132,8 @@ const reportBlogSchema = Joi.object({
 
 const getBlogsSchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10),
-  sort: Joi.string().valid('createdAt', 'updatedAt', 'title', 'views'),
+  limit: Joi.number().integer().min(1).max(200).default(10),
+  sort: Joi.string().valid('createdAt', 'updatedAt', 'title', 'views', 'newest', 'popular'),
   order: Joi.string().valid('asc', 'desc').default('desc'),
   query: Joi.string().allow('').optional(),
   category: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),

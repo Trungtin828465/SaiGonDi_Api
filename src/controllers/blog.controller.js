@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import ApiError from '../utils/ApiError.js'
 import Blog from '../models/Blog.model.js'; 
+import SearchLogModel from '~/models/SearchLog.model.js'
 
 /**
  * @desc    Lấy danh sách bài viết công khai (có phân trang)
@@ -302,6 +303,13 @@ const reportBlog = async (req, res, next) => {
 
 const searchBlogs = async (req, res, next) => {
   try {
+    if (req.query.query) {
+      const keyword = req.query.query.toString().trim();
+      if (keyword) {
+        SearchLogModel.create({ keyword }).catch(err => console.error('Failed to log search keyword:', err));
+      }
+    }
+
     const { blogs, pagination } = await blogService.searchBlogs(req.query, req.user)
     res.status(StatusCodes.OK).json({
       success: true,

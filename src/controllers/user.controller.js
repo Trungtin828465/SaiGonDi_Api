@@ -241,6 +241,19 @@ const oAuthLoginCallback = async (req, res, next) => {
   }
 }
 
+const getUserBlogs = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const blogs = await userService.getUserBlogs(userId);
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: blogs
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const userController = {
   register,
   login,
@@ -258,5 +271,6 @@ export const userController = {
   destroyUser,
   updateUserLocation,
   getOutstandingBloggers,
-  oAuthLoginCallback
+  oAuthLoginCallback,
+  getUserBlogs
 }

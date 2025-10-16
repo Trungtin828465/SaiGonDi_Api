@@ -5,6 +5,7 @@ import PlaceModel from '~/models/Place.model.js'
 import UserModel from '~/models/User.model.js'
 import CheckinModel from '~/models/Checkin.model.js'
 import ReviewModel from '~/models/Review.model.js'
+import WardModel from '~/models/Ward.model.js'
 
 import { OBJECT_ID_RULE } from '~/utils/validators'
 import CategoryModel from '~/models/Category.model'
@@ -477,7 +478,12 @@ const searchPlaces = async (filterCriteria) => {
       query.district = { $regex: filterCriteria.district, $options: 'i' } // Case-insensitive search
     }
     if (filterCriteria.ward) {
-      query.ward = { $regex: filterCriteria.ward, $options: 'i' } // Case-insensitive search
+      const wards = await WardModel.find({ name: { $regex: filterCriteria.ward, $options: 'i' } }).select('_id')
+      if (wards.length > 0) {
+        query.ward = { $in: wards.map(w => w._id) }
+      } else {
+        query.ward = null
+      }
     }
     if (filterCriteria.avgRating) {
       query.avgRating = { $gte: parseFloat(filterCriteria.avgRating) } // Minimum average rating
@@ -531,21 +537,12 @@ const getHotPlaces = async () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
     const hotPlaces = await CheckinModel.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startOfMonth, $lte: now }
-        }
-      },
-      {
-        $group: {
-          _id: '$placeId',
-          totalCheckins: { $sum: 1 }
-        }
-      },
+      { $match: { createdAt: { $gte: startOfMonth, $lte: now } } },
+      { $group: { _id: '$placeId', totalCheckins: { $sum: 1 } } },
       { $sort: { totalCheckins: -1 } },
       {
         $lookup: {
-          from: 'places', // tên collection
+          from: 'places',
           localField: '_id',
           foreignField: '_id',
           as: 'place'
@@ -553,16 +550,56 @@ const getHotPlaces = async () => {
       },
       { $unwind: '$place' },
       {
+        $lookup: {
+          from: 'wards',
+          localField: 'place.ward',
+          foreignField: '_id',
+          as: 'ward'
+        }
+      },
+      { $unwind: { path: '$ward', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'place.categories',
+          foreignField: '_id',
+          as: 'categories'
+        }
+      },
+      {
+        $lookup: {
+          from: 'services',
+          localField: 'place.services',
+          foreignField: '_id',
+          as: 'services'
+        }
+      },
+      {
         $project: {
           _id: 0,
           placeId: '$_id',
           totalCheckins: 1,
           name: '$place.name',
+          description: '$place.description',
           address: '$place.address',
-          image: { $arrayElemAt: ['$place.images', 0] }
+          ward: { _id: '$ward._id', name: '$ward.name' },
+          district: '$place.district',
+          location: '$place.location',
+          images: '$place.images',
+          avgRating: '$place.avgRating',
+          totalRatings: '$place.totalRatings',
+          totalLikes: '$place.totalLikes',
+          likeBy: '$place.likeBy',
+          createdBy: '$place.createdBy',
+          verifiedBy: '$place.verifiedBy',
+          createdAt: '$place.createdAt',
+          updatedAt: '$place.updatedAt',
+          slug: '$place.slug',
+          categories: '$categories',
+          services: '$services'
         }
       }
-    ])
+    ]);
 
     return hotPlaces
   } catch (error) {

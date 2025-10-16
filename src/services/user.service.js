@@ -137,7 +137,7 @@ const login = async (loginData) => {
       throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been banned')
     }
 
-    const { AcessToken, RefreshToken } = jwtGenerate({ id: user._id, email: user.email, role: user.role })
+    const { AccessToken, RefreshToken } = jwtGenerate({ id: user._id, email: user.email, role: user.role })
 
     await RefreshTokenModel.create({ userId: user._id, token: RefreshToken })
 
@@ -148,7 +148,7 @@ const login = async (loginData) => {
       email: user.email,
       fullName: user.firstName + ' ' + user.lastName
     }
-    return { userData, accessToken: AcessToken, refreshToken: RefreshToken }
+    return { userData, accessToken: AccessToken, refreshToken: RefreshToken }
   } catch (error) {
     throw error
   }
@@ -163,7 +163,7 @@ const handleOAuthLogin = async (user, ipAddress, device) => {
       throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been banned');
     }
 
-    const { AcessToken, RefreshToken } = jwtGenerate({ id: user._id, email: user.email, role: user.role });
+    const { AccessToken, RefreshToken } = jwtGenerate({ id: user._id, email: user.email, role: user.role });
 
     await RefreshTokenModel.create({ userId: user._id, token: RefreshToken });
     await user.saveLog(ipAddress, device);
@@ -174,7 +174,7 @@ const handleOAuthLogin = async (user, ipAddress, device) => {
       email: user.email,
       fullName: user.firstName + ' ' + user.lastName
     };
-    return { userData, accessToken: AcessToken, refreshToken: RefreshToken };
+    return { userData, accessToken: AccessToken, refreshToken: RefreshToken };
   } catch (error) {
     throw error;
   }
@@ -601,6 +601,18 @@ const getOutstandingBloggers = async () => {
   }
 }
 
+const getUserBlogs = async (userId) => {
+  try {
+    const blogs = await BlogModel.find({
+      authorId: userId,
+      status: { $in: ['pending', 'approved'] }
+    }).sort({ createdAt: -1 });
+    return blogs;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const userService = {
   register,
   login,
@@ -621,5 +633,6 @@ export const userService = {
   updateUserProfile,
   getScoreAndTitle,
   updateUserLocation,
-  getOutstandingBloggers
+  getOutstandingBloggers,
+  getUserBlogs
 }

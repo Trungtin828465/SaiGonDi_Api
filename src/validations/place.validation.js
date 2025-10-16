@@ -94,44 +94,7 @@ const createNew = async (req, res, next) => {
 const pagingValidate = async (req, res, next) => {
   const pagingRule = Joi.object({
     page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(100).default(10),
-    categories: Joi.string().pattern(OBJECT_ID_RULE).messages({
-      'string.base': 'categories must be a string',
-      'string.pattern.base': OBJECT_ID_RULE_MESSAGE
-    }),
-    minRating: Joi.number().min(0).max(5).messages({
-      'number.base': 'minRating must be a number',
-      'number.min': 'minRating must be at least 0',
-      'number.max': 'minRating must be at most 5'
-    }),
-    services: Joi.alternatives().try(
-      Joi.string().pattern(OBJECT_ID_RULE).messages({
-        'string.pattern.base': OBJECT_ID_RULE_MESSAGE
-      }),
-      Joi.string().custom((value, helpers) => {
-        if (value.includes(',')) {
-          const ids = value.split(',').map(id => id.trim());
-          for (const id of ids) {
-            if (!OBJECT_ID_RULE.test(id)) {
-              return helpers.error('string.pattern.base', { value: id });
-            }
-          }
-          return value;
-        }
-        if (!OBJECT_ID_RULE.test(value)) {
-          return helpers.error('string.pattern.base', { value });
-        }
-        return value;
-      }).messages({
-        'string.pattern.base': OBJECT_ID_RULE_MESSAGE
-      }),
-      Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).messages({
-        'string.base': 'each service must be a string',
-        'string.pattern.base': OBJECT_ID_RULE_MESSAGE
-      }))
-    ).messages({
-      'alternatives.match': 'services must be a string or array of strings'
-    }),
+    limit: Joi.number().integer().min(1).max(200).default(10),
     sortBy: Joi.string().valid('newest', 'rating', 'popular').default('rating'),
     sortOrder: Joi.string().valid('asc', 'desc').default('desc')
   }).unknown(true)
