@@ -98,12 +98,18 @@ const pagingValidate = async (req, res, next) => {
     sortBy: Joi.string().valid('newest', 'rating', 'popular').default('rating'),
     sortOrder: Joi.string().valid('asc', 'desc').default('desc')
   }).unknown(true)
+  
   try {
-    const data = req?.query ? req.query : {}
+    if (req.query && req.query.services && typeof req.query.services === 'string' && req.query.services.includes(',')) {
+      req.query.services = req.query.services.split(',').map(id => id.trim())
+    }
+    const data = req?.query ? { ...req.query } : {}
     await pagingRule.validateAsync(data, { abortEarly: false })
     next()
   } catch (error) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+    console.error('Validation error:', error)
+    const errorMessage = error.message || error.details?.map(d => d.message).join(', ') || 'Validation error'
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errorMessage))
   }
 }
 
