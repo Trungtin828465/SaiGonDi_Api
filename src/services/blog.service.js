@@ -99,9 +99,9 @@ const getBlogs = async (query, user) => {
 
   const totalBlogs = await Blog.countDocuments(filter)
   const blogs = await Blog.find(filter)
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('ward', 'name')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('ward', '_id name')
+    .populate('categories', '_id name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
@@ -161,9 +161,9 @@ const searchBlogs = async (query, user) => {
 
   const totalBlogs = await Blog.countDocuments(filter)
   const blogs = await Blog.find(filter)
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('ward', 'name')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('ward', '_id name')
+    .populate('categories', '_id name')
     .sort(sortCriteria)
     .skip(skip)
     .limit(numericLimit)
@@ -197,9 +197,9 @@ const getPopularBlogs = async (query, user) => {
 
   const totalBlogs = await Blog.countDocuments(filter);
   const blogs = await Blog.find(filter)
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('ward', 'name')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('ward', '_id name')
+    .populate('categories', '_id name')
     .sort({ viewCount: -1 }) 
     .skip(skip)
     .limit(numericLimit)
@@ -221,8 +221,8 @@ const getPopularBlogs = async (query, user) => {
 // Lấy chi tiết blog
 const getBlogById = async (id, user) => {
   const blog = await Blog.findById(id)
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('categories', '_id name')
     .lean()
 
   if (!blog) {
@@ -250,8 +250,8 @@ const getBlogById = async (id, user) => {
 // Lấy chi tiết blog theo slug
 const getBlogBySlug = async (slug, user) => {
   const blog = await Blog.findOne({ slug })
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('categories', '_id name')
     .lean()
 
   if (!blog) {
@@ -505,8 +505,8 @@ const getBlogsByAuthor = async (authorId, user) => {
   }
 
   const blogs = await Blog.find(filter)
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('categories', '_id name')
     .sort({ createdAt: -1 })
     .lean()
 
@@ -576,9 +576,9 @@ const getBlogsByPlaceIdentifier = async (identifier, query, user) => {
   const totalBlogs = await Blog.countDocuments(filter)
   const blogs = await Blog.find(filter)
     .select('title slug mainImage authorId ward createdAt totalLikes viewCount shareCount privacy status tags categories')
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('ward', 'name')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('ward', '_id name')
+    .populate('categories', '_id name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
@@ -613,9 +613,9 @@ const getBlogsByWard = async (wardId, query, user) => {
 
   const totalBlogs = await Blog.countDocuments(filter)
   const blogs = await Blog.find(filter)
-    .populate('authorId', 'firstName lastName avatar')
-    .populate('ward', 'name')
-    .populate('categories', 'name')
+    .populate('authorId', '_id firstName lastName avatar')
+    .populate('ward', '_id name')
+    .populate('categories', '_id name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(numericLimit)
@@ -657,8 +657,8 @@ const getHotBlogs = async (limit = 2) => {
       .sort({ viewCount: -1 }) // Sort by viewCount in descending order
       .limit(limit)
       .select('title slug mainImage authorId createdAt viewCount totalLikes categories') // Select relevant fields
-      .populate('authorId', 'firstName lastName avatar')
-      .populate('categories', 'name')
+      .populate('authorId', '_id firstName lastName avatar')
+      .populate('categories', '_id name')
       .lean();
 
     return hotBlogs.map(transformCategoriesToString);

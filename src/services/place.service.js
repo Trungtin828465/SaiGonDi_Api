@@ -38,7 +38,7 @@ const getApprovedPlaces = async (queryParams) => {
       'newest': 'createdAt',
       'rating': 'avgRating',
     }
-    
+
     const page = parseInt(queryParams.page, 10) || 1
     const limit = parseInt(queryParams.limit, 10) || 10
     const startIndex = (page - 1) * limit
@@ -50,7 +50,7 @@ const getApprovedPlaces = async (queryParams) => {
     if (queryParams.categories && queryParams.categories !== 'all') {
       matchConditions.categories = queryParams.categories
     }
-    
+
     if (queryParams.minRating) {
       matchConditions.avgRating = { $gte: parseFloat(queryParams.minRating) }
     }
@@ -58,7 +58,7 @@ const getApprovedPlaces = async (queryParams) => {
     if (queryParams.services) {
       try {
         let serviceIds = []
-        
+
         if (Array.isArray(queryParams.services)) {
           serviceIds = queryParams.services
             .filter(id => id && typeof id === 'string')
@@ -72,7 +72,7 @@ const getApprovedPlaces = async (queryParams) => {
           } else {
             serviceIds = [new mongoose.Types.ObjectId(queryParams.services)]
           }
-        }        
+        }
         if (serviceIds.length > 0) {
           matchConditions.services = { $all: serviceIds }
         }
@@ -86,7 +86,7 @@ const getApprovedPlaces = async (queryParams) => {
     const places = await PlaceModel.find(matchConditions)
       .populate({
         path: 'categories',
-        select: 'name icon _id'  
+        select: 'name icon _id'
       })
       .populate({
         path: 'services',
@@ -101,7 +101,7 @@ const getApprovedPlaces = async (queryParams) => {
       .limit(limit)
       .select('name slug address avgRating images services categories ward viewCount createdAt totalRatings')
 
-    const total = await PlaceModel.countDocuments(matchConditions)  
+    const total = await PlaceModel.countDocuments(matchConditions)
 
     return {
       places,
@@ -117,20 +117,28 @@ const getApprovedPlaces = async (queryParams) => {
   }
 }
 
-const getPlacesMapdata = async (queryParams) => {
+const getPlacesMapdata = async (queryParams = {}) => {
   try {
     const sortByMapping = {
       // location: 'location',
       latest: 'createdAt',
       rating: 'avgRating'
     }
-    const page = parseInt(queryParams.page, 10) || 1
-    const limit = parseInt(queryParams.limit, 10) || 10
-    const startIndex = (page - 1) * limit
 
+    // Chỉ áp dụng limit nếu có query param limit
+    const rawLimit = queryParams.limit
+    let limit = null
+    if (rawLimit !== undefined && rawLimit !== null && rawLimit !== '') {
+      const parsed = parseInt(rawLimit, 10)
+      if (!Number.isNaN(parsed) && parsed > 0) limit = parsed
+    }
+
+    const page = parseInt(queryParams.page, 10) || 1
+    const startIndex = limit ? (page - 1) * limit : 0
     const sortBy = queryParams.sortBy || 'createdAt'
     const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
-    const places = await PlaceModel.find({ status: 'approved' })
+
+    let query = PlaceModel.find({ status: 'approved' })
       .populate({
         path: 'categories',
         select: 'name icon'
@@ -139,20 +147,18 @@ const getPlacesMapdata = async (queryParams) => {
         path: 'ward',
         select: 'name'
       })
-      .sort({ [sortByMapping[sortBy]]: sortOrder })
-      .skip(startIndex)
-      .limit(limit)
+      .sort({ [sortByMapping[sortBy] || sortBy]: sortOrder })
       .select('name slug category address location avgRating images services')
+
+    if (limit) {
+      query = query.skip(startIndex).limit(limit)
+    }
+
+    const places = await query
     const total = await PlaceModel.countDocuments({ status: 'approved' })
 
     const returnPlaces = {
-      places,
-      pagination: {
-        total,
-        limit,
-        page,
-        totalPages: Math.ceil(total / limit)
-      }
+      places
     }
     return returnPlaces
   } catch (error) {
@@ -160,22 +166,51 @@ const getPlacesMapdata = async (queryParams) => {
   }
 }
 
-const getAllPlaces = async (queryParams) => {
+const getAllPlaces = async (queryParams = {}) => {
   try {
     const sortByMapping = {
-      // location: 'location',
       latest: 'createdAt',
       rating: 'avgRating'
     }
+    const hasFilter = (queryParams.filter && queryParams.filter !== 'all')
+
+    const filterParam = queryParams.filter
+    const rawLimit = queryParams.limit
+    let limit = null
+    if (rawLimit !== undefined && rawLimit !== null && rawLimit !== '') {
+      const parsed = parseInt(rawLimit, 10)
+      if (!Number.isNaN(parsed) && parsed > 0) limit = parsed
+    }
     const page = parseInt(queryParams.page, 10) || 1
-    const limit = parseInt(queryParams.limit, 10) || 10
-    const startIndex = (page - 1) * limit
-    const sortBy = queryParams.sortBy || 'createdAt'
+    const startIndex = limit ? (page - 1) * limit : 0
+    const sortBy = queryParams.sortBy || 'latest'
     const sortOrder = queryParams.sortOrder === 'desc' ? -1 : 1
-    const places = await PlaceModel.find()
+
+    const matchConditions = {}
+
+    if (queryParams.name) {
+      const nameQuery = queryParams.name.toString().trim()
+      if (nameQuery) {
+        matchConditions.name = { $regex: nameQuery, $options: 'i' }
+      }
+    }
+
+    if (hasFilter) {
+      if (filterParam === 'approved') {
+        matchConditions.status = { $in: ['approved'] }
+      } else if (filterParam) {
+        matchConditions.status = filterParam
+      }
+    } else {
+      matchConditions.status = { $ne: 'deleted' }
+    }
+
+    const sortField = sortByMapping[sortBy] || sortBy
+
+    let query = PlaceModel.find(matchConditions)
       .populate({
         path: 'categories',
-        select: 'name icon'
+        select: 'name icon description _id'
       })
       .populate({
         path: 'ward',
@@ -183,19 +218,24 @@ const getAllPlaces = async (queryParams) => {
       })
       .populate({
         path: 'services',
-        select:'name description'
+        select: 'name description'
       })
-      .sort({ [sortByMapping[sortBy]]: sortOrder })
-      .skip(startIndex)
-      .limit(limit)
-    const total = await PlaceModel.countDocuments()
+      .sort({ [sortField]: sortOrder })
+
+    if (limit) {
+      query = query.skip(startIndex).limit(limit)
+    }
+
+    const places = await query
+
+    const total = await PlaceModel.countDocuments(matchConditions)
     return {
       places,
       pagination: {
         total,
-        limit,
-        page,
-        totalPages: Math.ceil(total / limit)
+        limit: limit || total,
+        page: limit ? page : 1,
+        totalPages: limit ? Math.ceil(total / limit) : 1
       }
     }
   } catch (error) {
@@ -208,7 +248,7 @@ const getPlaceDetails = async (placeId) => {
     const query = await queryGenerate(placeId)
 
     const place = await PlaceModel.findOneAndUpdate(
-      { ...query, status: 'approved' },
+      query,
       { $inc: { viewCount: 1 } },
       { new: true }
     )
@@ -219,13 +259,11 @@ const getPlaceDetails = async (placeId) => {
         'categories status name slug description address district ward location avgRating totalRatings totalLikes likeBy images viewCount services'
       );
 
-    if (!place || place.status !== 'approved') {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
-    }
+    
 
     // Lấy danh sách đánh giá
     const reviews = await ReviewModel.find({ placeId: place._id, _hidden: false })
-      .populate('userId', 'name avatar')
+      .populate('userId', 'firstName lastName fullName avatar')
       .select('comment rating createdAt')
       .sort({ createdAt: -1 })
 
@@ -241,10 +279,47 @@ const getPlaceDetails = async (placeId) => {
 
 const updatePlace = async (placeId, updateData) => {
   try {
-    const updatedPlace = await PlaceModel.findByIdAndUpdate(placeId, {
+    // Ảnh mới thêm 
+    const imagesFromBody = updateData.images || [] 
+
+    //Ảnh trước đó
+    const existingImagesRaw = updateData.existingImages
+
+    // Chuyển mảng thành chuỗi
+    let existingImages = []
+    if (existingImagesRaw) {
+      if (Array.isArray(existingImagesRaw)) {
+        existingImages = existingImagesRaw.filter(Boolean).map(String)
+      } else if (typeof existingImagesRaw === 'string') {
+        if (existingImagesRaw.includes(',')) {
+          existingImages = existingImagesRaw.split(',').map(s => s.trim()).filter(Boolean)
+        } else {
+          existingImages = [existingImagesRaw.trim()].filter(Boolean)
+        }
+      }
+    }
+
+    // Normalize imagesFromBody to array of strings as well
+    let newImages = []
+    if (Array.isArray(imagesFromBody)) {
+      newImages = imagesFromBody.filter(Boolean).map(String)
+    } else if (typeof imagesFromBody === 'string') {
+      newImages = [imagesFromBody]
+    }
+
+    // Gộp cả 2 mảng và loại bỏ trùng lặp
+    const mergedImages = [...existingImages, ...newImages].filter(Boolean)
+    const dedupedImages = Array.from(new Set(mergedImages))
+
+    const dataToUpdate = {
       ...updateData,
+      images: dedupedImages,
       updatedAt: new Date()
-    }, { new: true })
+    }
+
+    delete dataToUpdate.existingImages
+
+    const updatedPlace = await PlaceModel.findByIdAndUpdate(placeId, dataToUpdate, { new: true })
     if (!updatedPlace) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Place not found')
     }
@@ -257,7 +332,7 @@ const updatePlace = async (placeId, updateData) => {
 
 const destroyPlace = async (placeId) => {
   try {
-    return await updatePlace(placeId, { status: 'hidden' })
+    return await updatePlace(placeId, { status: 'deleted' })
   } catch (error) {
     throw error
   }
