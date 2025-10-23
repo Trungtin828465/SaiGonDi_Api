@@ -159,8 +159,19 @@ const handleOAuthLogin = async (user, ipAddress, device) => {
     if (!user) {
       throw new ApiError(StatusCodes.UNAUTHORIZED, 'User information is missing from OAuth provider.');
     }
+    
+    if (!user.email) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'User email is required for OAuth login.');
+    }
+    
     if (user.banned) {
       throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been banned');
+    }
+
+    // Ensure user is email verified for OAuth users
+    if (!user.emailVerified) {
+      user.emailVerified = true;
+      await user.save();
     }
 
     const { AccessToken, RefreshToken } = jwtGenerate({ id: user._id, email: user.email, role: user.role });
@@ -176,6 +187,7 @@ const handleOAuthLogin = async (user, ipAddress, device) => {
     };
     return { userData, accessToken: AccessToken, refreshToken: RefreshToken };
   } catch (error) {
+    console.error('OAuth login error:', error);
     throw error;
   }
 };
