@@ -6,7 +6,7 @@ import ReviewModel from '~/models/Review.model.js'
 
 const getMe = async (adminId) => {
   const admin = await UserModel.findById(adminId).select(
-    'firstName lastName fullName email avatar role'
+    'firstName lastName email avatar role'
   )
 
   if (!admin) return null
@@ -14,7 +14,8 @@ const getMe = async (adminId) => {
   return {
     id: admin._id,
     email: admin.email,
-    fullName: admin.fullName || `${admin.firstName} ${admin.lastName}`,
+    firstName: admin.firstName,
+    lastName: admin.lastName,
     avatar: admin.avatar,
     role: admin.role,
     isAdmin: admin.role?.toLowerCase() === 'admin'
