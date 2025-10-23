@@ -50,7 +50,7 @@ const getReviewsByPlaceId = async (queryParams) => {
     const query = { placeId: queryParams.placeId }
 
     const reviews = await ReviewModel.find({ ...query, _hidden: false })
-      .populate('userId', 'name avatar') // Lấy thông tin người dùng
+      .populate('userId', 'firstName avatar') // Lấy thông tin người dùng
       .sort({ createdAt: -1 })
       .skip(startIndex)
       .limit(limit)
