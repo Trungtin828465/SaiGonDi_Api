@@ -79,9 +79,8 @@ const getApprovedPlaces = async (queryParams) => {
       } catch (error) {
         console.error('Error processing service IDs:', queryParams.services, error)
       }
-    } else {
-      console.log('No services parameter found')
     }
+
 
     const places = await PlaceModel.find(matchConditions)
       .populate({
@@ -705,4 +704,3 @@ export const placeService = {
   getNearbyPlaces,
   getHotPlaces
 }
-

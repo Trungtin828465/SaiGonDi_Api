@@ -225,19 +225,39 @@ const getOutstandingBloggers = async (req, res, next) => {
 
 const oAuthLoginCallback = async (req, res, next) => {
   try {
+    if (!req.user) {
+      const script = `
+        <script>
+          window.opener.postMessage({ error: 'no_user_found' }, '${process.env.CLIENT_URL || 'http://localhost:3000'}');
+          window.close();
+        </script>
+      `;
+      return res.send(script);
+    }
+
     const { accessToken, refreshToken } = await userService.handleOAuthLogin(
       req.user,
       req.ip,
       req.headers['user-agent']
     )
 
-    // Chuyển hướng đến CLIENT_URL với tokens dưới dạng query params
-    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}?accessToken=${accessToken}&refreshToken=${refreshToken}`
-    res.redirect(redirectUrl)
+    const script = `
+      <script>
+        window.opener.postMessage({ accessToken: '${accessToken}', refreshToken: '${refreshToken}' }, '${process.env.CLIENT_URL || 'http://localhost:3000'}');
+        window.close();
+      </script>
+    `;
+    res.send(script);
+
   } catch (error) {
-    // Nếu có lỗi, chuyển hướng đến trang lỗi đăng nhập trên client
-    const failureRedirectUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/login-failure`
-    res.redirect(failureRedirectUrl)
+    console.error('OAuth callback error:', error);
+    const script = `
+      <script>
+        window.opener.postMessage({ error: '${encodeURIComponent(error.message || 'authentication_failed')}' }, '${process.env.CLIENT_URL || 'http://localhost:3000'}');
+        window.close();
+      </script>
+    `;
+    res.send(script);
   }
 }
 
