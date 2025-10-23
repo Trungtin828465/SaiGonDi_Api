@@ -25,7 +25,8 @@ const getMe = async (req, res, next) => {
       data: {
         id: admin.id,
         email: admin.email,
-        fullName: admin.fullName,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
         avatar: admin.avatar,
         role: admin.role
       }
