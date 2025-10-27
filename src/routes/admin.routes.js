@@ -35,6 +35,7 @@ Router.put('/places/:id/coordinates', verifyToken, verifyAdmin, placeValidation.
 Router.delete('/places/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, placeController.destroyPlace)
 Router.post('/categories', verifyToken, categoryValidation.createNew, categoryController.createNew)
 Router.get('/categories', categoryController.getAllCategories)
+Router.get('/categories/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, categoryController.getCategoryById)
 Router.patch('/categories/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, categoryController.updateCategory)
 Router.delete('/categories/:id', verifyToken, verifyAdmin, generalValidation.paramIdValidate, categoryController.deleteCategory)
 
