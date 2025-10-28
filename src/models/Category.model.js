@@ -29,6 +29,14 @@ const categorySchema = new mongoose.Schema({
     required: true,
     default: 'place'
   },
+  deleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
